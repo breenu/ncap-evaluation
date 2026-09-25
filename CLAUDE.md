@@ -8,7 +8,7 @@ The full specification is `docs/proposal.pdf`. **Read it completely before doing
 
 Owner: Reenu, final-year CS student, building this as the main data science project for UK MSc Data Science applications (2027 entry). The project must be something Reenu can explain and defend line by line in an interview, so clarity of reasoning matters as much as the code.
 
-Machine: [fill in — OS, RAM, free disk space, GPU yes/no]
+Machine: Windows 11, HP Pavilion 14, Intel i7-1255U (10 cores), 16 GB RAM, ~169 GB free disk, NVIDIA MX550 2 GB (not needed; treat as CPU-only)
 
 ## How to work
 
