@@ -3,14 +3,14 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-09-26, end of Phase 1.*
+*Last updated: 2026-09-26, Phase 1 approved and pushed; Phase 2 not started.*
 
 ## Status
 
 | Phase | State |
 |---|---|
 | 0 Plan | ✅ approved 2026-09-26 (answers in PLAN.md §8) |
-| 1 Skeleton | ✅ done, **awaiting Reenu's approval** |
+| 1 Skeleton | ✅ approved 2026-09-26; pushed; CI green |
 | 2 Acquisition | not started |
 | 3–10 | not started |
 
@@ -27,7 +27,10 @@ Pre-registration gate: **closed** (`config/gate.yaml`). No post-2019 effect esti
   - `src/common/`: `paths.py`, `manifest.py` (idempotent downloads, immutable raw data), `gate.py`.
   - Config: `params.yaml` (undecided thresholds are `null`, DEC-024), `gate.yaml`, `regions.yaml` (draft).
   - Tests: 41 passing. They cover gate, manifest, heavy imports, and R estimators actually running.
-  - CI: `.github/workflows/tests.yml`. It has **not run yet**, because nothing has been pushed.
+  - CI: `.github/workflows/tests.yml` on the private repo `breenu/ncap-evaluation`.
+    - First run failed: `fastglm` source build on Linux lacked the RcppEigen/BH headers.
+    - Fixed in `dd31f52` by adding `r-rcppeigen` and `r-bh` (lock diff: only those two added).
+    - Run 36187837666 passed: 41 tests, none skipped, R estimators ran on Linux.
   - Phase note: `docs/phase-notes/01-skeleton.md`.
 
 ## How to run (Windows, Git Bash or PowerShell)
@@ -57,6 +60,5 @@ Before step 0: create `~/.cdsapirc` and `.env` with **placeholder** values and t
 - **NCAP city counts** (131 vs 130; 48 vs 49 XV-FC) are to be reconciled from source PDFs.
 - **FIRMS archive** did not respond on 2026-09-26.
 - **V6.GL.03 has no methods note.** If one appears, revisit DEC-001.
-- **CI is unverified** until the first push. Micromamba's handling of the lock file's pip entry (pyfixest) is the likeliest failure point.
 - `config/regions.yaml` is a draft (IGP membership of Jharkhand, coastal distance, whether "peninsular/other" needs splitting). It gets finalised in Phase 3.
 - Possible extension (not scheduled): official PRANA/NAMP PM10 series as a "reported" reference (DEC-016).
