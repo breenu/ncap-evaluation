@@ -67,6 +67,8 @@ dependencies:
   - r-trust          # DRDID
   - r-rcpp           # DRDID, fastglm
   - r-bigmemory      # fastglm
+  - r-rcppeigen      # fastglm (compile-time headers; needed for Linux source builds)
+  - r-bh             # fastglm (compile-time headers; needed for Linux source builds)
   - r-formula        # fastglm
   - pip:
       - pyfixest

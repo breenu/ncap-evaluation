@@ -21,6 +21,8 @@ jobs:
           cache-environment: true
 
       - name: R packages not on conda-forge (pinned)
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}   # avoids anonymous API rate limits for install_github
         run: Rscript workflow/scripts/install_r_extra.R
 
       - name: Unit and environment tests

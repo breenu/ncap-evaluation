@@ -13,16 +13,16 @@
 version: 1
 metadata:
   content_hash:
-    win-64: 81281e6034bf7ee697dade4f24bbbe1553dc520894c6df7864427ca30c96684b
-    linux-64: 86493261422d18b045414f5cb45c0285e057c4093fb16c0310120f681ba40ea8
+    win-64: f73acffef1a297523a5a3d23e0acc3d5bbb3692b916e905f9dbd244ba80f59d8
+    linux-64: 2666bcbd814a61d2da86bda3f78eada034297d2e894172c3340c65e86d16c9be
   channels:
   - url: conda-forge
     used_env_vars: []
   - url: bioconda
     used_env_vars: []
   platforms:
-  - win-64
   - linux-64
+  - win-64
   sources:
   - environment.yml
 package:
@@ -10924,6 +10924,30 @@ package:
     sha256: aa18bf817ced850d17de851f98991d2a70a1671b24696279699040dd90a60149
   category: main
   optional: false
+- name: r-bh
+  version: 1.90.0_1
+  manager: conda
+  platform: linux-64
+  dependencies:
+    r-base: '>=4.5,<4.6.0a0'
+  url: https://conda.anaconda.org/conda-forge/noarch/r-bh-1.90.0_1-r45hc72bb7e_0.conda
+  hash:
+    md5: 3424e2dc84315db5aa590ffebabd11c7
+    sha256: 50bada081238bfefe0cf50030e57222c5449da693194627c2a7cf4ffbc04920e
+  category: main
+  optional: false
+- name: r-bh
+  version: 1.90.0_1
+  manager: conda
+  platform: win-64
+  dependencies:
+    r-base: '>=4.5,<4.6.0a0'
+  url: https://conda.anaconda.org/conda-forge/noarch/r-bh-1.90.0_1-r45hc72bb7e_0.conda
+  hash:
+    md5: 3424e2dc84315db5aa590ffebabd11c7
+    sha256: 50bada081238bfefe0cf50030e57222c5449da693194627c2a7cf4ffbc04920e
+  category: main
+  optional: false
 - name: r-bigmemory
   version: 4.6.6
   manager: conda
@@ -12113,6 +12137,45 @@ package:
   hash:
     md5: 0b43571618b687bcc5c920f41c5af9d6
     sha256: e73800204e0d07ee7554e431d7878d7a2c94347a7d1aeb84b73d747ca7e24747
+  category: main
+  optional: false
+- name: r-rcppeigen
+  version: 0.3.4.0.2
+  manager: conda
+  platform: linux-64
+  dependencies:
+    __glibc: '>=2.17,<3.0.a0'
+    libblas: '>=3.9.0,<4.0a0'
+    libgcc: '>=14'
+    liblapack: '>=3.9.0,<4.0a0'
+    libstdcxx: '>=14'
+    r-base: '>=4.5,<4.6.0a0'
+    r-matrix: '>=1.1_0'
+    r-rcpp: '>=0.11.0'
+  url: https://conda.anaconda.org/conda-forge/linux-64/r-rcppeigen-0.3.4.0.2-r45h3704496_1.conda
+  hash:
+    md5: 743927aa75562d9a53b8fda4777bdf93
+    sha256: fd1cc8ec804fede96bbd07867c58fd15c9fdb3fbae800ba0eb7b2779910734dc
+  category: main
+  optional: false
+- name: r-rcppeigen
+  version: 0.3.4.0.2
+  manager: conda
+  platform: win-64
+  dependencies:
+    libblas: '>=3.9.0,<4.0a0'
+    libgcc: '>=14'
+    liblapack: '>=3.9.0,<4.0a0'
+    libstdcxx: '>=14'
+    libwinpthread: '>=12.0.0.r4.gg4f2fc60ca'
+    r-base: '>=4.5,<4.6.0a0'
+    r-matrix: '>=1.1_0'
+    r-rcpp: '>=0.11.0'
+    ucrt: '>=10.0.20348.0'
+  url: https://conda.anaconda.org/conda-forge/win-64/r-rcppeigen-0.3.4.0.2-r45hac2c72c_1.conda
+  hash:
+    md5: 9c4d389b27c5beca1ed6256ea106c2ea
+    sha256: 848224f58bd8ba6049f7e09003136f622a33efd3ecdc570da529a8b00e2bec66
   category: main
   optional: false
 - name: r-remotes
