@@ -1,5 +1,7 @@
 # PLAN: NCAP evaluation, Phase 0
 
+*Status: Phase 0 reviewed and approved by Reenu on 2026-09-26. Answers are recorded in §8 and logged in `DECISIONS.md`.*
+
 *Written 2026-09-26, after reading `CLAUDE.md` and all 20 pages of `docs/proposal.pdf`. Facts marked ✔ were checked against the live source today. Facts marked ⚠ could not be confirmed and are checked first in Phase 2.*
 
 ## 1. Summary: where this plan departs from the proposal
@@ -8,7 +10,7 @@ The proposal stays the spec. The changes below make the work cheaper, faster or 
 
 | # | Proposal says | Plan does | Why |
 |---|---|---|---|
-| D1 | ACAG **V6.GL.02.04** and **V5.GL.05.02**, 1998–2023 | Use **V6.GL.03** as primary and **V5.GL.06** for the version comparison. Both cover **1998–2024** ✔. Optionally add V6.GL.02.04 as a "vintage" check. | This adds a sixth post-treatment year, 2024, and shrinks the "satellite ends in 2023" limitation. Comparing vintages also partly tests whether ground-network growth leaks into the satellite product (proposal threat #3). |
+| D1 | ACAG **V6.GL.02.04** and **V5.GL.05.02**, 1998–2023 | Use **V5.GL.06** as primary (documented on satpm.org), **V6.GL.03** for the version comparison, and **V6.GL.02.04** as the vintage check. All but V6.GL.02.04 cover **1998–2024** ✔. *(Revised at review: V6.GL.03 has no published methods note.)* | This adds a sixth post-treatment year, 2024, and shrinks the "satellite ends in 2023" limitation. Comparing vintages also partly tests whether ground-network growth leaks into the satellite product (proposal threat #3). |
 | D2 | Download ACAG from Box, global files | Download the **Asia-region files** from the public AWS bucket `s3://satpmdata` with no sign-in and no key ✔ | Global 0.01° monthly files are about 437 MB each. The Asia annual files are about 92 MB each (V6) and 18 MB each (V5). This is scriptable, has checksums through ETags, and avoids Box links. |
 | D3 | ERA5 through `cdsapi`, or Open-Meteo | Use one source: the CDS **ERA5 hourly time-series** point dataset (`reanalysis-era5-single-levels-timeseries`) for the station grid cells. Use the **ERA5 monthly means** for an India bounding box for the satellite layer. | The point dataset has every variable the model needs, including **boundary-layer height**, solar radiation and precipitation ✔. It returns long point series quickly and never touches all-India hourly data. The free Open-Meteo tier is capped at 10,000 weighted calls a day ✔, so about 400 points × 11 years would take days. Open-Meteo stays as a no-key fallback. |
 | D4 | OpenAQ API v3 | Use the **OpenAQ S3 archive** (`openaq-data-archive`, no key, no rate limit ✔) for the measurements. Use the v3 API only for station metadata. | The API is limited to about 2,000 requests an hour. Hourly PM data for about 1,200 station-pollutant series would need over 100,000 paged calls. |
@@ -21,7 +23,7 @@ The proposal stays the spec. The changes below make the work cheaper, faster or 
 | D11 | Analysis-plan gate is a process rule | Enforce it in code as well. `config/gate.yaml: analysis_plan_approved: false`. Every causal rule checks the flag and refuses to run while it is false. | This makes Hard Rule 4 mechanical instead of relying on discipline. |
 | D12 | MDE reported at the end | **Compute the minimum detectable effect (MDE) before the gate**, by placebo-in-time on pre-2019 satellite data only. | Rule 4 allows pre-2019 checks. Knowing the MDE up front makes `analysis_plan.md` state realistic decision rules. |
 
-Tooling additions that are not in the proposal: `conda-lock` for exact pinning, and a GitHub Actions job that runs `pytest` on synthetic fixtures only (cheap insurance for the clean-clone check in Phase 10).
+Approved at review: D1 (revised), D2–D12. Tooling additions that are not in the proposal, also approved: `conda-lock` for exact pinning, and a GitHub Actions job that runs `pytest` on synthetic fixtures only (cheap insurance for the clean-clone check in Phase 10).
 
 ## 2. Data sources: access, sizes, verification status
 
@@ -31,9 +33,9 @@ Totals are about **8–15 GB raw**, most of it the OpenAQ archive. Free disk is 
 |---|---|---|---|---|
 | **CAAQMS through OpenAQ S3 archive** ⚑ | Hourly PM2.5 and PM10, plus NO2 as a secondary check, for all Indian locations, 2015-01 to 2026-03 | S3 anonymous. OpenAQ v3 API key for location metadata (IDs, coordinates, first and last dates) | **3–8 GB** compressed; about 1–1.5 M small daily `csv.gz` files | ⚠ India coverage unknown: one secondary source says the legacy CPCB provider tree stops in 2022. **First task of Phase 2 is a coverage probe.** |
 | CPCB CCR portal (fallback) | Same, for gaps | Web portal with captcha; about 1 week of 15-min data per query ✔. Hourly and daily queries allow longer ranges. | Depends on the gaps | Only if the probe shows gaps. It may need manual downloads by you. |
-| **ACAG V6.GL.03 SatPM2.5** ⚑ | Annual 0.01°, Asia region, 2005–2024; monthly **0.1°** Asia (for seasonal analysis) | `s3://satpmdata/V6GL03/…` anonymous, CC BY 4.0 | Annual about **1.8 GB** (20 × 92 MB ✔); monthly 0.1° about 0.3 GB ✔ | ⚠ The version is in the bucket but not yet described on the ACAG site, which still lists V6.GL.02.04 as current. See Q1. |
-| ACAG V5.GL.06 | Annual 0.01° Asia 2005–2024, plus annual uncertainty grids | `s3://satpmdata/V5GL06/…` | About 0.36 GB + 0.18 GB ✔ | Documented on satpm.org, 1998–2024 ✔ |
-| ACAG V6.GL.02.04 (optional vintage check) | Annual 0.01° Asia | Same bucket | About 1.8 GB | Optional (Q1) |
+| **ACAG V5.GL.06 SatPM2.5 (primary)** | Annual 0.01° Asia 2005–2024, annual uncertainty grids, monthly 0.05° Asia (seasonal analysis; ⚠ confirm folder) | `s3://satpmdata/V5GL06/…` anonymous | About 0.36 GB + 0.18 GB ✔, monthly coarse < 0.5 GB | Documented on satpm.org, 1998–2024 ✔ |
+| ACAG V6.GL.03 (comparison) ⚑ | Annual 0.01° Asia 2005–2024 | `s3://satpmdata/V6GL03/…` | About **1.8 GB** (20 × 92 MB ✔) | The bucket has no methods note or README (checked 2026-09-26). The files were uploaded 2026-09-22. |
+| ACAG V6.GL.02.04 (vintage check) ⚑ | Annual 0.01° Asia 2005–2023 | `s3://satpmdata/V6GL0204/…` | About 1.8 GB | Approved (Q1) |
 | **ERA5 hourly time-series** | T2m, Td2m, u10, v10, BLH, total precipitation, SSRD at unique 0.25° cells containing stations (about 300–450), 2015-01 to 2026-03 | CDS account + API key in `~/.cdsapirc`; accept the ERA5 licence | About 1 GB | Variables ✔ |
 | **ERA5 monthly means** | Same variables, India bounding box (6–38°N, 68–98°E), 2005–2024 | Same key | About 0.1 GB | Standard product |
 | **GHSL UCDB R2024A** | Urban-centre polygons, population by epoch, 11,422 centres worldwide ✔ | Direct download, GPKG | < 1 GB (⚠ exact size) | ✔ release exists |
@@ -162,7 +164,7 @@ The phases fit the proposal's 15 weeks (28 Sep 2026 to 10 Jan 2027):
 | 11–12 | Phases 8 and 9 |
 | 13–15 | Phase 10 |
 
-The application milestone (audit plus deweathered trends by about 22 Nov) holds. The main schedule risk is idle time waiting on the Phase 4 review; see Q8.
+The application milestone (audit plus deweathered trends by about 22 Nov) holds. The main schedule risk is idle time waiting on the Phase 4 review; see Q8. *Update at review: Reenu has time until November with no academic constraints, so this calendar is an upper bound and phases proceed as soon as each is approved.*
 
 ## 6. Risks
 
@@ -185,19 +187,31 @@ The application milestone (audit plus deweathered trends by about 22 Nov) holds.
 ## 7. Out of scope (kept out)
 Forecasting models, extra pollutants beyond PM2.5, PM10 and NO2 (secondary), health modelling, source apportionment, live dashboards or APIs, regression discontinuity (RD), causal forests or double ML as the headline method, LLM components, and the Kaggle dataset.
 
-## 8. Questions for Reenu
+## 8. Questions for Reenu (answered 2026-09-26)
 1. **ACAG version.** Should V6.GL.03 (primary) and V5.GL.06 (comparison) replace the proposal's versions, since both run to 2024? Should I also download V6.GL.02.04 as a vintage check (+1.8 GB)? *Recommend yes and yes, conditional on confirming V6.GL.03's release status.*
+   → **V5.GL.06 primary; V6.GL.03 comparison; V6.GL.02.04 vintage check (+1.8 GB approved).** Revisit if a V6.GL.03 methods note appears.
 2. **Environment.** OK to install Miniforge and use a conda env with Python 3.12 and R 4.4, with R used only for mgcv, synthdid and did? *Recommend yes.*
+   → Yes.
 3. **Simplifications D5–D9** (drop WorldPop, pyGAM, camelot and Make; use MODIS FRP): OK?
+   → Yes.
 4. **Keys.** Please create a Copernicus CDS account (and accept the ERA5 licence) and an OpenAQ account before Phase 2. I'll ask for the keys to be placed in `~/.cdsapirc` and `.env`, never pasted into code.
+   → Both accounts exist. In Phase 2 I create `~/.cdsapirc` and `.env` with placeholders and say where they are; Reenu pastes the keys.
 5. **Download budget.** OK in principle to 8–15 GB total? I'll confirm exact sizes for the OpenAQ archive and ACAG before each item over 2 GB.
+   → Approved in principle; still confirm before any item over 2 GB.
 6. **Ground window to 31 Mar 2026** (complete FY2025-26): OK?
+   → Yes.
 7. **The "reported change" bar in the waterfall.** Primary = all-CAAQMS raw PM, which is what CREA and similar trackers use. NCAP's *official* metric is PM10 that also includes NAMP manual stations. Do you want the official PRANA/NAMP figures extracted as an extra reference series? That adds PDF extraction work. *Recommend: only if city-level numbers are published in extractable form.*
+   → No. Skip the PRANA/NAMP series for now; noted as a possible extension.
 8. **Gate timing.** CLAUDE.md puts the analysis plan after the audit. To avoid idle weeks, may I draft `analysis_plan.md` *during* Phase 3 (it doesn't need post-2019 results), so your review overlaps with the audit? Phase order stays the same.
+   → Yes, draft during Phase 3. The gate itself is unchanged.
 9. **OSF.** Will you pre-register on OSF? If so, I'll format `analysis_plan.md` to OSF's template.
+   → Yes; use OSF's pre-registration template.
 10. **Maps.** Use Survey-of-India-consistent boundaries (e.g. DataMeet) for all maps? *Recommend yes, since the audience is Indian policy.*
+   → Yes.
 11. **Schedule.** Any exam weeks or application deadlines I should plan around?
+   → No academic constraints; Reenu has time until November, so phases run as fast as reviews allow rather than to the 15-week calendar.
 12. **Repo visibility.** Public on GitHub from Phase 1, or private until release?
+   → Private now (confirmed private on GitHub); public after Phase 3.
 
 *Sources checked 2026-09-26:*
 - ACAG dataset page (sites.wustl.edu/acag) and satpm.org (V5.GL.06)
