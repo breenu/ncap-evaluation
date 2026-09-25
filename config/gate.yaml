@@ -1,0 +1,6 @@
+# Pre-registration gate: CLAUDE.md hard rule 4, docs/DECISIONS.md DEC-012.
+# While false, every step that estimates post-2019 NCAP treatment effects refuses to run.
+# Flip to true ONLY in a dedicated commit, after docs/analysis_plan.md has been approved
+# by Reenu and committed, and put the hash of that commit in analysis_plan_commit.
+analysis_plan_approved: false
+analysis_plan_commit: null

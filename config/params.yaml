@@ -1,0 +1,46 @@
+# Analysis parameters. Code reads thresholds from here, never from literals.
+# Every value comes from the proposal or docs/DECISIONS.md.
+# null = not decided yet. The stage that first needs it sets it, with a DECISIONS entry, before running.
+
+seed: 20260926
+
+windows:
+  ground_start: "2015-01-01"
+  ground_end: "2026-03-31"            # DEC-011: completes FY2025-26
+  satellite_download_years: [2005, 2024]   # DEC-003
+  satellite_analysis_years: null      # fixed in docs/analysis_plan.md
+  ncap_launch_year: 2019              # proposal: NCAP launched January 2019
+
+pollutants:
+  primary: [pm25, pm10]
+  secondary: [no2]                    # secondary check only (proposal, "what not to do")
+
+satellite:
+  primary: V5GL06                     # DEC-001
+  comparison: V6GL03                  # DEC-002
+  vintage: V6GL0204                   # DEC-002
+  region: Asia
+  zonal_weighting: area               # population weighting = sensitivity (DEC-006)
+
+completeness:                         # proposal stage 3
+  min_hour_share_per_day: 0.75
+  min_day_share_per_year: 0.75
+  sensitivity: [0.60, 0.90]           # proposal validation table
+
+flags:                                # proposal stage 3; values set in Phase 3 from the data
+  flatline_min_hours: null
+  ceiling_values: null
+  changepoint_penalty: null
+  neighbour_radius_km: null
+
+control_pool:
+  min_population: 100000              # proposal stage 7 example; confirmed in analysis_plan.md
+  spillover_buffer_km: null           # set in analysis_plan.md
+
+deweathering:                         # proposal stage 5; plan section 4, Phase 5
+  resamples_default: 300              # raised if the convergence check fails
+  resamples_max: 1000
+
+robustness:                           # proposal validation table
+  placebo_year: 2016
+  placebo_space_permutations: 500

@@ -7,7 +7,10 @@
 secrets/
 
 # --- Data (raw is immutable and not committed; derived data is rebuilt by the pipeline) ---
-data/raw/
+# raw files are ignored, but each source's MANIFEST.csv is committed (provenance; DEC-023)
+data/raw/**
+!data/raw/**/
+!data/raw/*/MANIFEST.csv
 data/interim/
 data/processed/
 *.nc

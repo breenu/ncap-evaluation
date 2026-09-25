@@ -1,0 +1,16 @@
+# Tool configuration only; the project is not an installable package.
+# The environment is defined in environment.yml / conda-lock.yml.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "env: environment smoke tests (heavy imports and R packages); slower",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

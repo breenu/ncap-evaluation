@@ -1,0 +1,72 @@
+# Project environment. Loose specs here; exact pins live in conda-lock.yml.
+# Rebuild the lock after editing:  conda-lock lock -f environment.yml -p win-64 -p linux-64
+name: ncap
+channels:
+  - conda-forge
+  - bioconda        # snakemake only (noarch)
+  - nodefaults
+dependencies:
+  # --- core ---
+  - python=3.12
+  - pip
+  - pyyaml
+  - python-dotenv
+  - requests
+  - tqdm
+  # --- data wrangling and storage ---
+  - polars
+  - pandas
+  - pyarrow
+  - duckdb
+  - python-duckdb
+  # --- gridded and spatial ---
+  - xarray
+  - netcdf4
+  - h5netcdf
+  - rioxarray
+  - geopandas
+  - shapely
+  - pyproj
+  - exactextract
+  # --- acquisition ---
+  - cdsapi
+  - pdfplumber
+  # --- audit, modelling, inference ---
+  - ruptures
+  - lightgbm
+  - scikit-learn
+  - statsmodels
+  - pymc
+  - arviz
+  # --- figures and dashboard ---
+  - matplotlib
+  - streamlit
+  # --- pipeline, tests, notebooks ---
+  - snakemake-minimal
+  - pytest
+  - ruff
+  - ipykernel
+  # --- R: only mgcv (GAM), did (Callaway & Sant'Anna) and synthdid (SDID). DEC-014, DEC-022.
+  # did, DRDID and fastglm are not installable from conda-forge (its r-did needs an r-drdid that
+  # does not exist), so workflow/scripts/install_r_extra.R installs them from a dated CRAN snapshot,
+  # and synthdid from a pinned GitHub commit. Their dependencies come from conda-forge below.
+  - r-base=4.5
+  - r-mgcv
+  - r-arrow
+  - r-yaml
+  - r-remotes
+  - r-mvtnorm        # synthdid
+  - r-bmisc          # did, DRDID
+  - r-data.table     # did
+  - r-tidyr          # did
+  - r-pbapply        # did
+  - r-generics       # did
+  - r-dreamerr       # did
+  - r-ggplot2        # did
+  - r-matrix         # did, fastglm
+  - r-trust          # DRDID
+  - r-rcpp           # DRDID, fastglm
+  - r-bigmemory      # fastglm
+  - r-formula        # fastglm
+  - pip:
+      - pyfixest

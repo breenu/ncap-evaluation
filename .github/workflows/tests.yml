@@ -1,0 +1,30 @@
+# Runs the unit tests (synthetic fixtures only, no real data; DEC-015) in the locked environment.
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: conda-lock.yml
+          environment-name: ncap
+          cache-environment: true
+
+      - name: R packages not on conda-forge (pinned)
+        run: Rscript workflow/scripts/install_r_extra.R
+
+      - name: Unit and environment tests
+        run: pytest -q
+
+      - name: Pipeline DAG resolves
+        run: snakemake -n all

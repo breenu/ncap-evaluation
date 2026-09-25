@@ -48,7 +48,7 @@ Access actions for you, in order of need: **CDS account and key** and **OpenAQ k
 
 ## 3. Architecture (Phase 1 builds this)
 
-- **Environment:** Miniforge (conda-forge) with one `environment.yml`: Python 3.12 (not the system 3.14, where the scientific wheels lag) plus R 4.4 with `mgcv`, `did`, `arrow`, and `synthdid` installed from a pinned GitHub commit. It is not on CRAN. Exact pins go in `conda-lock.yml` for win-64 and linux-64. Quarto is installed at Phase 10.
+- **Environment:** Miniforge (conda-forge) with one `environment.yml`: Python 3.12 (not the system 3.14, where the scientific wheels lag) plus R (4.5 at build time; DEC-022) with `mgcv` and `arrow` from conda-forge, `did` from a dated CRAN snapshot, and `synthdid` from a pinned GitHub commit (it is not on CRAN). Exact pins go in `conda-lock.yml` for win-64 and linux-64. Quarto is installed at Phase 10.
 - **Languages:** Python for everything except three R steps: GAM deweathering (`mgcv`), SDID (`synthdid`) and Callaway & Sant'Anna (`did`). These are the reference implementations by the methods' own authors. R scripts read and write Parquet, so there is no rpy2.
 - **Data:** polars + DuckDB + Parquet. One DuckDB file (`data/processed/ncap.duckdb`) holds *views* over Parquet, so it is always rebuildable. Raw data is immutable, with `data/raw/<source>/MANIFEST.csv` recording url, s3_key/etag, download date, sha256 and bytes.
 - **Orchestration:** `Snakefile` plus `workflow/rules/*.smk`, one per stage. Rules call `python -m src.<stage>.<module>` or `Rscript src/<stage>/<script>.R`. The pipeline is `snakemake --cores 8 all`.

@@ -1,0 +1,29 @@
+# Region assignment for EDA (proposal stage 4) and moderators (stage 8):
+# Indo-Gangetic Plain, coastal, peninsular, north-east.
+# DRAFT: finalised in Phase 3, with a DECISIONS entry, once state boundaries are loaded.
+
+igp_states:        # draft list; whether to add Jharkhand is open
+  - Punjab
+  - Haryana
+  - Chandigarh
+  - Delhi
+  - Uttar Pradesh
+  - Bihar
+  - West Bengal
+
+northeast_states:
+  - Arunachal Pradesh
+  - Assam
+  - Manipur
+  - Meghalaya
+  - Mizoram
+  - Nagaland
+  - Sikkim
+  - Tripura
+
+# Coastal is a city-level rule (distance from the urban-centre polygon to the coastline),
+# not a state rule, because coastal states contain inland cities (e.g. Pune, Nagpur).
+coastal_max_km: null
+
+# All remaining cities are "peninsular / other". Phase 3 decides whether that group is too
+# mixed (e.g. Rajasthan, Himalayan states) and needs splitting.
