@@ -1,0 +1,50 @@
+# --- Secrets (never commit) ---
+.env
+.env.*
+!.env.example
+.cdsapirc
+*.key
+secrets/
+
+# --- Data (raw is immutable and not committed; derived data is rebuilt by the pipeline) ---
+data/raw/
+data/interim/
+data/processed/
+*.nc
+*.nc4
+*.grib
+*.tif
+*.tiff
+*.parquet
+*.duckdb
+*.duckdb.wal
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.coverage
+htmlcov/
+
+# --- R ---
+.Rhistory
+.RData
+.Rproj.user/
+
+# --- Snakemake / Quarto build ---
+.snakemake/
+_freeze/
+.quarto/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
