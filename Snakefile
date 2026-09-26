@@ -7,10 +7,14 @@
 # Phase 1: every stage is a stub that only writes a marker file under data/interim/_stubs/.
 # Later phases replace each stub with real rules, keeping the stage names and order.
 
+import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, workflow.basedir)  # so rules can import src.*
+# Every rule's Python writes UTF-8 to the console: GeoNames and UCDB names carry diacritics that the
+# Windows default code page (cp1252) cannot encode (DEC-082).
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 
 configfile: "config/params.yaml"
 

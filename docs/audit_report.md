@@ -22,7 +22,7 @@
 
 ## 2. Is the source trustworthy?
 
-The mirror was checked against OpenAQ's independent copy of the same CPCB data at every overlapping station-year (`docs/mirror-openaq-crosscheck.md`). 2019-2021 values are identical; IMD-operated stations differ at 15 minutes but agree on daily means; OpenAQ's March 2018 PM2.5 is an index, not a concentration (DEC-057). Station coordinates were settled from identical values (`docs/station_metadata_review.md`, DEC-058, DEC-059, DEC-067): station 513, urban_centre 27, station_unconfirmed 20, locality 3, none 2; 5 stations await a decision.
+The mirror was checked against OpenAQ's independent copy of the same CPCB data at every overlapping station-year (`docs/mirror-openaq-crosscheck.md`). 2019-2021 values are identical; IMD-operated stations differ at 15 minutes but agree on daily means; OpenAQ's March 2018 PM2.5 is an index, not a concentration (DEC-057). Station coordinates were settled from identical values (`docs/station_metadata_review.md`, DEC-058, DEC-059, DEC-067): station 516, urban_centre 24, station_unconfirmed 20, locality 3, none 2; 0 stations await a decision.
 
 ## 3. Impossible values and instrument ceilings (15-minute values)
 
@@ -88,42 +88,42 @@ Penalty calibration (`null_false_alarm` = share of shuffled series with a spurio
 
 | penalty | null_false_alarm | real_share_with_shift | series | reference | chosen |
 |---|---|---|---|---|---|
-| 3 | 0.180 | 0.686 | 582 | neighbours | False |
-| 5 | 0.061 | 0.552 | 582 | neighbours | False |
-| 8 | 0.027 | 0.399 | 582 | neighbours | True |
-| 10 | 0.014 | 0.299 | 582 | neighbours | False |
-| 15 | 0.006 | 0.162 | 582 | neighbours | False |
-| 20 | 0.003 | 0.100 | 582 | neighbours | False |
-| 3 | 0.095 | 0.677 | 461 | own_season | False |
-| 5 | 0.028 | 0.542 | 461 | own_season | True |
-| 8 | 0.001 | 0.354 | 461 | own_season | False |
-| 10 | 0.001 | 0.239 | 461 | own_season | False |
-| 15 | 0.000 | 0.091 | 461 | own_season | False |
-| 20 | 0.000 | 0.041 | 461 | own_season | False |
+| 3 | 0.179 | 0.689 | 585 | neighbours | False |
+| 5 | 0.073 | 0.554 | 585 | neighbours | False |
+| 8 | 0.021 | 0.400 | 585 | neighbours | True |
+| 10 | 0.013 | 0.297 | 585 | neighbours | False |
+| 15 | 0.006 | 0.168 | 585 | neighbours | False |
+| 20 | 0.003 | 0.099 | 585 | neighbours | False |
+| 3 | 0.099 | 0.675 | 458 | own_season | False |
+| 5 | 0.021 | 0.539 | 458 | own_season | True |
+| 8 | 0.005 | 0.349 | 458 | own_season | False |
+| 10 | 0.001 | 0.234 | 458 | own_season | False |
+| 15 | 0.001 | 0.085 | 458 | own_season | False |
+| 20 | 0.000 | 0.035 | 458 | own_season | False |
 
-653 level shifts at 317 stations. By year:
+653 level shifts at 316 stations. By year:
 
 | year | pm10 | pm25 |
 |---|---|---|
 | 2016 | 1 | 4 |
 | 2017 | 2 | 4 |
 | 2018 | 5 | 8 |
-| 2019 | 16 | 10 |
+| 2019 | 16 | 9 |
 | 2020 | 33 | 29 |
-| 2021 | 21 | 20 |
-| 2022 | 38 | 44 |
-| 2023 | 65 | 75 |
-| 2024 | 77 | 95 |
-| 2025 | 55 | 51 |
+| 2021 | 21 | 19 |
+| 2022 | 39 | 44 |
+| 2023 | 66 | 73 |
+| 2024 | 77 | 97 |
+| 2025 | 56 | 50 |
 
 Size of the steps (% change in level, relative to neighbours):
 
 | pollutant | reference | count | 25% | 50% | 75% |
 |---|---|---|---|---|---|
-| pm10 | neighbours | 156.0 | -30.8 | -20.8 | 35.9 |
-| pm10 | own_season | 157.0 | -40.7 | -29.2 | 31.8 |
-| pm25 | neighbours | 191.0 | -34.6 | -20.5 | 52.8 |
-| pm25 | own_season | 149.0 | -46.5 | -32.1 | 34.3 |
+| pm10 | neighbours | 160.0 | -30.8 | -20.8 | 35.9 |
+| pm10 | own_season | 156.0 | -40.7 | -29.1 | 31.8 |
+| pm25 | neighbours | 192.0 | -34.7 | -20.5 | 54.1 |
+| pm25 | own_season | 145.0 | -45.7 | -32.1 | 34.3 |
 
 ## 6. Spatial consistency
 
@@ -131,8 +131,8 @@ Each station-year (60+ valid days) against its neighbours within 25 km (correlat
 
 | pollutant | station_years | assessed_neighbours | median_corr | flagged_neighbours | assessed_satellite | flagged_satellite |
 |---|---|---|---|---|---|---|
-| pm10 | 3,040 | 1,662 | 0.909 | 162 | 0 | 0 |
-| pm25 | 3,157 | 1,751 | 0.907 | 164 | 2,218 | 52 |
+| pm10 | 3,040 | 1,668 | 0.909 | 162 | 0 | 0 |
+| pm25 | 3,157 | 1,766 | 0.907 | 163 | 2,244 | 49 |
 
 ## 7. Valid station-years (completeness rules)
 
@@ -173,13 +173,13 @@ score = 100 × completeness × (1 − flagged share) × 0.8^(failed checks). Fig
 | 2016 | 43.0 | 42.5 | 57.8 | 73.2 |
 | 2017 | 81.0 | 14.7 | 36.5 | 68.0 |
 | 2018 | 131.0 | 54.3 | 79.4 | 88.5 |
-| 2019 | 197.0 | 57.5 | 81.4 | 94.8 |
+| 2019 | 197.0 | 57.5 | 82.1 | 94.9 |
 | 2020 | 250.0 | 59.5 | 82.0 | 92.8 |
-| 2021 | 314.0 | 54.8 | 81.9 | 93.0 |
-| 2022 | 388.0 | 47.6 | 77.5 | 92.3 |
-| 2023 | 513.0 | 53.4 | 75.0 | 89.5 |
-| 2024 | 531.0 | 64.4 | 81.9 | 93.4 |
-| 2025 | 545.0 | 63.1 | 81.6 | 93.8 |
+| 2021 | 314.0 | 54.8 | 82.2 | 93.0 |
+| 2022 | 388.0 | 48.2 | 77.5 | 92.3 |
+| 2023 | 513.0 | 53.4 | 75.1 | 89.6 |
+| 2024 | 531.0 | 64.4 | 81.7 | 93.4 |
+| 2025 | 545.0 | 63.2 | 81.6 | 93.8 |
 
 ## 9. Missingness as data
 
@@ -190,19 +190,19 @@ Linear probability models of a station-day being missing (not valid), with stati
 | season_year | pm25 | C(season)[T.pre-monsoon] | -4.37 | 0.41 | -5.16 | -3.57 | 1,060,753 | 562 |
 | season_year | pm25 | C(season)[T.post-monsoon] | -6.08 | 0.37 | -6.81 | -5.35 | 1,060,753 | 562 |
 | season_year | pm25 | C(season)[T.winter] | -5.96 | 0.44 | -6.82 | -5.10 | 1,060,753 | 562 |
-| pollution_level | pm25 | C(ref_tercile)[T.mid] | -2.91 | 0.34 | -3.58 | -2.23 | 551,984 | 315 |
-| pollution_level | pm25 | C(ref_tercile)[T.high] | -4.58 | 0.54 | -5.65 | -3.51 | 551,984 | 315 |
-| pollution_level | pm25 | C(season)[T.pre-monsoon] | -0.63 | 0.48 | -1.57 | 0.30 | 551,984 | 315 |
-| pollution_level | pm25 | C(season)[T.post-monsoon] | -2.25 | 0.51 | -3.25 | -1.25 | 551,984 | 315 |
-| pollution_level | pm25 | C(season)[T.winter] | -2.03 | 0.53 | -3.08 | -0.99 | 551,984 | 315 |
+| pollution_level | pm25 | C(ref_tercile)[T.mid] | -2.94 | 0.34 | -3.61 | -2.26 | 557,127 | 317 |
+| pollution_level | pm25 | C(ref_tercile)[T.high] | -4.65 | 0.54 | -5.72 | -3.57 | 557,127 | 317 |
+| pollution_level | pm25 | C(season)[T.pre-monsoon] | -0.64 | 0.47 | -1.58 | 0.29 | 557,127 | 317 |
+| pollution_level | pm25 | C(season)[T.post-monsoon] | -2.21 | 0.51 | -3.20 | -1.21 | 557,127 | 317 |
+| pollution_level | pm25 | C(season)[T.winter] | -2.04 | 0.53 | -3.08 | -1.01 | 557,127 | 317 |
 | season_year | pm10 | C(season)[T.pre-monsoon] | -3.52 | 0.36 | -4.23 | -2.81 | 1,019,768 | 557 |
 | season_year | pm10 | C(season)[T.post-monsoon] | -5.35 | 0.37 | -6.07 | -4.63 | 1,019,768 | 557 |
 | season_year | pm10 | C(season)[T.winter] | -4.65 | 0.42 | -5.47 | -3.83 | 1,019,768 | 557 |
-| pollution_level | pm10 | C(ref_tercile)[T.mid] | -2.64 | 0.30 | -3.23 | -2.05 | 522,386 | 306 |
-| pollution_level | pm10 | C(ref_tercile)[T.high] | -4.03 | 0.41 | -4.84 | -3.23 | 522,386 | 306 |
-| pollution_level | pm10 | C(season)[T.pre-monsoon] | -0.42 | 0.44 | -1.29 | 0.45 | 522,386 | 306 |
-| pollution_level | pm10 | C(season)[T.post-monsoon] | -2.31 | 0.46 | -3.21 | -1.40 | 522,386 | 306 |
-| pollution_level | pm10 | C(season)[T.winter] | -2.04 | 0.46 | -2.94 | -1.13 | 522,386 | 306 |
+| pollution_level | pm10 | C(ref_tercile)[T.mid] | -2.64 | 0.30 | -3.23 | -2.05 | 524,718 | 307 |
+| pollution_level | pm10 | C(ref_tercile)[T.high] | -4.03 | 0.41 | -4.83 | -3.23 | 524,718 | 307 |
+| pollution_level | pm10 | C(season)[T.pre-monsoon] | -0.43 | 0.44 | -1.30 | 0.43 | 524,718 | 307 |
+| pollution_level | pm10 | C(season)[T.post-monsoon] | -2.31 | 0.46 | -3.21 | -1.41 | 524,718 | 307 |
+| pollution_level | pm10 | C(season)[T.winter] | -2.03 | 0.46 | -2.94 | -1.13 | 524,718 | 307 |
 
 Share of days missing, pooled:
 
@@ -217,8 +217,8 @@ What filling missing days from the neighbours does to annual means (valid statio
 
 | pollutant | count | 25% | 50% | 75% |
 |---|---|---|---|---|
-| pm10 | 1,212.00 | -0.21 | 0.45 | 1.55 |
-| pm25 | 1,293.00 | -0.18 | 0.69 | 2.02 |
+| pm10 | 1,217.00 | -0.21 | 0.45 | 1.56 |
+| pm25 | 1,303.00 | -0.18 | 0.67 | 2.04 |
 
 ## 10. Exploratory findings
 
@@ -233,24 +233,24 @@ What filling missing days from the neighbours does to annual means (valid statio
 
 | product | year | stations | r | r_lo | r_hi | median_ratio |
 |---|---|---|---|---|---|---|
-| V5GL06 | 2016 | 11 | 0.790 | 0.378 | 0.955 | 1.215 |
-| V5GL06 | 2017 | 16 | 0.873 | 0.732 | 0.954 | 1.041 |
-| V5GL06 | 2018 | 79 | 0.877 | 0.820 | 0.931 | 1.015 |
-| V5GL06 | 2019 | 134 | 0.883 | 0.827 | 0.927 | 1.024 |
-| V5GL06 | 2020 | 166 | 0.890 | 0.856 | 0.920 | 0.945 |
-| V5GL06 | 2021 | 195 | 0.907 | 0.876 | 0.932 | 0.984 |
-| V5GL06 | 2022 | 227 | 0.837 | 0.787 | 0.874 | 0.983 |
-| V5GL06 | 2023 | 309 | 0.809 | 0.766 | 0.847 | 0.982 |
-| V5GL06 | 2024 | 369 | 0.786 | 0.732 | 0.831 | 0.987 |
-| V6GL03 | 2016 | 11 | 0.892 | 0.648 | 0.991 | 1.235 |
-| V6GL03 | 2017 | 16 | 0.893 | 0.766 | 0.965 | 1.030 |
-| V6GL03 | 2018 | 79 | 0.873 | 0.813 | 0.931 | 1.037 |
-| V6GL03 | 2019 | 134 | 0.883 | 0.826 | 0.929 | 1.012 |
-| V6GL03 | 2020 | 166 | 0.888 | 0.851 | 0.920 | 0.940 |
-| V6GL03 | 2021 | 196 | 0.900 | 0.866 | 0.928 | 0.948 |
-| V6GL03 | 2022 | 228 | 0.815 | 0.763 | 0.857 | 0.951 |
-| V6GL03 | 2023 | 309 | 0.770 | 0.709 | 0.821 | 0.981 |
-| V6GL03 | 2024 | 369 | 0.764 | 0.707 | 0.812 | 0.954 |
+| V5GL06 | 2016 | 12 | 0.802 | 0.451 | 0.960 | 1.222 |
+| V5GL06 | 2017 | 17 | 0.873 | 0.745 | 0.949 | 1.061 |
+| V5GL06 | 2018 | 81 | 0.875 | 0.817 | 0.926 | 1.016 |
+| V5GL06 | 2019 | 137 | 0.883 | 0.832 | 0.926 | 1.024 |
+| V5GL06 | 2020 | 168 | 0.890 | 0.854 | 0.920 | 0.945 |
+| V5GL06 | 2021 | 197 | 0.906 | 0.875 | 0.933 | 0.982 |
+| V5GL06 | 2022 | 229 | 0.834 | 0.790 | 0.871 | 0.983 |
+| V5GL06 | 2023 | 312 | 0.806 | 0.761 | 0.844 | 0.982 |
+| V5GL06 | 2024 | 372 | 0.787 | 0.731 | 0.832 | 0.982 |
+| V6GL03 | 2016 | 12 | 0.898 | 0.726 | 0.991 | 1.190 |
+| V6GL03 | 2017 | 17 | 0.889 | 0.772 | 0.960 | 1.041 |
+| V6GL03 | 2018 | 81 | 0.872 | 0.813 | 0.924 | 1.037 |
+| V6GL03 | 2019 | 137 | 0.884 | 0.829 | 0.930 | 1.014 |
+| V6GL03 | 2020 | 168 | 0.888 | 0.844 | 0.921 | 0.940 |
+| V6GL03 | 2021 | 198 | 0.899 | 0.864 | 0.926 | 0.945 |
+| V6GL03 | 2022 | 230 | 0.811 | 0.759 | 0.856 | 0.951 |
+| V6GL03 | 2023 | 312 | 0.766 | 0.707 | 0.817 | 0.979 |
+| V6GL03 | 2024 | 372 | 0.763 | 0.708 | 0.813 | 0.953 |
 
 **Seasonal cycles by region** and **raw city trends**: figures `eda_seasonal_regions` and `eda_city_trends`.
 
@@ -268,4 +268,4 @@ What filling missing days from the neighbours does to annual means (valid statio
 - A level shift cannot be told apart from a real local change next to a monitor.
 - Stations without two neighbours (isolated) get no neighbour check; their changepoints use their own seasonal cycle and can reflect regional change.
 - The satellite check is only as independent as ACAG is of the ground network (it is calibrated to it).
-- 27 stations keep an approximate city point; they are used for city assignment, not neighbour checks.
+- 24 stations keep an approximate city point; they are used for city assignment, not neighbour checks.

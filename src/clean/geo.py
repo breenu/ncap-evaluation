@@ -21,7 +21,8 @@ Matching table (data/interim/ncap_ucdb_match.csv), one row per NCAP city and urb
     shared_uc: a primary centre that is also another NCAP city's primary centre (e.g. Delhi, Noida,
     Ghaziabad, Faridabad in one polygon); such cities form one unit for satellite analysis.
 
-    python -m src.clean.geo
+    python -m src.clean.geo ucdb   # build data/interim/ghsl/ucdb_india.gpkg
+    python -m src.clean.geo        # NCAP-UCDB matching table (reads the layer, never rebuilds it)
 """
 
 import re
@@ -349,7 +350,7 @@ def write_review(m: pd.DataFrame, uc: pd.DataFrame, path=None) -> None:
 def main() -> None:
     from src.clean.station_meta import load_stations  # resolved coordinates
 
-    uc = build_ucdb_india()
+    uc = ucdb_india()  # read only: the ucdb_india rule owns this file (rebuilding it here made a cycle)
     print(f"India urban centres: {len(uc)}; >= 100k in 2020: {(uc.pop_2020 >= 1e5).sum()}")
     st = stations_in_ucs(load_stations(), uc)
     ncap = pd.read_csv(INTERIM / "ncap_cities.csv")
@@ -361,4 +362,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+
+    if sys.argv[1:] == ["ucdb"]:  # the ucdb_india rule: build the India urban-centre layer only
+        build_ucdb_india()
+    else:
+        main()

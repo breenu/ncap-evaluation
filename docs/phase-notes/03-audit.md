@@ -102,3 +102,12 @@ The unweighted mean is the sensitivity check. The choice changes a typical unit 
 2. **Confirm DEC-064:** Raniganj joined as its GHSL polygon rather than a buffer.
 3. **Confirm DEC-070:** the oversized-polygon rule.
 4. **Review `docs/analysis_plan.md`.**
+
+## Update after review (2026-09-26)
+
+Reenu accepted the recommended coordinates for the 5 reviewed stations (DEC-080), and the whole Phase 3 pipeline was then rebuilt end to end with `snakemake --cores 1 pregate` (DEC-082, DEC-083). With 3 more stations located:
+
+- Level shifts: 653 at **316** stations (was 317). The calibrated penalties are unchanged (8 and 5).
+- Station-years flagged against the satellite: **49** PM2.5 station-years (was 52).
+- Coordinates: 516 stations have a station-level coordinate from OpenAQ (3 of them by Reenu's decision), plus 3 GeoNames localities; 26 keep an approximate city point or none.
+- Everything else quoted above is unchanged, including the valid station-years, the missingness findings, the new-vs-existing station comparison and the ground–satellite correlations. The generated `docs/audit_report.md` carries the current numbers.

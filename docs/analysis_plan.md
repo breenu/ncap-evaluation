@@ -101,6 +101,7 @@ All data exist and are downloaded, with checksums in manifests (`docs/data-cards
 - include buffered no-centre towns; exclude Patancheruvu (DEC-049); treated units ≥ 100k only;
 - completeness 60/90% and the 3-of-4 quarter-hour rule (ground);
 - ground station-years with reliability score < 50 excluded (`docs/audit_report.md` §8); include January–March 2026 (ground);
+- drop the 5 stations whose coordinates were set by Reenu's decision (`reenu_decided`, DEC-080) (ground);
 - no deweathering (ground);
 - a Himalayan region split.
 

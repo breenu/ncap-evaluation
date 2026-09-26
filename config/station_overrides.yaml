@@ -19,3 +19,24 @@ state:
     why: >-
       Mirror says Bihar. Operator MPCB; identical-value OpenAQ location 3409461 lies inside the
       Chhatrapati Sambhajinagar (Aurangabad, MH) urban centre.
+
+# Coordinates for the stations whose candidate coordinates lay in different urban centres
+# (docs/station_metadata_review.md section 3). Decided by Reenu on 2026-09-26, accepting the
+# recommendation in each case (DEC-080). These 5 stations carry reenu_decided = True; a sensitivity
+# analysis drops all of them.
+coordinates:
+  site_157:
+    location_id: 5652
+    why: IGSC Planetarium Complex, Patna. Most recently used data-confirmed coordinate (2018-03 to 2026-03); the earlier id 2593 sat 26 km away.
+  site_273:
+    location_id: 5590
+    why: Ardhali Bazar, Varanasi. Most recently used data-confirmed coordinate (2018-03 to 2026-03); lies just outside the Varanasi GHSL polygon.
+  site_5048:
+    location_id: 6958
+    why: Sector-18, Panipat. Most recent coordinate of the data-confirmed id (2025-09 to 2026-03), inside the Panipat centre.
+  site_5124:
+    keep_approximate: true
+    why: Urban, Chamarajanagar. The only candidate is outside Karnataka; the city has no GHSL centre, so the station keeps no station-level coordinate.
+  site_5674:
+    keep_approximate: true
+    why: Dabuna, Nayagarh. The only candidate is 187 km from the city's centre; the station keeps the city's approximate point.

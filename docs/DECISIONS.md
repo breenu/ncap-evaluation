@@ -318,3 +318,18 @@ Raniganj's GeoNames point (1258470; population 131,261) lies inside UCDB centre 
 - **Two consequences:**
   - The Phase 2 statement that the two sources are "identical in 2025" holds only on slots where both hold a value.
   - The pre-2019 mirror has a PM2.5 > PM10 rate of 0.9–2%, so CPCB's validation was less strict before 2019. That is part of why the baseline years score lower on reliability.
+
+## 2026-09-26: Phase 3 review (approved by Reenu)
+
+**DEC-080: The 5 stations whose candidate coordinates lay in different urban centres take the recommended coordinates (Reenu), and a sensitivity analysis drops all 5.**
+- **Chosen coordinates.** Patna IGSC Planetarium (site_157), Varanasi Ardhali Bazar (site_273) and Panipat Sector-18 (site_5048) take their most recently used, data-confirmed coordinate.
+- **Kept approximate.** Chamarajanagar (site_5124) keeps no station-level coordinate: its only candidate is outside Karnataka, and the city has no GHSL centre. Nayagarh (site_5674) keeps the city's approximate point: its only candidate is 187 km away.
+- **Where recorded:** `config/station_overrides.yaml` (`coordinates`, each with why). `data/processed/stations.csv` marks them `reenu_decided` = True and `resolved_by` = `reenu_decision`.
+- **Sensitivity:** added to the ground-layer robustness list in `docs/analysis_plan.md`: every ground-based estimate is re-run without these 5 stations.
+
+**DEC-081: Reenu confirmed DEC-064 (Raniganj joins the Asansol unit as the GHSL centre UCDB names "Mejia") and DEC-070 (population-weighted satellite mean for every unit as primary; unweighted as sensitivity).**
+
+**DEC-082: The Phase 3 outputs were rebuilt end to end with `snakemake --cores 1 pregate`, the first full run of the workflow rather than module by module.** It is single-core because several steps give DuckDB 8 GB and the machine has 16 GB. The log is `data/interim/logs/snakemake_pregate_phase3.log`. With the 3 newly located stations, the rebuilt outputs move slightly: level shifts 653 at 316 stations (was 317; DEC-078's calibrated penalties unchanged), and satellite-flagged PM2.5 station-years 49 (was 52). Valid station-years, missingness and EDA results are unchanged.
+
+**DEC-083: The first end-to-end `pregate` run exposed three workflow bugs that module-by-module runs had hidden; all are fixed.**
+(1) `src/clean/towns.py` prints GeoNames names with diacritics, which the Windows console code page (cp1252) cannot encode; manual runs had set `PYTHONIOENCODING=utf-8` by hand. The Snakefile now sets it for every rule. (2) The NCAP-UCDB matching step (`python -m src.clean.geo`) rebuilt `data/interim/ghsl/ucdb_india.gpkg`, the output of a different rule and an input of `station_meta`, so every run silently invalidated an upstream step (a hidden cycle). It now only reads that file. (3) The `ucdb_india` rule's command came out as `python -m -c ...` and had never run through Snakemake; it is now `python -m src.clean.geo ucdb`. This is why the pipeline is run end to end before each phase is closed.

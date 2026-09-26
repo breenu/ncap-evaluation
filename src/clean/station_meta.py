@@ -228,6 +228,7 @@ def resolve(
     x["state_dm"] = x.state.map(smap)
     ref = city_reference(x.assign(state=x.state_dm), uc)
     confirmed = identified(ident)
+    decisions = overrides().get("coordinates", {})
     no_cand = x[x.openaq_location_ids.isna() & ~x.sid.isin(confirmed.sid)]
     localities = locality_points(no_cand, ref, uc)
 
@@ -403,6 +404,29 @@ def resolve(
                 notes.append(
                     f"GeoNames locality '{loc['name']}' (geonameid {loc['geonameid']}) inside the city's centre"
                 )
+        # Reenu's decisions on stations listed for review (config/station_overrides.yaml, DEC-080)
+        decision = decisions.get(r.sid)
+        rec["reenu_decided"] = decision is not None
+        if decision is not None:
+            rec.update(decision_needed=False, resolved_by="reenu_decision")
+            if "location_id" in decision:
+                pick = cand[cand.location_id == decision["location_id"]].sort_values(
+                    "last_seen", ascending=False, na_position="last"
+                )
+                if pick.empty:
+                    raise ValueError(
+                        f"{r.sid}: decided location {decision['location_id']} is not a candidate"
+                    )
+                best = pick.iloc[0]
+                rec.update(
+                    lat=best.lat,
+                    lon=best.lon,
+                    coord_quality="station",
+                    coord_location_id=best.location_id,
+                )
+                notes.append(f"Reenu chose id {decision['location_id']} (DEC-080)")
+            else:
+                notes.append("Reenu: keep the approximate city point (DEC-080)")
         if rec["coord_quality"] == "none":
             if city_uc is not None:
                 p = uc[uc.uc_id == city_uc].geometry.iloc[0].representative_point()
@@ -632,10 +656,17 @@ def write_report(
         if len(dec)
         else "(none)",
         "",
+        "**Decided by Reenu (DEC-080; config/station_overrides.yaml `coordinates`).** These stations carry "
+        "`reenu_decided` = True; a sensitivity analysis drops all of them.",
+        "",
+        tbl(s[s.reenu_decided][["sid", "sname", "coord_quality", "lat", "lon", "note"]].round(5))
+        if s.reenu_decided.any()
+        else "(none)",
+        "",
         "Their candidate coordinates (first_seen/last_seen: when OpenAQ's archive used that coordinate, UTC):",
         "",
         tbl(
-            cand[cand.sid.isin(dec.sid)][
+            cand[cand.sid.isin(set(dec.sid) | set(s[s.reenu_decided].sid))][
                 [
                     "sid",
                     "location_id",
@@ -653,7 +684,7 @@ def write_report(
                 last_seen=lambda d: pd.to_datetime(d.last_seen).dt.date,
             )
         )
-        if len(dec)
+        if len(dec) or s.reenu_decided.any()
         else "(none)",
         "",
         "## 4. Candidate coordinates behind each decision",

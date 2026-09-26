@@ -34,7 +34,7 @@ rule ucdb_india:
         f"{FLAGS}/acquire_boundaries.done",
         "src/clean/geo.py",
     output: f"{INT}/ghsl/ucdb_india.gpkg"
-    shell: f"{PY} -c \"from src.clean.geo import build_ucdb_india; build_ucdb_india()\""
+    shell: f"{PY} src.clean.geo ucdb"
 
 
 rule crosscheck:
