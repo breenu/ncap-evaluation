@@ -1,0 +1,81 @@
+# How city names printed in the NCAP documents map to the master list (CPCB list of
+# 131 cities, 2022-10-10: data/interim/ncap_city_lists.csv, source_doc cpcb_nac_2022_10).
+#
+# Matching is exact after normalisation (lower case; punctuation, "UA"/"U.A."/"City",
+# and the UA codes (K)/(GM)/(HY) removed). Anything that does not match exactly must be
+# listed here; nothing is matched fuzzily. Every entry is a judgement made by reading the
+# documents; `why` says which kind. Names not here and not in the master list go to
+# docs/ncap_extraction_mismatches.md.
+#
+# kinds: spelling  - same city, different spelling
+#        renamed   - official name change or UA name for the same city
+#        combined  - one printed row covers two master cities (amounts cannot be split)
+#        truncated - name cut at a line wrap by the PDF text layer (AU386 annexure);
+#                    mapped from its position in the list, flagged for a manual look
+#        artefact  - text from a neighbouring column glued to the name
+
+aliases:
+  Vijaywada: {to: [Vijayawada], why: spelling}
+  Visakhapatnam: {to: [Vishakhapatnam], why: spelling}
+  Visakhapatna m: {to: [Vishakhapatnam], why: spelling}
+  Chittur: {to: [Chitoor], why: spelling}
+  Chittoor: {to: [Chitoor], why: spelling}
+  Ananthpur: {to: [Anantapur], why: spelling}
+  Rajamahendravaram: {to: [Rajahmundry], why: renamed}
+  Vizhianagaram: {to: [Vizianagaram], why: spelling}
+  Sivasagar: {to: [Sibsagar], why: renamed}
+  Muzafarpur: {to: [Muzaffarpur], why: spelling}
+  Bhillai: {to: [Bhilai], why: spelling}
+  Durg Bhilainagar: {to: [Bhilai], why: renamed}
+  Durg: {to: [Bhilai], why: truncated}
+  Ahmadabad: {to: [Ahmedabad], why: spelling}
+  Bengaluru: {to: [Bangalore], why: renamed}
+  Bruhat Bangalore: {to: [Bangalore], why: renamed}
+  Devangere: {to: [Devanagere], why: spelling}
+  Gulburga / Kalaburgi: {to: [Gulburga], why: renamed}
+  Hubli-: {to: [Hubli-Dharwad], why: truncated}
+  Greater Mumbai: {to: [Mumbai], why: renamed}
+  Greater: {to: [Mumbai], why: truncated}
+  Bhubneshwar: {to: [Bhubaneswar], why: spelling}
+  Bhubaneshwar: {to: [Bhubaneswar], why: spelling}
+  Bhubaneshwar & Cuttack: {to: [Bhubaneswar, Cuttack], why: combined}
+  Twin City Bhubaneshwar & Cuttack: {to: [Bhubaneswar, Cuttack], why: combined}
+  Angul&Talcher: {to: [Angul, Talcher], why: combined}
+  Mandi: {to: [Gobindgarh], why: truncated}
+  MandiGobindgarh: {to: [Gobindgarh], why: renamed}
+  Dera Baba: {to: [Pathankot/Dera Baba], why: truncated}
+  Dera Baba Nanak: {to: [Pathankot/Dera Baba], why: renamed}
+  Pathankot/Dera Baba Nanak: {to: [Pathankot/Dera Baba], why: renamed}
+  "Baddi (Baddi&nalagarh considered twin during FY 20- 21)": {to: [Baddi], why: artefact}
+  Tuticorin: {to: [Thoothukudi], why: renamed}
+  Tuticorin   emission: {to: [Thoothukudi], why: artefact}
+  Tuticorn/Thoothukudi: {to: [Thoothukudi], why: renamed}
+  Tiruchirappalli: {to: [Trichy], why: renamed}
+  Tiruchirappal li: {to: [Trichy], why: renamed}
+  Hydrabad: {to: [Hyderabad], why: spelling}
+  Patencheru: {to: [Patancheruvu], why: spelling}
+  Pattancheruv u: {to: [Patancheruvu], why: spelling}
+  Muradabad: {to: [Moradabad], why: spelling}
+  Gorakpur: {to: [Gorakhpur], why: spelling}
+  Dehardun: {to: [Dehradun], why: spelling}
+  # The 2020-06 to 2021-06 CPCB lists print Asansol and Raniganj as two entries; from 2022-10
+  # they are one ("Asansol & Raniganj"). This is the whole of the 132 -> 131 change.
+  Asansol: {to: ["Asansol & Raniganj"], why: renamed}
+  Raniganj: {to: ["Asansol & Raniganj"], why: combined}
+
+# Million-plus urban agglomerations in the Finance Commission annexes that are not NCAP
+# cities (XV-FC 2020-21 Annex 5.3 footnote: "ambient air quality is not a major problem").
+not_ncap:
+  - Kannur
+  - Kochi
+  - Kollam
+  - Kozhikode
+  - Malappuram
+  - Thiruvananthapuram
+  - Thrissur
+  - Coimbatore
+
+# Rows that are not cities (headers or state-level rows picked up by the table parser).
+not_city:
+  - "MPC/UA wise grant distribution* (Rs. In crore)"
+  - "Jammu & Kashmir"

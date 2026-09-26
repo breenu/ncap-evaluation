@@ -11,6 +11,12 @@ windows:
   satellite_analysis_years: null      # fixed in docs/analysis_plan.md
   ncap_launch_year: 2019              # proposal: NCAP launched January 2019
 
+mirror:                               # CPCB mirror (DEC-037); evidence in docs/mirror-checks.md
+  # The mirror's "UTC" timestamps are not UTC. Exact 15-minute matches with OpenAQ and the solar
+  # cycle at every station put them 11 h ahead of UTC (5.5 h ahead of IST), constant 2015-2025
+  # (DEC-040). Raw files are not changed; ingest subtracts this.
+  label_minus_utc_hours: 11.0
+
 pollutants:
   primary: [pm25, pm10]
   secondary: [no2]                    # secondary check only (proposal, "what not to do")

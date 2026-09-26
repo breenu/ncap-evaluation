@@ -9,6 +9,7 @@ from src.common.manifest import (
     download,
     read_manifest,
     record,
+    s3_md5,
     sha256_file,
     verify,
 )
@@ -74,16 +75,72 @@ def test_clean_clone_redownload_must_match_hash(tmp_path, fake_fetch):
     assert not (tmp_path / "f.nc.part").exists()
 
 
-def test_failed_fetch_leaves_no_partial_file(tmp_path):
+def test_failed_fetch_keeps_partial_for_resume_but_records_nothing(tmp_path):
     def broken(url, dest):
         dest.write_bytes(b"half")
         raise ConnectionError("network dropped")
 
     with pytest.raises(ConnectionError):
-        download(tmp_path, "f.nc", URL, fetch=broken)
-    assert not (tmp_path / "f.nc").exists()
-    assert not (tmp_path / "f.nc.part").exists()
+        download(tmp_path, "f.nc", URL, remote_id="e1", fetch=broken)
+    assert not (tmp_path / "f.nc").exists()  # never a half file under the real name
+    assert (tmp_path / "f.nc.part").read_bytes() == b"half"  # kept so the next run resumes
     assert read_manifest(tmp_path) == {}
+
+
+def test_next_run_resumes_the_partial_file(tmp_path):
+    def broken(url, dest):
+        dest.write_bytes(b"hal")
+        raise ConnectionError("network dropped")
+
+    def resume(url, dest):  # appends the rest, like an HTTP Range request
+        with open(dest, "ab") as f:
+            f.write(b"f and half")
+
+    with pytest.raises(ConnectionError):
+        download(tmp_path, "f.nc", URL, remote_id="e1", fetch=broken)
+    download(tmp_path, "f.nc", URL, remote_id="e1", fetch=resume)
+    assert (tmp_path / "f.nc").read_bytes() == b"half and half"
+    assert not (tmp_path / "f.nc.part").exists()
+    assert not (tmp_path / "f.nc.part.json").exists()
+    assert read_manifest(tmp_path)["f.nc"]["sha256"] == hashlib.sha256(b"half and half").hexdigest()
+
+
+def test_partial_from_another_upstream_version_is_discarded(tmp_path, fake_fetch):
+    def broken(url, dest):
+        dest.write_bytes(b"old-version-bytes")
+        raise ConnectionError("network dropped")
+
+    with pytest.raises(ConnectionError):
+        download(tmp_path, "f.nc", URL, remote_id="v1", fetch=broken)
+    seen = []
+
+    def fetch(url, dest):
+        seen.append(dest.exists())
+        dest.write_bytes(b"new")
+
+    download(tmp_path, "f.nc", URL, remote_id="v2", fetch=fetch)
+    assert seen == [False]  # the v1 partial was deleted before fetching v2
+    assert (tmp_path / "f.nc").read_bytes() == b"new"
+
+
+def test_upstream_checksum_mismatch_is_rejected(tmp_path, fake_fetch):
+    good = hashlib.sha256(b"abc").hexdigest()
+    download(tmp_path, "ok.nc", URL, fetch=fake_fetch(b"abc"), expected_sha256=good)
+    with pytest.raises(RawDataError, match="upstream checksum"):
+        download(tmp_path, "bad.nc", URL, fetch=fake_fetch(b"abd"), expected_sha256=good)
+    with pytest.raises(RawDataError, match="md5"):
+        download(tmp_path, "bad2.nc", URL, fetch=fake_fetch(b"abd"), expected_md5=md5(b"abc"))
+    assert not (tmp_path / "bad.nc").exists() and not (tmp_path / "bad.nc.part").exists()
+    assert set(read_manifest(tmp_path)) == {"ok.nc"}
+
+
+def md5(b: bytes) -> str:
+    return hashlib.md5(b, usedforsecurity=False).hexdigest()
+
+
+def test_s3_md5_only_for_single_part_etags():
+    assert s3_md5('"d41d8cd98f00b204e9800998ecf8427e"') == "d41d8cd98f00b204e9800998ecf8427e"
+    assert s3_md5("abc123-12") is None
 
 
 def test_verify_reports_missing_tampered_and_unrecorded(tmp_path):

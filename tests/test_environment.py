@@ -14,11 +14,30 @@ import pytest
 pytestmark = pytest.mark.env
 
 PYTHON_MODULES = [
-    "polars", "pandas", "pyarrow", "duckdb",
-    "xarray", "netCDF4", "h5netcdf", "rioxarray", "geopandas", "shapely", "pyproj",
-    "exactextract", "cdsapi", "pdfplumber",
-    "ruptures", "lightgbm", "sklearn", "statsmodels", "pymc", "arviz", "pyfixest",
-    "matplotlib", "streamlit", "snakemake",
+    "polars",
+    "pandas",
+    "pyarrow",
+    "duckdb",
+    "xarray",
+    "netCDF4",
+    "h5netcdf",
+    "rioxarray",
+    "geopandas",
+    "shapely",
+    "pyproj",
+    "exactextract",
+    "cdsapi",
+    "pdfplumber",
+    "ruptures",
+    "lightgbm",
+    "sklearn",
+    "statsmodels",
+    "pymc",
+    "arviz",
+    "pyfixest",
+    "matplotlib",
+    "streamlit",
+    "snakemake",
 ]
 
 
@@ -59,8 +78,6 @@ cat("R_OK\n")
 
 @pytest.mark.skipif(shutil.which("Rscript") is None, reason="Rscript not on PATH")
 def test_r_estimators_run():
-    out = subprocess.run(
-        ["Rscript", "-e", R_CHECK], capture_output=True, text=True, timeout=600
-    )
+    out = subprocess.run(["Rscript", "-e", R_CHECK], capture_output=True, text=True, timeout=600)
     assert out.returncode == 0, out.stderr[-2000:]
     assert "R_OK" in out.stdout

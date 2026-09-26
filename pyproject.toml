@@ -14,3 +14,6 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+# `ruff format` enforces line length for code; long string literals (report prose, URLs)
+# are allowed rather than split mid-sentence (ruff's own advice when using the formatter).
+ignore = ["E501"]
