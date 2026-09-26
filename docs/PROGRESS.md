@@ -30,7 +30,7 @@ Pre-registration gate: **closed** (`config/gate.yaml`). No post-2019 effect esti
   - Tests: 41 passing. They cover gate, manifest, heavy imports, and R estimators actually running.
   - CI: `.github/workflows/tests.yml` on the private repo `breenu/ncap-evaluation`.
     - First run failed: `fastglm` source build on Linux lacked the RcppEigen/BH headers.
-    - Fixed in `dd31f52` by adding `r-rcppeigen` and `r-bh` (lock diff: only those two added).
+    - Fixed in `5af0edf` by adding `r-rcppeigen` and `r-bh` (lock diff: only those two added).
     - Run 36187837666 passed: 41 tests, none skipped, R estimators ran on Linux.
   - Phase note: `docs/phase-notes/01-skeleton.md`.
 - **Phase 2, step 0 (feasibility probe):**
