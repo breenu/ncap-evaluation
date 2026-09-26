@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-09-26. Phase 3 approved and pushed; README rewritten and git history audited for the public repo. Gate closed. **Next: Phase 4** (see "Next: Phase 4" below).*
+*Last updated: 2026-09-26. Phase 4 built: pre-gate checks computed on pre-2019 data, `docs/analysis_plan.md` finalised for Reenu's approval. Gate still closed. **Next: Reenu reviews the plan** (see "Next: the gate" below).*
 
 ## Status
 
@@ -13,7 +13,8 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 1 Skeleton | ✅ approved 2026-09-26; pushed; CI green |
 | 2 Acquisition | ✅ approved 2026-09-26; pushed. FIRMS pending (Reenu will run it from another network with a new key) |
 | 3 Storage, cleaning, audit, EDA | ✅ approved 2026-09-26; pushed (DEC-080 to DEC-082) |
-| 4–10 | not started |
+| 4 Analysis-plan gate | 🟡 built 2026-09-26; plan awaiting Reenu's approval (DEC-084 to DEC-090) |
+| 5–10 | not started |
 
 Pre-registration gate: **closed** (`config/gate.yaml`). No post-2019 effect estimates exist.
 
@@ -67,41 +68,30 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Next: Phase 4 (analysis-plan gate). START HERE in a new chat
+## Next: the gate. START HERE in a new chat
 
-Phase 3 is approved (DEC-080, DEC-081). Phase 4 finishes `docs/analysis_plan.md` so Reenu can review and approve it. Per CLAUDE.md: write a short plan of files and functions first, then build; at the end run the tests, commit, update this file and DECISIONS, write `docs/phase-notes/04-gate.md`, and **stop**.
+Phase 4 is built; nothing after it may start until Reenu approves the plan.
 
-**Hard constraints in Phase 4**
-- The gate stays **closed** (`config/gate.yaml`). Do not edit it; it is flipped only after Reenu approves the plan, in a separate commit citing the plan's hash (DEC-012).
-- **Pre-gate computations use pre-2019 data only.** Code must *enforce* that: filter to year ≤ 2018 when reading, and assert it.
-- **Blinding:** no NCAP vs non-NCAP comparison after 2018, in any figure, table or printout.
+**What Reenu does:** read `docs/analysis_plan_summary.md` (one page), then `docs/analysis_plan.md`; edit freely (prose only, see below); decide the three items at the end of the summary; optionally register on OSF.
 
-**What to compute** (plan §6; PLAN.md §4 Phase 4; DEC-013):
-1. **Minimum detectable effect.** Placebo-in-time on the satellite panel, 2010–2018:
-   - pretend adoption in 2014 and in 2015;
-   - estimator: the plan's primary, SDID (R `synthdid`, installed; DEC-027);
-   - the null spread: ≥ 500 random treated sets drawn from the pre-period panel, the same size as the real treated set;
-   - report MDE = 2.8 × SE (80% power, 5% two-sided), in % and µg/m³.
-2. **Baseline balance, 2010–2018:** treated units vs the control pool on PM2.5 level and trend, 2015 population, and region.
-3. **Put both results into `docs/analysis_plan.md` §6**, generated (as `docs/audit_report.md` is) or quoting a generated file, then hand the plan to Reenu.
+**After approval, in this order (DEC-012):**
+1. Commit the approved plan (and summary). Note the commit hash.
+2. In a *separate* commit, set `config/gate.yaml`: `analysis_plan_approved: true`, `analysis_plan_commit: <hash>`. Nothing else in that commit.
+3. Record the approval (and any OSF link) in DECISIONS.
+4. **Fix mgcv before Phase 5** (DEC-090): add mgcv 1.9-4 from the 2026-09-25 Posit snapshot to `workflow/scripts/install_r_extra.R`, re-run `pytest tests/test_environment.py`. Needs Reenu's OK (changes the pinned env).
 
-**Inputs, all built by `snakemake --cores 1 pregate`:**
-- `data/processed/unit_year_sat.parquet`: satellite PM2.5 per unit and year, 2005–2024.
-  - Products: V5GL06 (primary), V6GL03, V6GL0204.
-  - Columns: `pm25_popw` (primary, DEC-070), `pm25_area` (sensitivity).
-- `data/processed/unit_month_sat.parquet`: the same, monthly, for winter/non-winter.
-- `data/interim/sat_units.gpkg`: units.
-  - `ncap_cities` is non-empty for treated units.
-  - `in_primary` is False for the 10 buffered towns.
-  - `contains_ncap_town` marks Kalka, which is excluded from controls.
-  - `pop_2015` is used for the ≥ 100k control rule.
-- `data/interim/unit_regions.csv`: region per unit.
-- `data/interim/ncap_cities.csv`: listing dates → adoption cohorts. The plan's rule: listed by 30 June → treated that year, which gives 2019: 102, 2020: 19, 2021: 10. A shared unit takes its earliest member's date.
-- `data/interim/ncap_ucdb_match.csv`: city ↔ centre, `role` primary/secondary.
-- `data/processed/station_year.parquet`, `station_year_quality.parquet`: the ground layer (not needed for the MDE).
-- **Not built yet:** ERA5 monthly covariates per unit. The raw file is `data/raw/era5_monthly/`. The MDE can be computed without covariates (state that); build the covariates in Phase 7.
+**Editing the plan:** numbers sit between `<!--g:key-->` and `<!--/g-->` markers and are written by `python -m src.causal.pregate_report sync-plan`; never type over them. `snakemake pregate` runs `check-plan` and fails if any quoted number no longer matches the pipeline (then: sync, and log the deviation).
 
-**Snakemake:** the `pre_period_checks` stub in `workflow/rules/causal.smk` is where the Phase 4 rules go; it is part of `pregate`, not gated.
+## Phase 4: what was built (2026-09-26)
+
+- **Pre-gate code** (`workflow/rules/causal.smk`, part of `pregate`, not gated):
+  - `src/causal/treatment.py`: listing-date cohorts (primary) and first-funding cohorts (alternative, DEC-086).
+  - `src/causal/pregate.py` → `data/interim/pregate/`: pre-2019 satellite panels (reader filters year ≤ 2018 and asserts it), control pool with 25 km spillover distances (DEC-085), baseline balance, ground PM10 feasibility counts.
+  - `src/causal/mde_placebo.R`: SDID placebo-in-time (fake 2014/2015), 500 draws × {random, region-matched} null designs × 4 outcomes; the real treated set at the fake years (DEC-087). ~35 min on 8 workers; BLAS pinned to one thread per worker.
+  - `src/causal/pregate_report.py` → `docs/pregate_checks.md` (generated), plus `sync-plan` / `check-plan` for the numbers quoted in the plan and summary.
+- **Docs:** `docs/analysis_plan.md` (OSF Preregistration layout, final draft), `docs/analysis_plan_summary.md`, `docs/phase-notes/04-gate.md`, DEC-084 to DEC-090.
+- **Tests:** `tests/test_pregate.py` (19, synthetic).
+- **Run:** R steps run inside the env (`conda run -n ncap`, or `snakemake` from an activated env). Only `mgcv` fails to load (DEC-090); one early Rscript call loading synthdid/arrow/data.table also crashed once but did not recur in 6 further tries.
 
 ## Phase 3: what was built (2026-09-26, approved)
 
@@ -149,7 +139,8 @@ Built and run (all generated, all in Snakemake `workflow/rules/clean.smk`):
 - **Stations with no coordinate anywhere** keep an approximate city point (count in `docs/station_metadata_review.md`); they stay out of neighbour checks.
 - **ERA5 cells for newly located stations**: stations located in Phase 3 (by identity or locality) may sit in 0.25° cells not yet downloaded. Check and fetch in Phase 5 (small, under 2 GB).
 - **V6.GL.03 has no methods note.** If one appears, revisit DEC-001.
-- **The treatment definition** (listed vs funded; interval-censored dates) is proposed in `docs/analysis_plan.md` and decided at the Phase 4 gate.
+- **The treatment definition** (listed vs funded) is proposed in `docs/analysis_plan.md` (listed primary) and decided by Reenu at the gate.
+- **R mgcv fails to load** (conda-forge build; MinGW 32-bit pseudo-relocation; fails in nearly every try, passed once; DEC-090). `tests/test_environment.py::test_r_estimators_run` therefore fails most of the time. Tested fix (CRAN binary, same version) awaits Reenu's OK. Blocks Phase 5's GAM only.
 - **No LICENSE file yet.** Reenu to choose a code licence before or when the repo goes public. Any derived dataset from the CPCB mirror must be ODbL (DEC-037).
 - **Jan–Mar 2026 ground data are provisional** (OpenAQ raw feed, DEC-079).
 - Possible extension (not scheduled): the official PRANA/NAMP PM10 series as a "reported" reference (DEC-016).

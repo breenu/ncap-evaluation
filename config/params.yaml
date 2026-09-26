@@ -8,7 +8,7 @@ windows:
   ground_start: "2015-01-01"
   ground_end: "2026-03-31"            # DEC-011: completes FY2025-26
   satellite_download_years: [2005, 2024]   # DEC-003
-  satellite_analysis_years: null      # fixed in docs/analysis_plan.md
+  satellite_analysis_years: [2010, 2024]   # docs/analysis_plan.md §3 (DEC-084); nine pre-years
   ncap_launch_year: 2019              # proposal: NCAP launched January 2019
 
 mirror:                               # CPCB mirror (DEC-037); evidence in docs/mirror-checks.md
@@ -59,8 +59,9 @@ reliability:                          # src/clean/reliability.py (DEC-073)
   check_penalty: 0.8                  # score multiplied by this for each failed check
 
 control_pool:
-  min_population: 100000              # proposal stage 7 example; confirmed in analysis_plan.md
-  spillover_buffer_km: null           # set in analysis_plan.md
+  min_population: 100000              # 2015 population (pre-treatment epoch); analysis_plan.md §2
+  spillover_buffer_km: 25             # sensitivity only: drop controls within 25 km of an NCAP place (DEC-085)
+  spillover_buffer_report_km: [10, 25, 50]   # pool sizes shown in docs/pregate_checks.md
 
 deweathering:                         # proposal stage 5; plan section 4, Phase 5
   resamples_default: 300              # raised if the convergence check fails
@@ -69,3 +70,16 @@ deweathering:                         # proposal stage 5; plan section 4, Phase 
 robustness:                           # proposal validation table
   placebo_year: 2016
   placebo_space_permutations: 500
+
+treatment:                            # docs/analysis_plan.md §2 (DEC-086)
+  first_year: 2019                    # NCAP launched January 2019; earlier listings count from 2019
+  listed_by: "06-30"                  # listed on or before 30 June -> treated that calendar year, else the next
+
+pregate:                              # Phase 4 checks on pre-2019 data only (DEC-013, DEC-087)
+  last_year: 2018                     # enforced when reading: nothing after 2018 is loaded
+  first_year: 2010                    # start of the satellite analysis window
+  fake_adoption_years: [2014, 2015]   # placebo-in-time
+  placebo_draws: 500                  # random treated sets drawn from the control pool
+  mde_multiplier: 2.8                 # z(0.975) + z(0.80): 5% two-sided, 80% power
+  winter_months: [10, 11, 12, 1, 2]   # season-year t = Oct t to Feb t+1
+  workers: 8                          # R parallel workers for the placebo draws

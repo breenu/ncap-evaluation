@@ -1,113 +1,314 @@
-# Analysis plan (pre-registration draft)
+# Analysis plan (pre-registration)
 
 **Weather, Monitors, or Policy? A meteorologically normalised, quasi-experimental evaluation of India's National Clean Air Programme, 2015–2025**
 
-*DRAFT for Reenu's review (Phase 3, 2026-09-26). Follows the OSF Preregistration template. Nothing in the estimation stages may run until this plan is approved and committed, and `config/gate.yaml` is then flipped in a separate commit that cites this file's hash (DEC-012). Counts quoted below are pipeline outputs; each cites its source file.*
+*Status: FINAL DRAFT for Reenu's approval (Phase 4, 2026-09-26). Laid out in the order of the OSF Preregistration template (sections 1–6 below match its sections). Every number marked in the source as `<!--g:…-->` is written by `python -m src.causal.pregate_report sync-plan` from pipeline outputs, and `snakemake pregate` fails if any is stale. The full pre-gate tables are in [`pregate_checks.md`](pregate_checks.md) (generated). Nothing estimating post-2019 effects runs until this file is approved and committed, and `config/gate.yaml` is then flipped in a separate commit citing this file's commit hash (DEC-012).*
 
-## 0. Read this first: how much pre-NCAP ground data exists
-
-The ground network before NCAP is very small. Under the primary completeness rule, the number of valid station-years (an hour counts with at least one 15-minute value; a day needs 18 of 24 hours; a year needs 75% of days; flagged hours removed) is:
-
-| | 2015 | 2016 | 2017 | 2018 | 2019 |
-|---|---|---|---|---|---|
-| PM10 | 2 | 6 | **9** | **66** | 123 |
-| PM2.5 | 2 | 12 | 17 | 82 | 138 |
-
-*Source: `data/interim/audit/valid_station_years.csv`. With hours requiring 3 of 4 quarter-hours (sensitivity, DEC-069): PM10 8 in 2017 and 55 in 2018. The 2018 PM10 figure of 69 given before Phase 3 was counted before flagged hours were removed; 3 station-years fall below 75% once flatlines and PM2.5 > PM10 hours are taken out.*
-
-So the ground layer has **effectively one pre-NCAP year for PM10 (2018)**, and one for PM2.5. One pre-period year cannot test parallel trends. Therefore:
-- The **primary evidence is the satellite PM2.5 layer (Layer A)**, which has a pre-period from 2010.
-- **Ground-based effects (Layer B), PM10 effects, and the PM10-vs-PM2.5 mechanism test are secondary.** They are reported with this limitation stated beside every estimate, and the decision rules below treat them as weaker evidence.
+---
 
 ## 1. Study information
 
-**Research questions** (proposal): RQ1, how much of reported change is network composition; RQ2, how much is weather; **RQ3, the effect of NCAP enrolment on PM2.5** (this plan's confirmatory question); RQ4, heterogeneity and mechanism (exploratory apart from H3).
+**Title.** As above.
 
-**Hypotheses**
-- **H1 (confirmatory, Layer A).** Enrolment in NCAP reduced annual population-weighted PM2.5 in enrolled urban centres relative to comparable non-enrolled centres, 2019–2024.
-- **H2 (confirmatory, direction).** The effect is larger in winter (Oct–Feb) than in the rest of the year. Most measures target winter episodes, and GRAP (the Graded Response Action Plan) actions apply in winter.
-- **H3 (secondary, mechanism).** If dust control dominated spending, PM10 falls more than PM2.5 in enrolled cities, and the PM2.5/PM10 ratio rises.
+**Authors.** Reenu (sole author).
+
+**Description.** NCAP, launched in January 2019, enrolled 131 Indian cities with a target of up to 40% lower PM10 by 2025-26. Public progress reports compare raw concentrations with a baseline. That comparison mixes three things: weather, changes in which monitors exist, and policy. This study separates them:
+- **RQ1, measurement:** how much of a city's reported change comes from data-quality artefacts and network composition.
+- **RQ2, weather:** how much comes from meteorology.
+- **RQ3, policy:** the effect of NCAP enrolment on PM2.5 (and PM10), relative to comparable non-enrolled urban centres. This is the confirmatory question.
+- **RQ4, heterogeneity and mechanism:** mostly exploratory.
+
+**The central data limitation, stated first.** The ground network before NCAP is very small. Under the primary completeness rule, PM10 has <!--g:pm10_2017_ncap-->9<!--/g--> valid station-years in 2017 and <!--g:pm10_2018_ncap-->56<!--/g--> + <!--g:pm10_2018_non-->10<!--/g--> (NCAP + non-NCAP urban centres) in 2018. Non-NCAP centres have <!--g:pm10_2017_non-->0<!--/g--> valid PM10 station-years before 2018. So the ground layer has **one pre-NCAP year**, which cannot test parallel trends. Consequences:
+- The **primary evidence is satellite PM2.5 (Layer A)**, which has nine pre-years (2010–2018).
+- **Ground-based effects (Layer B), all PM10 effects, and the PM10-vs-PM2.5 mechanism test are secondary.** They carry that limitation beside every estimate.
+- No minimum detectable effect is claimed for ground PM10 (§3).
+
+**Hypotheses.**
+
+| # | Status | Hypothesis | Layer |
+|---|---|---|---|
+| **H1** | Confirmatory, primary | NCAP enrolment reduced annual population-weighted PM2.5 in enrolled urban centres, relative to comparable non-enrolled centres, 2019–2024 (2020 excluded). | A |
+| **H2** | Confirmatory, tested only if H1 is supported | The reduction is larger in winter (Oct–Feb) than in the rest of the year. Most city measures and GRAP (the Graded Response Action Plan) target winter episodes. | A |
+| H3 | Secondary (mechanism) | If dust control dominated action, PM10 fell more than PM2.5 in enrolled cities, and the PM2.5/PM10 ratio rose. | B |
+| H4 | Secondary (RQ1/RQ2; proposal hypothesis 1) | Reported (raw, all-station) improvements in NCAP cities exceed deweathered, composition-corrected improvements: weather and network change explain part of the reported change. | B |
+| H5 | Secondary (RQ4; proposal hypothesis 3) | Effects are smaller (less negative) in Indo-Gangetic Plain (IGP) cities, where regional sources dominate. | A |
+
+H4 and H5 are the proposal's own pre-specified hypotheses. They were missing from the Phase 3 draft and are added here (see §6).
 
 ## 2. Design plan
 
-**Study type:** observational, quasi-experimental; staggered adoption; secondary data.
+**Study type.** Observational; quasi-experimental; staggered adoption; secondary data only.
 
-**Blinding.** Before approval, the authors have seen: all pre-2019 data; descriptive post-2019 series for individual cities, regions and the network as a whole; and data-quality diagnostics for all years. No NCAP vs non-NCAP comparison after 2018 has been computed or plotted (blinding rule, Phase 3). The pre-gate computations in §6 use pre-2019 data only.
+**Blinding.** No one is blinded in the usual sense (single analyst, public data). The substitute is a **data-access rule**, enforced in code (`config/gate.yaml`; `src/common/gate.py`):
+- **Seen before this plan:**
+  - all pre-2019 data;
+  - post-2019 series for individual cities, regions and the whole network, descriptively;
+  - data-quality diagnostics for every year.
+- **Pre-gate computations** (all on data up to 2018; the reader filters and asserts it):
+  - the minimum detectable effect;
+  - baseline balance;
+  - a placebo on the real NCAP units at fake adoption years 2014 and 2015.
+- **Not computed or plotted:** any comparison of NCAP with non-NCAP units after 2018.
 
-**Units and treatment**
-- **Units:** GHSL UCDB R2024A urban centres (DEC-006), one satellite unit per centre. NCAP cities sharing a centre are one unit (e.g. Delhi, Faridabad, Ghaziabad and Noida). The matching rules are in `docs/ncap_ucdb_review.md`.
-- **Treated:** 113 units containing 121 NCAP cities, including Asansol & Raniganj as one unit (DEC-064).
-- **Towns without a centre:** the 10 NCAP towns with no GHSL centre are **excluded from the primary estimate** (DEC-063). Controls are all GHSL centres, and treated and control units must be defined the same way. The towns enter one sensitivity analysis as 1.87 km buffered points.
-- **Treatment timing (primary): the date a city first appears on an official NCAP list.** A city listed by 30 June counts as treated from that year, otherwise from the next year (interval-censored dates, DEC-043/044):
-  - 2019 cohort: 102 cities (launch list, January 2019)
-  - 2020 cohort: 19 cities (June 2020 list)
-  - 2021 cohort: 10 cities (December 2020 and June 2021 lists)
-  - A shared unit takes its earliest member's date.
-- **Treatment timing (alternative):** the first financial year with a recorded central release (`ncap_funding_clean.csv`).
-- **Anticipation:** 94 of the 102 launch cities were already on CPCB's 2017 non-attainment list. The event study will show any change between 2017 and 2018. A sensitivity analysis dates treatment from 2018 for those 94.
+**Study design: units, treatment, controls.**
+- **Units (Layer A):** GHSL UCDB R2024A urban centres, one satellite unit per centre (DEC-006).
+  - NCAP cities sharing a centre are one unit, e.g. Delhi, Faridabad, Ghaziabad and Noida.
+  - **Asansol & Raniganj is one unit:** the Asansol centre joined with the GHSL centre UCDB names "Mejia", which holds Raniganj's built-up area (DEC-064, confirmed DEC-081).
+- **Treated:** <!--g:n_treated-->113<!--/g--> units holding 121 NCAP cities.
+- **Towns without a GHSL centre:** the 10 NCAP towns with none are **excluded from the primary estimate**, because treated and control units must be defined the same way (DEC-063). They enter one sensitivity analysis as 1.87 km buffered GeoNames points.
+- **Patancheruvu (DEC-049): intention to treat.** It is enrolled from its listing date even though it is absent from the 2026 list, because dropping it would condition on a post-treatment event.
+  - Layer A: its point lies inside the Hyderabad centre, which is treated anyway. The rule matters in the buffered-towns sensitivity analysis and on the ground (one station).
+  - Sensitivity: exclude it.
+- **Treatment timing, primary: first appearance on an official NCAP list.** Listed on or before 30 June counts as treated from that calendar year, otherwise from the next. Nothing is treated before 2019. A shared unit takes its earliest member's date.
+  - Unit cohorts: 2019: <!--g:coh_2019-->89<!--/g-->; 2020: <!--g:coh_2020-->15<!--/g-->; 2021: <!--g:coh_2021-->9<!--/g-->.
+- **Treatment timing, alternative: the first financial year with a recorded central release**, counted from the next calendar year (FY2019-20 → 2020; DEC-086). Sources: Lok Sabha AU2467 per-FY releases; XV-FC grants start in FY2020-21.
+  - Unit cohorts: 2020: <!--g:fcoh_2020-->86<!--/g-->; 2021: <!--g:fcoh_2021-->25<!--/g-->; 2022: <!--g:fcoh_2022-->2<!--/g-->.
+- **Anticipation:** 94 launch cities were already on CPCB's 2017 non-attainment list. Sensitivity: treat them from 2018.
+- **Control pool:** non-NCAP centres with 2015 population ≥ 100,000. 2015 is a pre-treatment epoch, so the pool cannot depend on post-treatment growth.
+  - Any centre containing the point of an NCAP town that has no centre of its own is excluded (Kalka, which contains Parwanoo).
+  - This leaves **<!--g:n_controls-->923<!--/g--> controls**, from <!--g:n_nonncap-->1,810<!--/g--> non-NCAP centres (<!--g:n_pop-->924<!--/g--> of them ≥ 100k).
+- **Spillover:** primary = no buffer. Sensitivity = drop controls within 25 km, edge to edge, of any NCAP place, including the buffered towns. This leaves <!--g:n_buffered-->754<!--/g--> controls (DEC-085).
 
-**Control pool**
-- Non-NCAP GHSL centres with 2015 population ≥ 100,000 (a pre-treatment epoch, so the pool cannot depend on post-treatment growth): 924 centres.
-- **Excluded:** any centre that contains the point of an NCAP town without its own centre. This removes 1 centre (Kalka, containing Parwanoo), leaving 923.
-- **Spillover:** primary = no buffer. Sensitivity = drop controls within 25 km of a treated unit (`control_pool.spillover_buffer_km`).
-- **Size:** treated units are kept whatever their size. A sensitivity analysis restricts treated units to ≥ 100,000 too, which drops 4 (Sunder Nagar, Nalagarh, Paonta Sahib, Talcher).
+<!--g:table_pool-->
 
-## 3. Sampling plan (existing data)
-All data exist and are downloaded, with checksums in manifests (`docs/data-cards/`). Satellite analysis years: **2010–2024** (ACAG ends in 2024; nine pre-years). The ground window is 2015-01-01 to 2026-03-31. Ground analyses use **calendar years up to 2025 as primary**. January–March 2026 comes only from OpenAQ's raw real-time feed, not CPCB's validated repository (DEC-079), so it enters only a sensitivity check (FY2025-26). Sample sizes are fixed by the data; there is no stopping rule.
+| Rule | Units |
+|---|---|
+| GHSL urban centres in India (primary units) | 1,923 |
+| ... of which hold an NCAP city (treated units) | 113 |
+| Non-NCAP centres | 1,810 |
+| ... with 2015 population >= 100,000 | 924 |
+| ... not containing an NCAP town's point (control pool) | 923 |
+| ... and at least 10 km from every NCAP place | 852 |
+| ... and at least 25 km from every NCAP place | 754 |
+| ... and at least 50 km from every NCAP place | 511 |
+
+<!--/g-->
+
+- **Size of treated units:** they are kept whatever their size. Sensitivity: restrict them to ≥ 100k too, which drops <!--g:n_below_100k_treated-->4<!--/g-->.
+
+**Randomization.** None; treatment was assigned by policy. Enrolled cities were chosen *because* they were polluted, so selection and regression to the mean are the main threats. SDID's unit and time weights, the pre-trend tests and the placebos address them.
+
+## 3. Sampling plan
+
+**Existing data.** *Registration following analysis of the data.* The data exist and have been downloaded, audited and described. The analyses that bear on the hypotheses (post-2018 NCAP vs non-NCAP comparisons) have not been run, and a code-level gate prevents them from running.
+
+**Explanation of existing data.** Everything was checked and recorded in manifests with checksums (`docs/data-cards/`):
+- **Satellite:** ACAG V5.GL.06, V6.GL.03 and V6.GL.02.04.
+- **Ground:** the CPCB mirror 2015–2025, plus OpenAQ for January–March 2026.
+- **Weather:** ERA5.
+- **Boundaries and population:** GHSL.
+- **Treatment:** NCAP lists and funding tables from PDFs, with source page for every row.
+
+Pre-period results already seen (details in [`pregate_checks.md`](pregate_checks.md) §5): the real NCAP units show a placebo ATT of <!--g:placebo_2014_logpts-->0.47<!--/g--> log points at fake adoption 2014 (95% CI <!--g:placebo_2014_ci-->-0.25 to 1.18<!--/g-->; permutation p = <!--g:placebo_2014_p-->0.22<!--/g-->) and <!--g:placebo_2015_logpts-->-0.41<!--/g--> at 2015 (95% CI <!--g:placebo_2015_ci-->-1.14 to 0.32<!--/g-->; p = <!--g:placebo_2015_p-->0.41<!--/g-->).
+
+**Data collection procedures.** None; all data are secondary. The pipeline is `snakemake pregate` / `all`.
+
+**Sample size.**
+- **Layer A:** <!--g:n_treated-->113<!--/g--> treated and <!--g:n_controls-->923<!--/g--> control units. Years 2010–2024: nine pre-years; the primary post-period is 2019 and 2021–2024.
+- **Layer B:** NCAP-city stations with a valid 2018 baseline. In 2018 that is <!--g:pm10_2018_ncap-->56<!--/g--> PM10 station-years in <!--g:pm10_2018_ncap_units-->25<!--/g--> NCAP centres.
+
+**Sample size rationale: minimum detectable effect (MDE).** The sample is fixed by the data, so the plan reports what it can detect.
+- **Method:** placebo-in-time on 2010–2018 satellite data. <!--g:draws-->500<!--/g--> sets of <!--g:n_treated-->113<!--/g--> control units were given fake adoption in 2014 and in 2015, and SDID was re-estimated each time.
+- **Two null designs:** random sets, and region-matched sets (the same regional make-up as the real treated set).
+- **Formula:** SE = SD of the placebo ATTs; MDE = 2.8 × SE (5% two-sided test, 80% power). The largest over both designs and both fake years is used.
+
+<!--g:table_mde-->
+
+| Outcome | Null design | Fake adoption | SE | Mean placebo ATT | MDE |
+|---|---|---|---|---|---|
+| Annual PM2.5, log (primary) | random | 2014 | 0.42 log pts | 0.01 log pts | 1.2% |
+| Annual PM2.5, log (primary) | region-matched | 2014 | 0.36 log pts | 0.11 log pts | 1.0% |
+| Annual PM2.5, log (primary) | random | 2015 | 0.41 log pts | 0.02 log pts | 1.1% |
+| Annual PM2.5, log (primary) | region-matched | 2015 | 0.37 log pts | -0.28 log pts | 1.0% |
+| Annual PM2.5, level (ug/m3) | random | 2014 | 0.27 ug/m3 | 0.00 ug/m3 | 0.75 ug/m3 |
+| Annual PM2.5, level (ug/m3) | region-matched | 2014 | 0.24 ug/m3 | -0.36 ug/m3 | 0.66 ug/m3 |
+| Annual PM2.5, level (ug/m3) | random | 2015 | 0.33 ug/m3 | 0.00 ug/m3 | 0.93 ug/m3 |
+| Annual PM2.5, level (ug/m3) | region-matched | 2015 | 0.29 ug/m3 | -0.48 ug/m3 | 0.81 ug/m3 |
+| Winter PM2.5 (Oct-Feb), log | random | 2014 | 0.59 log pts | 0.01 log pts | 1.6% |
+| Winter PM2.5 (Oct-Feb), log | region-matched | 2014 | 0.57 log pts | -0.20 log pts | 1.6% |
+| Winter PM2.5 (Oct-Feb), log | random | 2015 | 0.55 log pts | 0.01 log pts | 1.5% |
+| Winter PM2.5 (Oct-Feb), log | region-matched | 2015 | 0.53 log pts | -0.51 log pts | 1.5% |
+| Non-winter PM2.5 (Mar-Sep), log | random | 2014 | 0.54 log pts | 0.01 log pts | 1.5% |
+| Non-winter PM2.5 (Mar-Sep), log | region-matched | 2014 | 0.53 log pts | 0.03 log pts | 1.5% |
+| Non-winter PM2.5 (Mar-Sep), log | random | 2015 | 0.59 log pts | 0.02 log pts | 1.6% |
+| Non-winter PM2.5 (Mar-Sep), log | region-matched | 2015 | 0.55 log pts | -0.48 log pts | 1.5% |
+| Winter minus non-winter, log (H2) | random | 2014 | 0.72 log pts | -0.00 log pts | 2.0 log pts |
+| Winter minus non-winter, log (H2) | region-matched | 2014 | 0.77 log pts | -0.23 log pts | 2.1 log pts |
+| Winter minus non-winter, log (H2) | random | 2015 | 0.65 log pts | -0.01 log pts | 1.8 log pts |
+| Winter minus non-winter, log (H2) | region-matched | 2015 | 0.68 log pts | -0.03 log pts | 1.9 log pts |
+
+<!--/g-->
+
+**The MDE for H1 is a <!--g:mde_pct-->1.2<!--/g-->% reduction in annual population-weighted PM2.5** (<!--g:mde_logpts-->1.2<!--/g--> log points; <!--g:mde_ugm3-->0.9<!--/g--> µg/m³ on the level scale). The MDE for H2 (winter minus non-winter) is <!--g:mde_h2_logpts-->2.1<!--/g--> log points. **Read this MDE as a lower bound, not a power calculation.** ACAG PM2.5 is a smooth, calibrated product averaged over a hundred units, so pre-period noise is small. The real design is noisier:
+- its post-years reach 6 years after adoption, where synthetic controls drift more (the placebo post-periods are 4–5 years);
+- the placebo assigns every unit at once, while the real estimator averages cohorts;
+- even region-matched sets are more dispersed than the real treated set;
+- the post-period holds shocks the pre-period does not (COVID, BS-VI).
+
+The real design's own SE (joint placebo, §5) is what the confidence intervals use. The MDE sets the equivalence bound below.
+
+**Ground PM10: no MDE.** Non-NCAP centres have no valid PM10 before 2018, so no pre-period change exists on the control side. Only <!--g:pm10_pair_stations-->6<!--/g--> stations in <!--g:pm10_pair_units-->5<!--/g--> NCAP cities are valid in both 2017 and 2018. A placebo is therefore impossible, and a variance from one year-pair would not be an MDE.
+
+**Stopping rule.** None (fixed existing data).
 
 ## 4. Variables
-- **Outcome, Layer A:** log of annual population-weighted mean PM2.5 over the unit (ACAG V5.GL.06; GHS-POP 2020 weights; DEC-070). Also winter (Oct–Feb) and non-winter means from monthly V5.GL.06 (0.05°). Effects are reported as % change, with levels in µg/m³ secondary.
-- **Outcome, Layer B:** deweathered station-level log daily PM2.5 and PM10 (Phase 5), aggregated to city-year on a balanced station panel (Phase 6).
-- **Covariates:** ERA5 monthly meteorology averaged over the unit (temperature, humidity, wind, boundary-layer height, precipitation, radiation); region × year effects (`config/regions.yaml`: IGP, coastal, north-east, peninsular/other).
+
+**Manipulated variables.** None. The treatment indicator is NCAP enrolment (timing as in §2).
+
+**Measured variables.**
+- **Layer A outcome (primary):** log annual population-weighted mean PM2.5 over the unit: ACAG V5.GL.06, 0.01°, weighted by GHS-POP 2020 (DEC-070, DEC-081). Sensitivity: the area-weighted mean.
+- **Seasonal outcomes (H2):** V5.GL.06 monthly.
+  - Winter season-year *t* = October *t* to February *t*+1, so winter 2019 is the first fully after launch and winter 2023 the last complete one.
+  - Non-winter *t* = March to September *t*.
+  - A season needs all its months.
+- **Layer B outcome:** station daily PM2.5 and PM10 → deweathered (Phase 5) → city-year on a balanced station panel (Phase 6).
+  - Balanced-panel baseline 2018 (primary), 2019 (sensitivity).
+  - Ground years: **calendar 2025 is the last primary year.** January–March 2026 exists only in OpenAQ's raw real-time feed, not CPCB's validated archive (DEC-079), so it enters a FY2025-26 sensitivity analysis only.
+- **Ground validity rules:**
+  - Valid hour: at least 1 of 4 quarter-hours (primary); at least 3 of 4 (sensitivity) (DEC-069).
+  - Valid day and valid year: 75% of hours and 75% of days (primary); 60% and 90% (sensitivity).
+  - Flagged values are removed before daily means: ceilings, flatlines of 4 or more hours, PM2.5 > PM10 (DEC-068).
+- **Covariates:**
+  - ERA5 monthly meteorology averaged over each unit: temperature, humidity, wind, boundary-layer height, precipitation, radiation.
+  - Region × year effects, with regions IGP, coastal, north-east and peninsular/other (DEC-075).
+  - VIIRS fire radiative power, from 2012, in one sensitivity check (DEC-039).
+
+**Indices.**
+- The station reliability score (0–100; DEC-073) is descriptive. It is used only in the "exclude score < 50" sensitivity analysis.
+- Deweathered series: the model family with the better median out-of-sample R² under blocked, forward-chaining CV is primary; the other is the sensitivity (DEC-088). Choosing on CV fit is blind to treatment.
 
 ## 5. Analysis plan
 
-**Estimators**
-1. **Primary: synthetic difference-in-differences** (Arkhangelsky et al. 2021), estimated separately for each adoption cohort (the `synthdid` package requires simultaneous adoption, DEC-027) and combined as a treated-unit-weighted average. Standard errors: placebo method.
-2. **Event study:** unit effects, region × year effects and ERA5 covariates; coefficients for years relative to adoption, with −1 omitted; standard errors clustered by unit. It shows pre-trends and when any effect appears.
-3. **Callaway & Sant'Anna (2021)** staggered-adoption ATT, with not-yet-treated and never-treated controls.
-4. **Layer B:** interrupted time series on deweathered ground data for each NCAP city with valid 2018 data; difference-in-differences where control-city stations exist.
+**Statistical models.**
+1. **Primary: synthetic difference-in-differences** (SDID; Arkhangelsky et al. 2021; R `synthdid`).
+   - Estimated separately per listing cohort with never-treated controls, since the package needs simultaneous adoption (DEC-027).
+   - Pre-period: 2010 to the year before the cohort's adoption. Post-period: adoption to 2024.
+   - **The year 2020 is dropped from the primary panel.**
+   - Cohort ATTs are combined weighted by their number of treated units.
+   - **SE by joint placebo:** in each of 500 replications, disjoint random sets of controls, of the cohorts' sizes, are given the cohorts' adoption years; the aggregate is re-estimated each time. 95% CI = ATT ± 1.96 SE.
+2. **Event study.**
+   - Unit effects, region × year effects, ERA5 covariates, and relative-year indicators from −9 to +5 with −1 omitted.
+   - Estimated with the Sun & Abraham (2021) interaction-weighted estimator against never-treated units, which avoids the bias of two-way fixed effects under staggered adoption.
+   - SEs clustered by unit. The 2020 coefficient is shown separately.
+3. **Callaway & Sant'Anna (2021)**, R `did`: doubly robust, never-treated controls (primary for this estimator) and not-yet-treated (sensitivity). Simple and dynamic aggregations, with uniform bands.
+4. **Layer B.**
+   - **ITS:** deweathered interrupted time series per NCAP city with valid 2018 data. It is a before–after contrast of deweathered series and cannot separate national shocks.
+   - **Ground DiD:** NCAP vs non-NCAP stations with year effects, only where both have 2018 data.
+   - Both are reported for PM2.5 and PM10 separately; 95% CIs by cluster bootstrap over cities (1,000 resamples).
+5. **Hierarchical model (Phase 8):** a measurement-error model of city effects and their SEs, with moderators: baseline PM2.5, IGP, log population, coastal, funding channel. This gives shrunken city estimates. H5 is the IGP coefficient.
 
-**2020.** The 2020 coefficient is estimated and shown separately (COVID lockdown; the BS-VI fuel switch in April 2020). The post-period ATT is reported both with 2020 included and with it excluded; the primary ATT excludes 2020.
+**Transformations.** Natural log of concentrations; effects reported as % change (100 × (e^β − 1)), with µg/m³ from the level-scale fit as secondary.
 
-**Inference criteria and decision rules**
+**Inference criteria and decision rules** (unchanged from the Phase 3 draft except where §6 says otherwise).
 - **H1 supported** if all of these hold:
-  - the primary SDID ATT (2019–2024, excluding 2020) is negative and its 95% CI excludes 0;
-  - the event-study pre-period coefficients (2010–2017) are jointly insignificant (p > 0.10);
-  - the 2016 placebo-in-time ATT's 95% CI includes 0;
-  - the estimate keeps its sign in the Callaway & Sant'Anna estimate and in the area-weighted and V6.GL.03 versions.
-- **If the CI includes 0:** report the minimum detectable effect (MDE, §6), and an equivalence statement. Effects larger than ±MDE are ruled out if the 90% CI lies within ±MDE.
-- **H1 not supported:** "no detectable effect", never "no effect".
-- **If the pre-trend test fails:** the effect is reported as "not identified by this design".
-- **H2:** the winter-minus-rest difference, with 95% CI; supported if the CI excludes 0 in the direction of a larger winter reduction.
-- **H3 (secondary):** evaluated on the ground layer only, where PM10 is measured, and with one pre-year. The result is labelled "consistent with dust control" only if all of these hold:
-  - the PM2.5/PM10 ratio rises with a 95% CI excluding 0;
+  - (a) the primary SDID ATT is negative and its 95% CI excludes 0;
+  - (b) the event-study pre-period coefficients (−9 to −2) are jointly insignificant (Wald p > 0.10);
+  - (c) the 2016 placebo-in-time ATT's 95% CI includes 0;
+  - (d) the estimate keeps its sign in Callaway & Sant'Anna, in the area-weighted outcome and in V6.GL.03.
+- **If (b) or (c) fails:** "not identified by this design", whatever the ATT.
+- **If the CI includes 0:** "no detectable effect", never "no effect". Plus an equivalence statement (two one-sided tests): effects larger than ±<!--g:mde_pct-->1.2<!--/g-->% are ruled out if the 90% CI lies within ±MDE; otherwise the result is inconclusive.
+- **Whatever the outcome:** report which effect sizes the 95% CI excludes, set against NCAP's own targets (a 20–30% reduction, later up to 40%, in PM10). A satellite PM2.5 result says nothing directly about PM10 attainment, and the report will say so.
+- **H2** (tested only if H1 is supported): the winter-minus-non-winter ATT difference, from the same joint placebo draws. Supported if the 95% CI excludes 0 in the direction of a larger winter reduction. If H1 is not supported, H2 is reported as exploratory.
+- **H3:** labelled "consistent with dust control" only if all of these hold:
+  - the PM2.5/PM10 ratio rises, with a 95% CI excluding 0;
   - the PM10 effect exceeds the PM2.5 effect in ≥ 2 of 3 specifications (raw, deweathered, balanced panel);
-  - H1's Layer A effect is not in the opposite direction.
-  Otherwise it is "inconclusive". It is never "confirmed", because parallel trends cannot be tested with one pre-year.
-- **Layers A and B disagree:** both are reported, the disagreement is investigated (network composition, satellite calibration), and the layers are not averaged.
-- **City-level claims:** from the hierarchical model's shrunken estimates (Phase 8), or with FDR control at 5%; no unshrunk "best/worst cities" table.
+  - Layer A is not in the opposite direction.
 
-**Robustness** (all reported, whichever way they point):
-- placebo in time (2016);
-- placebo in space (≥ 500 permutations);
-- leave-one-out donors;
-- exclude 2020; exclude IGP;
-- FIRMS fire covariate (from 2012);
-- satellite version (V6.GL.03) and vintage (V6.GL.02.04);
-- area-weighted outcome;
-- spillover buffer;
-- treatment dates (funding-based; 2018 anticipation);
-- include buffered no-centre towns; exclude Patancheruvu (DEC-049); treated units ≥ 100k only;
-- completeness 60/90% and the 3-of-4 quarter-hour rule (ground);
-- ground station-years with reliability score < 50 excluded (`docs/audit_report.md` §8); include January–March 2026 (ground);
-- drop the 5 stations whose coordinates were set by Reenu's decision (`reenu_decided`, DEC-080) (ground);
-- no deweathering (ground);
-- a Himalayan region split.
+  Otherwise "inconclusive". Never "confirmed", because one pre-year cannot test parallel trends.
+- **H4:** per NCAP city with ground data, raw all-station change minus deweathered balanced-panel change, from 2018 to 2025. Supported if the mean across cities is positive with a 95% cluster-bootstrap CI excluding 0. This is descriptive (NCAP cities only), not causal.
+- **H5:** supported if the IGP coefficient's 95% credible interval lies above 0 (a less negative effect).
+- **Robustness:** a check "agrees" if it has the primary's sign and its point estimate lies inside the primary 95% CI. Every check is reported in one table, whichever way it points.
 
-## 6. Computed before approval (pre-2019 data only)
-- **Minimum detectable effect:** placebo-in-time on 2010–2018 satellite data. Fake adoption in 2014 and 2015, the same estimator, and the spread of placebo ATTs across 500 permuted treated sets. MDE = 2.8 × SE (80% power, 5% two-sided). *To be filled in Phase 4 before approval.*
-- **Baseline balance** of treated units vs the control pool, 2010–2018: PM2.5 level and trend, population, region.
+**Multiple comparisons.**
+- **Confirmatory family = {H1, H2}, tested in fixed sequence at α = 0.05.** H2 is tested only if H1 is supported. This keeps the familywise error rate at 5% without splitting α.
+- **H3–H5 are secondary:** each at 0.05, labelled secondary, never promoted to confirmatory.
+- **Robustness checks and event-study coefficients** are not hypothesis tests. The event study gets one joint pre-trend test, plus pointwise CIs and uniform (simultaneous) bands from the CS estimator.
+- **City-level claims** come from the hierarchical model's shrunken estimates. Any unshrunk city claim is held to Benjamini–Hochberg FDR 5% across all 113 treated units. There is no unshrunk "best/worst cities" table.
+- **Moderators other than IGP** are exploratory.
 
-## 7. Other
-Deviations from this plan will be logged in `docs/DECISIONS.md`, dated and justified, and reported in the final report.
+**Triangulation, and how disagreement between layers is reported.**
+- Layer A remains the headline. Layer B is shown beside it, never averaged with it.
+- The like-for-like comparison is Layer A restricted to the units that have Layer B stations, PM2.5 only.
+- The pair is classified in advance as one of:
+  - **consistent:** same sign and overlapping 95% CIs;
+  - **different magnitude:** same sign, non-overlapping CIs;
+  - **conflict:** opposite signs with at least one CI excluding 0;
+  - **uninformative:** the Layer B CI contains both 0 and the Layer A estimate.
+- **Any category other than "consistent" triggers a fixed investigation**, each step reported whether or not it closes the gap:
+  1. network composition (all stations vs balanced panel);
+  2. satellite calibration to the ground (V6.GL.02.04 vintage vs V5.GL.06; the ground–satellite correlation over time);
+  3. spatial coverage (station sites vs the population-weighted polygon);
+  4. deweathering (raw vs deweathered).
+- PM10 on the ground and PM2.5 from satellite are never compared as "agreement".
+
+**Primary choices and their sensitivity checks** (every one run and reported).
+
+| Choice | Primary | Sensitivity | Log |
+|---|---|---|---|
+| Satellite product | V5.GL.06 | V6.GL.03 (algorithm); V6.GL.02.04 (vintage, to 2023) | DEC-001/002 |
+| Unit value | population-weighted mean | area-weighted mean | DEC-070/081 |
+| Towns without a GHSL centre (10) | excluded | included as 1.87 km buffers | DEC-063 |
+| Patancheruvu | intention to treat | excluded | DEC-049 |
+| Asansol & Raniganj | one unit incl. the "Mejia" centre | Asansol centre alone (*proposed; not previously logged*) | DEC-064/081 |
+| Treated-unit size | all | ≥ 100k only | draft plan |
+| Spillover | none | 25 km buffer | DEC-085 |
+| Treatment date | first listing | first funding year; 2018 for the 94 on the 2017 list | DEC-086 |
+| 2020 | dropped | included; own coefficient | draft plan |
+| Controls (CS) | never-treated | not-yet-treated | — |
+| Valid hour (ground) | ≥ 1 of 4 quarter-hours | ≥ 3 of 4 | DEC-069 |
+| Completeness (ground) | 75% / 75% | 60%, 90% | DEC-073 |
+| Ground end | calendar 2025 | + Jan–Mar 2026 (FY2025-26, provisional) | DEC-079 |
+| Reenu-decided station coordinates (5) | recommended coordinates | drop all 5 | DEC-080 |
+| Balanced-panel baseline | 2018 | 2019 | DEC-088 |
+| Deweathering | better-CV family | other family; none | DEC-088 |
+| Reliability | all valid station-years | drop score < 50 | DEC-073 |
+| Other checks | — | placebo in time (2016); placebo in space (500 permutations); leave-one-out donors; exclude IGP; Himalayan region split; VIIRS fire covariate (from 2012) | proposal |
+
+**Data exclusion.** Only by the rules above (flags, completeness, control-pool rules). No outlier exclusion on outcome values.
+
+**Missing data.**
+- The satellite panel is complete (no missing unit-years).
+- Ground gaps are handled by the completeness rules; there is no imputation in the primary analysis.
+- The audit found missingness is *lower* on polluted days, which biases naive annual means slightly upward (median +0.7%, `audit_report.md`). This is reported beside Layer B.
+
+**Exploratory analyses** (labelled as such):
+- funding dose-response on *allocations*, with the reverse-causality caveat (cut item 1);
+- moderators other than IGP;
+- NO2 as a secondary pollutant;
+- raw MAIAC AOD, if time allows.
+
+## 6. Other
+
+**Changes from the Phase 3 draft, made after the pre-gate numbers were computed** (for the reviewer to judge):
+1. Numbers filled in: MDE, pool, balance, cohorts.
+2. H4 and H5 added, from the proposal's own hypotheses.
+3. H2 made conditional on H1 (fixed sequence).
+4. The joint-placebo SE for the cohort aggregate; never-treated donors in each per-cohort SDID.
+5. The season-year definition.
+6. The Sun & Abraham event-study estimator.
+7. The layer-disagreement categories.
+8. The deweathering-family rule.
+9. The funding-date rule.
+10. The Asansol-alone sensitivity.
+
+H1's decision rules (a)–(d) are unchanged.
+
+**Baseline balance** (unweighted, 2010–2018). NCAP units are much larger than the pool (log-population SMD <!--g:smd_pop-->1.44<!--/g-->) and less often in the IGP (<!--g:igp_treated-->28<!--/g-->% vs <!--g:igp_control-->43<!--/g-->%). Their mean PM2.5 is similar (<!--g:level_treated-->51.7<!--/g--> vs <!--g:level_control-->56.4<!--/g--> µg/m³), and so is their pre-trend (<!--g:trend_treated-->2.3<!--/g--> vs <!--g:trend_control-->2.1<!--/g-->% a year). SDID does not need level balance, only a matched pre-period path, which the placebos test.
+
+<!--g:table_balance-->
+
+| Characteristic (2010-2018 unless stated) | NCAP units (n=113) | Control pool (n=923) | SMD | Buffered pool (n=754) | SMD (buffered) |
+|---|---|---|---|---|---|
+| PM2.5 mean 2010-2018 (µg/m³) | 51.67 | 56.37 | -0.22 | 54.30 | -0.12 |
+| PM2.5 trend 2010-2018 (% per year) | 2.28 | 2.11 | 0.17 | 2.11 | 0.18 |
+| Winter PM2.5 mean 2010-2017 seasons (µg/m³) | 72.09 | 80.80 | -0.23 | 76.98 | -0.13 |
+| Population 2015 (log10) | 5.94 | 5.32 | 1.44 | 5.31 | 1.46 |
+| Area (km2) | 211.58 | 48.26 | 0.53 | 43.81 | 0.55 |
+| Region: coastal | 15.9% | 13.9% | 0.06 | 14.7% | 0.03 |
+| Region: igp | 28.3% | 43.2% | -0.31 | 39.5% | -0.24 |
+| Region: north-east | 5.3% | 4.4% | 0.04 | 4.5% | 0.04 |
+| Region: peninsular/other | 50.4% | 38.5% | 0.24 | 41.2% | 0.19 |
+
+<!--/g-->
+
+**Deviations** from this plan will be logged in `docs/DECISIONS.md`, dated and justified, and listed in the final report.
