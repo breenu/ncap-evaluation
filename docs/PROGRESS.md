@@ -67,7 +67,7 @@ snakemake --cores 8 pregate
 
 ## Next
 
-1. **Reenu reviews `docs/ncap_extraction_mismatches.md`** (48 items: names mapped by judgement, combined rows, utilisation > release, small total differences) and records conclusions in DECISIONS.
+1. **Reenu reviews `docs/ncap_extraction_mismatches.md`** (37 items: names mapped by judgement, combined rows, utilisation > release, small total differences) and records conclusions in DECISIONS.
 2. **Reenu approves Phase 2.** Then commit, push, and start Phase 3 (storage, cleaning, audit, EDA). Phase 3's ingest must:
    - subtract 11 h from mirror timestamps (DEC-040);
    - de-duplicate OpenAQ location ids per station;

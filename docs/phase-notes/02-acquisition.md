@@ -50,7 +50,7 @@ The proposal took some facts from secondary sources (131 cities; 49 funded throu
 
 - **Counts.** The June 2021 CPCB list had 132 entries because Asansol and Raniganj were listed separately; from 2022 they are one entry (131). Patancheruvu, a city inside Hyderabad's urban agglomeration funded through the Finance Commission, drops out by 2026. That gives 130 cities and 48 Finance-Commission cities. Both "131 / 49" and "130 / 48" are right, at different dates.
 - **When each city joined.** CPCB republished its city list several times at the same web address. Old versions survive in the Internet Archive, and each PDF records its own creation date. The first list containing a city dates its entry: 102 cities at launch (Jan 2019), 19 more by June 2020, 2 by December 2020, and 8 large "million-plus" cities by June 2021. That staggering matters for the causal design in Phase 7.
-- **Checks.** All Parliament tables add up to their printed totals within 0.02 crore. The Finance Commission's city allocations match the Parliament answer's allocations for every city. The 48 remaining items (odd names, combined rows such as "Twin City Bhubaneshwar & Cuttack", and cases where more was spent than released) are listed in `docs/ncap_extraction_mismatches.md` for a manual check. None were "fixed" in code.
+- **Checks.** All Parliament tables add up to their printed totals within 0.02 crore. The Finance Commission's city allocations match the Parliament answer's allocations for every city. The 37 remaining items (odd names, combined rows such as "Twin City Bhubaneshwar & Cuttack", and cases where more was spent than released) are listed in `docs/ncap_extraction_mismatches.md` for a manual check. None were "fixed" in code.
 
 ## How the downloads stay trustworthy
 
