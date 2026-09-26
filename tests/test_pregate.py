@@ -192,3 +192,18 @@ def test_plan_markers_fill_and_check():
     assert pregate_report.stale(out, {**vals, "n": "900"}) == ["n"]
     with pytest.raises(KeyError):
         pregate_report.fill("<!--g:nope-->x<!--/g-->", vals)
+
+
+def test_equal_tailed_p_does_not_assume_a_null_centred_on_zero():
+    # SYNTHETIC null centred at -1: an ATT of -1 is typical (p ~ 1), an ATT of +1 is extreme
+    null = pd.Series(np.linspace(-2, 0, 201))
+    assert pregate_report.p_equal_tailed(null, -1.0) > 0.95
+    assert pregate_report.p_equal_tailed(null, 1.0) < 0.02
+    # the |ATT| rule would call -1 and +1 equally (un)usual; this one does not
+    assert pregate_report.p_equal_tailed(null, 1.0) < pregate_report.p_equal_tailed(null, -1.0)
+
+
+def test_log_units_are_labelled_as_log_units_and_percent():
+    assert pregate_report.lg(0.0047) == "+0.0047"
+    assert pregate_report.pc(0.0047) == "+0.47%"
+    assert pregate_report.pc(0.47) == "+60.00%"  # what "0.47 log points" was misread as

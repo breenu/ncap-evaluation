@@ -53,7 +53,9 @@ The surprise is that NCAP units are *not* more polluted than the pool on average
 2. Run SDID against the other 810.
 3. Repeat 500 times.
 
-No real treatment happened, so the spread of these fake effects is pure noise: SE ≈ 0.4 log points (about 0.4%). The minimum detectable effect is 2.8 × SE, i.e. **about a 1.2% reduction** (0.9 µg/m³).
+No real treatment happened, so the spread of these fake effects is pure noise: SE ≈ 0.004 in natural-log units, i.e. about 0.4%. The minimum detectable effect is 2.8 × SE, i.e. **about a 1.2% reduction**. At the NCAP units' 2010–2018 mean of 51.7 µg/m³ that is about 0.6 µg/m³.
+
+A separate SDID fit on the µg/m³ scale gives an MDE of 0.9 µg/m³, which is *not* 1.2% of the mean. Absolute noise sits in the dirtiest cities: the dirtiest third of controls has about 4 times the µg/m³ year-to-year noise of the cleanest third, but only 1.4 times the proportional noise, and holds 71% of the µg/m³ noise variance. The primary outcome is on the log scale, so 1.2% is the MDE that counts.
 
 *Where 2.8 comes from:* 1.96 (for a 5% two-sided test) + 0.84 (for 80% power).
 
@@ -69,15 +71,15 @@ No real treatment happened, so the spread of these fake effects is pure noise: S
 The confidence intervals in Phase 7 use the real design's own placebo SE, not this number. The MDE's job is to set the equivalence bound: if the result is null, can we rule out effects bigger than ±1.2%?
 
 **A check that failed to find a problem, and a small one it did find.** I expected random sets to *understate* noise, because 113 random controls are scattered across India and average away regional shocks, while the real NCAP set is regionally clustered. So I added a second null in which each fake set has the same regional mix as the real one. That was my prediction; the data disagreed:
-- Matched sets were slightly *less* noisy (SE 0.36–0.37 vs 0.41–0.42), so the carried MDE still comes from the random design.
-- Matched sets are not centred exactly on zero. Their mean fake effect is up to −0.5 log points, against a Monte Carlo error of 0.02, so the offset is real.
+- Matched sets were slightly *less* noisy (SE 0.0036–0.0037 vs 0.0041–0.0042 in log units), so the carried MDE still comes from the random design.
+- Matched sets are not centred exactly on zero. Their mean fake effect is up to −0.0051 in log units (−0.5%), against a Monte Carlo error of 0.0002, so the offset is real.
 - SDID has a small bias when the treated group shares a regional structure the donors lack. It is below one SE and it is reported.
 
 ## Finding 4: the real NCAP cities were not already diverging before NCAP
 
 The same fake starts, applied to the actual NCAP units (data to 2018 only):
-- **2014:** +0.47 log points (95% CI −0.25 to +1.18; permutation p = 0.22);
-- **2015:** −0.41 log points (95% CI −1.14 to +0.32; p = 0.41).
+- **2014:** +0.47% (95% CI −0.24% to +1.19%; equal-tailed permutation p = 0.32);
+- **2015:** −0.41% (95% CI −1.13% to +0.32%; p = 0.75).
 
 Both intervals include zero. This matters: if NCAP cities had already been improving faster before 2019, any post-2019 "effect" could just be that trend continuing.
 
@@ -111,7 +113,7 @@ So a ground placebo cannot be built. A variance from one year-pair in five citie
 
 ## Problems met
 
-- **R `mgcv` stopped loading** on this machine. The error is a MinGW "32-bit pseudo relocation out of range": a DLL linked in a way that breaks when Windows places another DLL more than 2 GB away, which varies with address randomisation.
+- **R `mgcv` stopped loading** on this machine (resolved after review; see the end of this note). The error is a MinGW "32-bit pseudo relocation out of range": a DLL linked in a way that breaks when Windows places another DLL more than 2 GB away, which varies with address randomisation.
   - It fails in almost every try (one pass in about 20).
   - Ruled out: PATH clashes (Oracle, old MinGW, Git's toolchain).
   - CRAN's build of the same version works every time. It is not installed yet, because it changes the pinned environment (DEC-090).
@@ -129,6 +131,21 @@ So a ground placebo cannot be built. A variance from one year-pair in five citie
 ## Open items for Reenu
 
 1. Approve or edit `docs/analysis_plan.md`. Numbers are generated, so edit prose only.
-2. Decide: listing vs funding date as primary; H4/H5 and the Asansol-alone check.
-3. OSF registration: yes or no, before the gate opens.
-4. OK to install CRAN's mgcv 1.9-4 (DEC-090)?
+2. Decide: listing vs funding date as primary; H4/H5 and the Asansol-alone check. *Decided 2026-09-27: listing primary; all three accepted (DEC-092).*
+3. OSF registration: yes or no, before the gate opens. *Yes.*
+4. OK to install CRAN's mgcv 1.9-4 (DEC-090)? *Resolved 2026-09-27; see below.*
+
+## Corrections after Reenu's review (2026-09-27)
+
+**"Log points" was the wrong label, and the p-value needed fixing.** Reenu noticed that the placebo ATTs ("+0.47 and −0.41 log points") read as about +60% and −34%, which cannot sit beside a 1.2% MDE.
+
+- **The numbers were right; the label was wrong.** The stored estimates are 0.0047 and −0.0041 in natural-log units, i.e. +0.47% and −0.41%. The report had multiplied them by 100 and called the result "log points". That is an economists' convention (1 log point = 0.01 log units), but it reads naturally as log units. Every table now shows raw log units with the implied percentage beside them. A test pins the labels.
+- **The p-values were computed with the wrong rule.** They compared |ATT| with |placebo|, which assumes the placebo distribution is centred on zero. The region-matched one is not (Finding 3). They are now equal-tailed: twice the smaller tail share of the empirical null. The 2014 placebo moves from p = 0.22 to 0.32, and 2015 from 0.41 to 0.75. The conclusion (no pre-NCAP divergence) is unchanged. The level-scale p-values also moved (0.87 → 0.31 and 0.74 → 0.53), for the same reason.
+- **"1.2% (0.9 µg/m³)" paired two numbers that are not conversions of each other.** 1.2% of the NCAP mean is 0.6 µg/m³; 0.9 µg/m³ is the separate µg/m³-scale MDE, larger for the reason given in Finding 3. Both are now stated separately, with the reconciliation generated in `pregate_checks.md` §4.
+
+**mgcv, resolved (DEC-093).** Reenu asked whether it was the Oracle MKL clash from Phase 1 (DEC-046).
+- **It was not.** A live R process with mgcv loaded uses only the environment's own MKL, BLAS and LAPACK DLLs. Oracle's file even has a different name (`mkl_rt.dll` vs `mkl_rt.3.dll`).
+- **What it was:** mgcv.dll's references into R.dll are patched with 32-bit offsets, which break when Windows happens to load the two DLLs more than 2 GB apart. That layout is re-randomised at each boot: after a restart the old build loaded every time, which confirms the cause and shows the bug was waiting for the next unlucky boot.
+- **The fix:** mgcv now comes from CRAN's build of the same version, which loaded every time even under the bad layout. The lock was updated so that removing conda-forge's r-mgcv is the only change, the environment was rebuilt from the lock, and the R test passed 10 times in a row.
+
+*If asked:* "Why did you not catch it?" The numbers were internally consistent, so every check passed; the fault was in how they were written down. That is why units are now tested as text, not only as values.

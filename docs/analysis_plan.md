@@ -2,7 +2,7 @@
 
 **Weather, Monitors, or Policy? A meteorologically normalised, quasi-experimental evaluation of India's National Clean Air Programme, 2015–2025**
 
-*Status: FINAL DRAFT for Reenu's approval (Phase 4, 2026-09-26). Laid out in the order of the OSF Preregistration template (sections 1–6 below match its sections). Every number marked in the source as `<!--g:…-->` is written by `python -m src.causal.pregate_report sync-plan` from pipeline outputs, and `snakemake pregate` fails if any is stale. The full pre-gate tables are in [`pregate_checks.md`](pregate_checks.md) (generated). Nothing estimating post-2019 effects runs until this file is approved and committed, and `config/gate.yaml` is then flipped in a separate commit citing this file's commit hash (DEC-012).*
+*Status: FINAL DRAFT for Reenu's approval (Phase 4, 2026-09-26; Reenu's review decisions of 2026-09-27 incorporated: treatment timing, H4/H5, Asansol-alone check, OSF registration, units corrections, DEC-091/092). To be registered on OSF before the gate opens. Laid out in the order of the OSF Preregistration template (sections 1–6 below match its sections). Every number marked in the source as `<!--g:…-->` is written by `python -m src.causal.pregate_report sync-plan` from pipeline outputs, and `snakemake pregate` fails if any is stale. The full pre-gate tables are in [`pregate_checks.md`](pregate_checks.md) (generated). Nothing estimating post-2019 effects runs until this file is approved and committed, and `config/gate.yaml` is then flipped in a separate commit citing this file's commit hash (DEC-012).*
 
 ---
 
@@ -33,7 +33,7 @@
 | H4 | Secondary (RQ1/RQ2; proposal hypothesis 1) | Reported (raw, all-station) improvements in NCAP cities exceed deweathered, composition-corrected improvements: weather and network change explain part of the reported change. | B |
 | H5 | Secondary (RQ4; proposal hypothesis 3) | Effects are smaller (less negative) in Indo-Gangetic Plain (IGP) cities, where regional sources dominate. | A |
 
-H4 and H5 are the proposal's own pre-specified hypotheses. They were missing from the Phase 3 draft and are added here (see §6).
+H4 and H5 are hypotheses 1 and 3 of the original proposal (dated 25 September 2026, written before any data were downloaded). They were missing from the Phase 3 draft and are restored here (see §6).
 
 ## 2. Design plan
 
@@ -61,7 +61,7 @@ H4 and H5 are the proposal's own pre-specified hypotheses. They were missing fro
   - Sensitivity: exclude it.
 - **Treatment timing, primary: first appearance on an official NCAP list.** Listed on or before 30 June counts as treated from that calendar year, otherwise from the next. Nothing is treated before 2019. A shared unit takes its earliest member's date.
   - Unit cohorts: 2019: <!--g:coh_2019-->89<!--/g-->; 2020: <!--g:coh_2020-->15<!--/g-->; 2021: <!--g:coh_2021-->9<!--/g-->.
-- **Treatment timing, alternative: the first financial year with a recorded central release**, counted from the next calendar year (FY2019-20 → 2020; DEC-086). Sources: Lok Sabha AU2467 per-FY releases; XV-FC grants start in FY2020-21.
+- **Treatment timing, sensitivity only: the first financial year with a recorded central release** (Reenu, 2026-09-27: XV-FC grants are partly performance-linked, so the timing of money is partly an outcome of air quality and must not define treatment), counted from the next calendar year (FY2019-20 → 2020; DEC-086). Sources: Lok Sabha AU2467 per-FY releases; XV-FC grants start in FY2020-21.
   - Unit cohorts: 2020: <!--g:fcoh_2020-->86<!--/g-->; 2021: <!--g:fcoh_2021-->25<!--/g-->; 2022: <!--g:fcoh_2022-->2<!--/g-->.
 - **Anticipation:** 94 launch cities were already on CPCB's 2017 non-attainment list. Sensitivity: treat them from 2018.
 - **Control pool:** non-NCAP centres with 2015 population ≥ 100,000. 2015 is a pre-treatment epoch, so the pool cannot depend on post-treatment growth.
@@ -99,7 +99,7 @@ H4 and H5 are the proposal's own pre-specified hypotheses. They were missing fro
 - **Boundaries and population:** GHSL.
 - **Treatment:** NCAP lists and funding tables from PDFs, with source page for every row.
 
-Pre-period results already seen (details in [`pregate_checks.md`](pregate_checks.md) §5): the real NCAP units show a placebo ATT of <!--g:placebo_2014_logpts-->0.47<!--/g--> log points at fake adoption 2014 (95% CI <!--g:placebo_2014_ci-->-0.25 to 1.18<!--/g-->; permutation p = <!--g:placebo_2014_p-->0.22<!--/g-->) and <!--g:placebo_2015_logpts-->-0.41<!--/g--> at 2015 (95% CI <!--g:placebo_2015_ci-->-1.14 to 0.32<!--/g-->; p = <!--g:placebo_2015_p-->0.41<!--/g-->).
+Pre-period results already seen (details in [`pregate_checks.md`](pregate_checks.md) §5): the real NCAP units show a placebo ATT of <!--g:placebo_2014_pct-->+0.47%<!--/g--> at fake adoption 2014 (95% CI <!--g:placebo_2014_ci-->-0.24% to +1.19%<!--/g-->; equal-tailed permutation p = <!--g:placebo_2014_p-->0.32<!--/g-->) and <!--g:placebo_2015_pct-->-0.41%<!--/g--> at 2015 (95% CI <!--g:placebo_2015_ci-->-1.13% to +0.32%<!--/g-->; p = <!--g:placebo_2015_p-->0.75<!--/g-->). Both are consistent with no pre-NCAP divergence.
 
 **Data collection procedures.** None; all data are secondary. The pipeline is `snakemake pregate` / `all`.
 
@@ -116,30 +116,30 @@ Pre-period results already seen (details in [`pregate_checks.md`](pregate_checks
 
 | Outcome | Null design | Fake adoption | SE | Mean placebo ATT | MDE |
 |---|---|---|---|---|---|
-| Annual PM2.5, log (primary) | random | 2014 | 0.42 log pts | 0.01 log pts | 1.2% |
-| Annual PM2.5, log (primary) | region-matched | 2014 | 0.36 log pts | 0.11 log pts | 1.0% |
-| Annual PM2.5, log (primary) | random | 2015 | 0.41 log pts | 0.02 log pts | 1.1% |
-| Annual PM2.5, log (primary) | region-matched | 2015 | 0.37 log pts | -0.28 log pts | 1.0% |
-| Annual PM2.5, level (ug/m3) | random | 2014 | 0.27 ug/m3 | 0.00 ug/m3 | 0.75 ug/m3 |
-| Annual PM2.5, level (ug/m3) | region-matched | 2014 | 0.24 ug/m3 | -0.36 ug/m3 | 0.66 ug/m3 |
-| Annual PM2.5, level (ug/m3) | random | 2015 | 0.33 ug/m3 | 0.00 ug/m3 | 0.93 ug/m3 |
-| Annual PM2.5, level (ug/m3) | region-matched | 2015 | 0.29 ug/m3 | -0.48 ug/m3 | 0.81 ug/m3 |
-| Winter PM2.5 (Oct-Feb), log | random | 2014 | 0.59 log pts | 0.01 log pts | 1.6% |
-| Winter PM2.5 (Oct-Feb), log | region-matched | 2014 | 0.57 log pts | -0.20 log pts | 1.6% |
-| Winter PM2.5 (Oct-Feb), log | random | 2015 | 0.55 log pts | 0.01 log pts | 1.5% |
-| Winter PM2.5 (Oct-Feb), log | region-matched | 2015 | 0.53 log pts | -0.51 log pts | 1.5% |
-| Non-winter PM2.5 (Mar-Sep), log | random | 2014 | 0.54 log pts | 0.01 log pts | 1.5% |
-| Non-winter PM2.5 (Mar-Sep), log | region-matched | 2014 | 0.53 log pts | 0.03 log pts | 1.5% |
-| Non-winter PM2.5 (Mar-Sep), log | random | 2015 | 0.59 log pts | 0.02 log pts | 1.6% |
-| Non-winter PM2.5 (Mar-Sep), log | region-matched | 2015 | 0.55 log pts | -0.48 log pts | 1.5% |
-| Winter minus non-winter, log (H2) | random | 2014 | 0.72 log pts | -0.00 log pts | 2.0 log pts |
-| Winter minus non-winter, log (H2) | region-matched | 2014 | 0.77 log pts | -0.23 log pts | 2.1 log pts |
-| Winter minus non-winter, log (H2) | random | 2015 | 0.65 log pts | -0.01 log pts | 1.8 log pts |
-| Winter minus non-winter, log (H2) | region-matched | 2015 | 0.68 log pts | -0.03 log pts | 1.9 log pts |
+| Annual PM2.5, log (primary) | random | 2014 | 0.0042 | +0.0001 | 0.0117 (1.2% fall) |
+| Annual PM2.5, log (primary) | region-matched | 2014 | 0.0036 | +0.0011 | 0.0102 (1.0% fall) |
+| Annual PM2.5, log (primary) | random | 2015 | 0.0041 | +0.0002 | 0.0115 (1.1% fall) |
+| Annual PM2.5, log (primary) | region-matched | 2015 | 0.0037 | -0.0028 | 0.0104 (1.0% fall) |
+| Annual PM2.5, level (µg/m³) | random | 2014 | 0.27 µg/m³ | +0.00 µg/m³ | 0.75 µg/m³ |
+| Annual PM2.5, level (µg/m³) | region-matched | 2014 | 0.24 µg/m³ | -0.36 µg/m³ | 0.66 µg/m³ |
+| Annual PM2.5, level (µg/m³) | random | 2015 | 0.33 µg/m³ | +0.00 µg/m³ | 0.93 µg/m³ |
+| Annual PM2.5, level (µg/m³) | region-matched | 2015 | 0.29 µg/m³ | -0.48 µg/m³ | 0.81 µg/m³ |
+| Winter PM2.5 (Oct-Feb), log | random | 2014 | 0.0059 | +0.0001 | 0.0165 (1.6% fall) |
+| Winter PM2.5 (Oct-Feb), log | region-matched | 2014 | 0.0057 | -0.0020 | 0.0158 (1.6% fall) |
+| Winter PM2.5 (Oct-Feb), log | random | 2015 | 0.0055 | +0.0001 | 0.0155 (1.5% fall) |
+| Winter PM2.5 (Oct-Feb), log | region-matched | 2015 | 0.0053 | -0.0051 | 0.0148 (1.5% fall) |
+| Non-winter PM2.5 (Mar-Sep), log | random | 2014 | 0.0054 | +0.0001 | 0.0151 (1.5% fall) |
+| Non-winter PM2.5 (Mar-Sep), log | region-matched | 2014 | 0.0053 | +0.0003 | 0.0147 (1.5% fall) |
+| Non-winter PM2.5 (Mar-Sep), log | random | 2015 | 0.0059 | +0.0002 | 0.0164 (1.6% fall) |
+| Non-winter PM2.5 (Mar-Sep), log | region-matched | 2015 | 0.0055 | -0.0048 | 0.0155 (1.5% fall) |
+| Winter minus non-winter, log (H2) | random | 2014 | 0.0072 | -0.0000 | 0.0201 (≈ 2.0 pp) |
+| Winter minus non-winter, log (H2) | region-matched | 2014 | 0.0077 | -0.0023 | 0.0215 (≈ 2.1 pp) |
+| Winter minus non-winter, log (H2) | random | 2015 | 0.0065 | -0.0001 | 0.0182 (≈ 1.8 pp) |
+| Winter minus non-winter, log (H2) | region-matched | 2015 | 0.0068 | -0.0003 | 0.0191 (≈ 1.9 pp) |
 
 <!--/g-->
 
-**The MDE for H1 is a <!--g:mde_pct-->1.2<!--/g-->% reduction in annual population-weighted PM2.5** (<!--g:mde_logpts-->1.2<!--/g--> log points; <!--g:mde_ugm3-->0.9<!--/g--> µg/m³ on the level scale). The MDE for H2 (winter minus non-winter) is <!--g:mde_h2_logpts-->2.1<!--/g--> log points. **Read this MDE as a lower bound, not a power calculation.** ACAG PM2.5 is a smooth, calibrated product averaged over a hundred units, so pre-period noise is small. The real design is noisier:
+**The MDE for H1 is a <!--g:mde_pct-->1.2<!--/g-->% fall in annual population-weighted PM2.5** (<!--g:mde_log-->0.0117<!--/g--> in natural-log units). At the NCAP units' 2010–2018 mean of <!--g:level_treated-->51.7<!--/g--> µg/m³ that is about <!--g:mde_ugm3_implied-->0.6<!--/g--> µg/m³. A separate fit on the µg/m³ scale gives <!--g:mde_ugm3-->0.9<!--/g--> µg/m³: absolute noise is concentrated in the most polluted units, so the µg/m³ MDE is not the % MDE times the mean (`pregate_checks.md` §4). The primary outcome is on the log scale, so the % MDE is the one that counts. The MDE for H2 (winter minus non-winter) is <!--g:mde_h2_log-->0.0215<!--/g--> in log units (≈ <!--g:mde_h2_pp-->2.1<!--/g--> percentage points). **Read this MDE as a lower bound, not a power calculation.** ACAG PM2.5 is a smooth, calibrated product averaged over a hundred units, so pre-period noise is small. The real design is noisier:
 - its post-years reach 6 years after adoption, where synthetic controls drift more (the placebo post-periods are 4–5 years);
 - the placebo assigns every unit at once, while the real estimator averages cohorts;
 - even region-matched sets are more dispersed than the real treated set;
@@ -249,10 +249,10 @@ The real design's own SE (joint placebo, §5) is what the confidence intervals u
 | Unit value | population-weighted mean | area-weighted mean | DEC-070/081 |
 | Towns without a GHSL centre (10) | excluded | included as 1.87 km buffers | DEC-063 |
 | Patancheruvu | intention to treat | excluded | DEC-049 |
-| Asansol & Raniganj | one unit incl. the "Mejia" centre | Asansol centre alone (*proposed; not previously logged*) | DEC-064/081 |
+| Asansol & Raniganj | one unit incl. the "Mejia" centre | Asansol centre alone (Reenu, 2026-09-27) | DEC-064/081 |
 | Treated-unit size | all | ≥ 100k only | draft plan |
 | Spillover | none | 25 km buffer | DEC-085 |
-| Treatment date | first listing | first funding year; 2018 for the 94 on the 2017 list | DEC-086 |
+| Treatment date | first listing | first funding year (never primary: funding is partly performance-linked); 2018 for the 94 on the 2017 list | DEC-086, DEC-092 |
 | 2020 | dropped | included; own coefficient | draft plan |
 | Controls (CS) | never-treated | not-yet-treated | — |
 | Valid hour (ground) | ≥ 1 of 4 quarter-hours | ≥ 3 of 4 | DEC-069 |
@@ -281,7 +281,7 @@ The real design's own SE (joint placebo, §5) is what the confidence intervals u
 
 **Changes from the Phase 3 draft, made after the pre-gate numbers were computed** (for the reviewer to judge):
 1. Numbers filled in: MDE, pool, balance, cohorts.
-2. H4 and H5 added, from the proposal's own hypotheses.
+2. H4 and H5 restored. They are hypotheses 1 and 3 of the original proposal dated 25 September 2026, written before any data were downloaded (the proposal PDF was created 2026-09-25 18:26 UTC and committed in the repository's first commit; the earliest raw download in any manifest is 2026-09-26 04:44 UTC). So they were not chosen after seeing data.
 3. H2 made conditional on H1 (fixed sequence).
 4. The joint-placebo SE for the cohort aggregate; never-treated donors in each per-cohort SDID.
 5. The season-year definition.
@@ -289,7 +289,8 @@ The real design's own SE (joint placebo, §5) is what the confidence intervals u
 7. The layer-disagreement categories.
 8. The deweathering-family rule.
 9. The funding-date rule.
-10. The Asansol-alone sensitivity.
+10. The Asansol-alone sensitivity (accepted by Reenu, 2026-09-27).
+11. Units and p-values corrected after review (DEC-091): log-scale results are given in natural-log units with the implied percentage (the draft's "log points" label read as 100 times too large), permutation p-values are equal-tailed, and the % and µg/m³ MDEs are reported separately. No estimate changed.
 
 H1's decision rules (a)–(d) are unchanged.
 

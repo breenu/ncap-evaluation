@@ -13,8 +13,8 @@
 version: 1
 metadata:
   content_hash:
-    win-64: f73acffef1a297523a5a3d23e0acc3d5bbb3692b916e905f9dbd244ba80f59d8
-    linux-64: 2666bcbd814a61d2da86bda3f78eada034297d2e894172c3340c65e86d16c9be
+    win-64: 88a6b147d50c40220152343dd3c1452c8150cc32997c066ee9bfbde5e7b1b686
+    linux-64: ec6efe631b77d065ad5670c69e761555023e622c8c0383b675840d83683678f7
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -392,7 +392,7 @@ package:
   platform: linux-64
   dependencies:
     arviz-base: '>=1.3.0,<1.4.0'
-    arviz-stats-core: ==1.3.2
+    arviz-stats-core: 1.3.2
     python: '>=3.12'
     xarray: '>=2024.11.0'
     xarray-einstats: ''
@@ -408,7 +408,7 @@ package:
   platform: win-64
   dependencies:
     arviz-base: '>=1.3.0,<1.4.0'
-    arviz-stats-core: ==1.3.2
+    arviz-stats-core: 1.3.2
     python: '>=3.12'
     xarray: '>=2024.11.0'
     xarray-einstats: ''
@@ -3486,7 +3486,7 @@ package:
     __glibc: '>=2.17,<3.0.a0'
     libffi: ''
     libgcc: '>=15'
-    libglib: ==2.90.0
+    libglib: 2.90.0
   url: https://conda.anaconda.org/conda-forge/linux-64/glib-tools-2.90.0-h3d503d9_0.conda
   hash:
     md5: d4adaebf8a2c9040ada6549c52a6b8d8
@@ -3784,7 +3784,7 @@ package:
   platform: linux-64
   dependencies:
     binutils_linux-64: ''
-    gcc_linux-64: ==16.2.0
+    gcc_linux-64: 16.2.0
     gxx_impl_linux-64: 16.2.0.*
     sysroot_linux-64: ''
   url: https://conda.anaconda.org/conda-forge/linux-64/gxx_linux-64-16.2.0-h23aca61_2.conda
@@ -5378,7 +5378,7 @@ package:
   platform: linux-64
   dependencies:
     __glibc: '>=2.17,<3.0.a0'
-    libclang-cpp23.1: ==23.1.2
+    libclang-cpp23.1: 23.1.2
     libgcc: '>=15'
     libllvm23: '>=23.1.2,<23.2.0a0'
     libstdcxx: '>=15'
@@ -9848,7 +9848,7 @@ package:
   manager: conda
   platform: linux-64
   dependencies:
-    pymc-base: ==6.3.1
+    pymc-base: 6.3.1
     pytensor: ''
     python-graphviz: ''
   url: https://conda.anaconda.org/conda-forge/noarch/pymc-6.3.1-h13dcb8a_0.conda
@@ -9862,7 +9862,7 @@ package:
   manager: conda
   platform: win-64
   dependencies:
-    pymc-base: ==6.3.1
+    pymc-base: 6.3.1
     pytensor: ''
     python-graphviz: ''
   url: https://conda.anaconda.org/conda-forge/noarch/pymc-6.3.1-h13dcb8a_0.conda
@@ -10138,7 +10138,7 @@ package:
     blas: '*'
     gxx: ''
     mkl-service: ''
-    pytensor-base: ==3.3.2
+    pytensor-base: 3.3.2
     python: ''
     python_abi: 3.12.*
   url: https://conda.anaconda.org/conda-forge/linux-64/pytensor-3.3.2-py312h8d828ed_0.conda
@@ -10155,7 +10155,7 @@ package:
     blas: '*'
     gxx: ''
     mkl-service: ''
-    pytensor-base: ==3.3.2
+    pytensor-base: 3.3.2
     python: ''
     python_abi: 3.12.*
   url: https://conda.anaconda.org/conda-forge/win-64/pytensor-3.3.2-py312h35876bc_0.conda
@@ -11755,44 +11755,6 @@ package:
   hash:
     md5: 5c26b52763f394938012e2843a273674
     sha256: 6eb416c8d2931fbefbc6f80445fe14d4e9ccb5669702a1f104f7f60461a2db34
-  category: main
-  optional: false
-- name: r-mgcv
-  version: '1.9_4'
-  manager: conda
-  platform: linux-64
-  dependencies:
-    __glibc: '>=2.17,<3.0.a0'
-    _openmp_mutex: '>=4.5'
-    libblas: '>=3.9.0,<4.0a0'
-    libgcc: '>=14'
-    liblapack: '>=3.9.0,<4.0a0'
-    r-base: '>=4.5,<4.6.0a0'
-    r-matrix: ''
-    r-nlme: '>=3.1_64'
-  url: https://conda.anaconda.org/conda-forge/linux-64/r-mgcv-1.9_4-r45h0e4624f_0.conda
-  hash:
-    md5: e33882c93c191f5d9a9b346431f02b43
-    sha256: 83a5233b6162c55f5021dea34464bd64d87f18b7815e738c42d06a046780e594
-  category: main
-  optional: false
-- name: r-mgcv
-  version: '1.9_4'
-  manager: conda
-  platform: win-64
-  dependencies:
-    libblas: '>=3.9.0,<4.0a0'
-    libgcc: '>=14'
-    liblapack: '>=3.9.0,<4.0a0'
-    libwinpthread: '>=12.0.0.r4.gg4f2fc60ca'
-    r-base: '>=4.5,<4.6.0a0'
-    r-matrix: ''
-    r-nlme: '>=3.1_64'
-    ucrt: '>=10.0.20348.0'
-  url: https://conda.anaconda.org/conda-forge/win-64/r-mgcv-1.9_4-r45h5ea86f4_0.conda
-  hash:
-    md5: 6dab482346e815b1548aadfe0e07ce4c
-    sha256: a074ef98669a119a32dbe53409157b89ad48598fa23cfc82067383ea6b9cdada
   category: main
   optional: false
 - name: r-munsell
@@ -14225,7 +14187,7 @@ package:
   manager: conda
   platform: linux-64
   dependencies:
-    typing_extensions: ==4.16.0
+    typing_extensions: 4.16.0
   url: https://conda.anaconda.org/conda-forge/noarch/typing-extensions-4.16.0-h69aa097_0.conda
   hash:
     md5: c680b5747e8c4c8f23dca0bb7042a8fc
@@ -14237,7 +14199,7 @@ package:
   manager: conda
   platform: win-64
   dependencies:
-    typing_extensions: ==4.16.0
+    typing_extensions: 4.16.0
   url: https://conda.anaconda.org/conda-forge/noarch/typing-extensions-4.16.0-h69aa097_0.conda
   hash:
     md5: c680b5747e8c4c8f23dca0bb7042a8fc

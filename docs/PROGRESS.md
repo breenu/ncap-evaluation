@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-09-26. Phase 4 built: pre-gate checks computed on pre-2019 data, `docs/analysis_plan.md` finalised for Reenu's approval. Gate still closed. **Next: Reenu reviews the plan** (see "Next: the gate" below).*
+*Last updated: 2026-09-27. Phase 4 built and reviewed; Reenu's rulings and the units correction are in the plan (DEC-091 to DEC-093); mgcv fixed; full pregate rebuild from raw data done in the rebuilt environment. Gate still closed. **Next: Reenu approves the plan text and registers it on OSF** (see "Next: the gate" below).*
 
 ## Status
 
@@ -13,7 +13,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 1 Skeleton | ✅ approved 2026-09-26; pushed; CI green |
 | 2 Acquisition | ✅ approved 2026-09-26; pushed. FIRMS pending (Reenu will run it from another network with a new key) |
 | 3 Storage, cleaning, audit, EDA | ✅ approved 2026-09-26; pushed (DEC-080 to DEC-082) |
-| 4 Analysis-plan gate | 🟡 built 2026-09-26; plan awaiting Reenu's approval (DEC-084 to DEC-090) |
+| 4 Analysis-plan gate | 🟡 built 2026-09-26; reviewed 2026-09-27 (DEC-091 to DEC-093); plan awaiting final approval and OSF registration |
 | 5–10 | not started |
 
 Pre-registration gate: **closed** (`config/gate.yaml`). No post-2019 effect estimates exist.
@@ -72,15 +72,27 @@ snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (
 
 Phase 4 is built; nothing after it may start until Reenu approves the plan.
 
-**What Reenu does:** read `docs/analysis_plan_summary.md` (one page), then `docs/analysis_plan.md`; edit freely (prose only, see below); decide the three items at the end of the summary; optionally register on OSF.
+**Decided 2026-09-27 (DEC-092):** first listing is the primary treatment date (funding timing is a sensitivity only); H4, H5 and the Asansol-alone check accepted; Reenu registers the plan on OSF before the gate opens.
+
+**What Reenu does next:** read `docs/analysis_plan.md` (summary: `docs/analysis_plan_summary.md`); edit prose only (see below); register it on OSF.
 
 **After approval, in this order (DEC-012):**
 1. Commit the approved plan (and summary). Note the commit hash.
 2. In a *separate* commit, set `config/gate.yaml`: `analysis_plan_approved: true`, `analysis_plan_commit: <hash>`. Nothing else in that commit.
-3. Record the approval (and any OSF link) in DECISIONS.
-4. **Fix mgcv before Phase 5** (DEC-090): add mgcv 1.9-4 from the 2026-09-25 Posit snapshot to `workflow/scripts/install_r_extra.R`, re-run `pytest tests/test_environment.py`. Needs Reenu's OK (changes the pinned env).
+3. Record the approval and the OSF link in DECISIONS.
+4. Then Phase 5 (deweathering). mgcv is fixed (DEC-093).
+5. Housekeeping: the pre-fix environment is kept as `ncap_prev`; delete it (`conda env remove -n ncap_prev`) once Reenu is happy.
 
 **Editing the plan:** numbers sit between `<!--g:key-->` and `<!--/g-->` markers and are written by `python -m src.causal.pregate_report sync-plan`; never type over them. `snakemake pregate` runs `check-plan` and fails if any quoted number no longer matches the pipeline (then: sync, and log the deviation).
+
+## Phase 4 review fixes (2026-09-27)
+
+- **Units (DEC-091):** log-scale results were labelled "log points" (100 × log difference), which read as 100 times too large. All reports now give natural-log units with the implied % (e.g. placebo +0.0047 = +0.47%). No estimate changed.
+- **p-values (DEC-091):** permutation p-values are now equal-tailed, because the region-matched null is not centred on zero. Real-NCAP placebo: 2014 p = 0.32 (was 0.22), 2015 p = 0.75 (was 0.41).
+- **MDE reconciliation (DEC-091):** the 1.2% MDE is about 0.6 µg/m³ at the NCAP mean; the separate µg/m³-scale MDE (0.9) is larger because absolute noise sits in the dirtiest cities. Generated in `docs/pregate_checks.md` §4.
+- **mgcv (DEC-093):** not the Oracle MKL conflict; now installed from the 2026-09-25 CRAN snapshot. `conda-lock.yml` re-locked in update mode (only change: r-mgcv removed). The `ncap` environment was rebuilt from the lock; the R environment test passed 10/10.
+- **Full rebuild from raw (DEC-094):** `snakemake --cores 1 --forceall pregate` with `--allowed-rules` excluding downloaders, 30 jobs, 1 h 25 min; every plan number and every generated report unchanged. Intermediates are content- but not byte-reproducible (timestamps, tie order).
+- **Re-locking on this machine:** `PYTHONNOUSERSITE=1 uvx conda-lock lock -f environment.yml -p win-64 -p linux-64 --lockfile conda-lock.yml --update <pkg> --conda %USERPROFILE%/miniforge3/Scripts/conda.exe`. Without `PYTHONNOUSERSITE`, conda's Python picks up user-site packages and update mode fails.
 
 ## Phase 4: what was built (2026-09-26)
 
@@ -91,7 +103,7 @@ Phase 4 is built; nothing after it may start until Reenu approves the plan.
   - `src/causal/pregate_report.py` → `docs/pregate_checks.md` (generated), plus `sync-plan` / `check-plan` for the numbers quoted in the plan and summary.
 - **Docs:** `docs/analysis_plan.md` (OSF Preregistration layout, final draft), `docs/analysis_plan_summary.md`, `docs/phase-notes/04-gate.md`, DEC-084 to DEC-090.
 - **Tests:** `tests/test_pregate.py` (19, synthetic).
-- **Run:** R steps run inside the env (`conda run -n ncap`, or `snakemake` from an activated env). Only `mgcv` fails to load (DEC-090); one early Rscript call loading synthdid/arrow/data.table also crashed once but did not recur in 6 further tries.
+- **Run:** R steps run inside the env (`conda run -n ncap`, or `snakemake` from an activated env). mgcv's load failure is fixed (DEC-093).
 
 ## Phase 3: what was built (2026-09-26, approved)
 
@@ -140,7 +152,7 @@ Built and run (all generated, all in Snakemake `workflow/rules/clean.smk`):
 - **ERA5 cells for newly located stations**: stations located in Phase 3 (by identity or locality) may sit in 0.25° cells not yet downloaded. Check and fetch in Phase 5 (small, under 2 GB).
 - **V6.GL.03 has no methods note.** If one appears, revisit DEC-001.
 - **The treatment definition** (listed vs funded) is proposed in `docs/analysis_plan.md` (listed primary) and decided by Reenu at the gate.
-- **R mgcv fails to load** (conda-forge build; MinGW 32-bit pseudo-relocation; fails in nearly every try, passed once; DEC-090). `tests/test_environment.py::test_r_estimators_run` therefore fails most of the time. Tested fix (CRAN binary, same version) awaits Reenu's OK. Blocks Phase 5's GAM only.
 - **No LICENSE file yet.** Reenu to choose a code licence before or when the repo goes public. Any derived dataset from the CPCB mirror must be ODbL (DEC-037).
 - **Jan–Mar 2026 ground data are provisional** (OpenAQ raw feed, DEC-079).
+- **Outputs are not byte-deterministic** (GeoPackage timestamps, tie order in DuckDB/pandas writes, SVG dates and ids; DEC-094). Content and numbers reproduce. Fix before the Phase 10 clean-clone check.
 - Possible extension (not scheduled): the official PRANA/NAMP PM10 series as a "reported" reference (DEC-016).

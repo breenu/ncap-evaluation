@@ -48,72 +48,76 @@ Unweighted means; SMD = standardised mean difference (treated minus control, poo
 
 ## 4. Minimum detectable effect (primary satellite SDID)
 
-Placebo-in-time on 2010-2018 (seasons 2010-2017), V5.GL.06 population-weighted PM2.5. For each of 500 sets of 113 control units (the size of the real treated set), treatment is assigned from a fake year (2014, 2015) and SDID is estimated against the other 810 controls. SE = SD of the placebo ATTs; MDE = 2.8 × SE (5% two-sided, 80% power). The same draws serve every outcome. Percentages are the reduction implied by the log MDE.
+Placebo-in-time on 2010-2018 (seasons 2010-2017), V5.GL.06 population-weighted PM2.5. For each of 500 sets of 113 control units (the size of the real treated set), treatment is assigned from a fake year (2014, 2015) and SDID is estimated against the other 810 controls. SE = SD of the placebo ATTs; MDE = 2.8 × SE (5% two-sided, 80% power). The same draws serve every outcome.
+
+**Units.** Log-scale quantities are in natural-log units: 0.0100 is about a 1% change (exactly, 100 × (e^x − 1)%). The MDE column also gives the percentage fall this implies. For winter minus non-winter, "pp" is percentage points (100 × the difference of two log effects).
 
 Two null designs: **random** sets (any controls) and **region-matched** sets (as many controls from each region as the real treated set has). Random sets are scattered across India and average away regional shocks that a real, regionally clustered treated set carries; matching the regional make-up brings the null closer to the real design.
 
 | Outcome | Null design | Fake adoption | SE | Mean placebo ATT | MDE |
 |---|---|---|---|---|---|
-| Annual PM2.5, log (primary) | random | 2014 | 0.42 log pts | 0.01 log pts | 1.2% |
-| Annual PM2.5, log (primary) | region-matched | 2014 | 0.36 log pts | 0.11 log pts | 1.0% |
-| Annual PM2.5, log (primary) | random | 2015 | 0.41 log pts | 0.02 log pts | 1.1% |
-| Annual PM2.5, log (primary) | region-matched | 2015 | 0.37 log pts | -0.28 log pts | 1.0% |
-| Annual PM2.5, level (ug/m3) | random | 2014 | 0.27 ug/m3 | 0.00 ug/m3 | 0.75 ug/m3 |
-| Annual PM2.5, level (ug/m3) | region-matched | 2014 | 0.24 ug/m3 | -0.36 ug/m3 | 0.66 ug/m3 |
-| Annual PM2.5, level (ug/m3) | random | 2015 | 0.33 ug/m3 | 0.00 ug/m3 | 0.93 ug/m3 |
-| Annual PM2.5, level (ug/m3) | region-matched | 2015 | 0.29 ug/m3 | -0.48 ug/m3 | 0.81 ug/m3 |
-| Winter PM2.5 (Oct-Feb), log | random | 2014 | 0.59 log pts | 0.01 log pts | 1.6% |
-| Winter PM2.5 (Oct-Feb), log | region-matched | 2014 | 0.57 log pts | -0.20 log pts | 1.6% |
-| Winter PM2.5 (Oct-Feb), log | random | 2015 | 0.55 log pts | 0.01 log pts | 1.5% |
-| Winter PM2.5 (Oct-Feb), log | region-matched | 2015 | 0.53 log pts | -0.51 log pts | 1.5% |
-| Non-winter PM2.5 (Mar-Sep), log | random | 2014 | 0.54 log pts | 0.01 log pts | 1.5% |
-| Non-winter PM2.5 (Mar-Sep), log | region-matched | 2014 | 0.53 log pts | 0.03 log pts | 1.5% |
-| Non-winter PM2.5 (Mar-Sep), log | random | 2015 | 0.59 log pts | 0.02 log pts | 1.6% |
-| Non-winter PM2.5 (Mar-Sep), log | region-matched | 2015 | 0.55 log pts | -0.48 log pts | 1.5% |
-| Winter minus non-winter, log (H2) | random | 2014 | 0.72 log pts | -0.00 log pts | 2.0 log pts |
-| Winter minus non-winter, log (H2) | region-matched | 2014 | 0.77 log pts | -0.23 log pts | 2.1 log pts |
-| Winter minus non-winter, log (H2) | random | 2015 | 0.65 log pts | -0.01 log pts | 1.8 log pts |
-| Winter minus non-winter, log (H2) | region-matched | 2015 | 0.68 log pts | -0.03 log pts | 1.9 log pts |
+| Annual PM2.5, log (primary) | random | 2014 | 0.0042 | +0.0001 | 0.0117 (1.2% fall) |
+| Annual PM2.5, log (primary) | region-matched | 2014 | 0.0036 | +0.0011 | 0.0102 (1.0% fall) |
+| Annual PM2.5, log (primary) | random | 2015 | 0.0041 | +0.0002 | 0.0115 (1.1% fall) |
+| Annual PM2.5, log (primary) | region-matched | 2015 | 0.0037 | -0.0028 | 0.0104 (1.0% fall) |
+| Annual PM2.5, level (µg/m³) | random | 2014 | 0.27 µg/m³ | +0.00 µg/m³ | 0.75 µg/m³ |
+| Annual PM2.5, level (µg/m³) | region-matched | 2014 | 0.24 µg/m³ | -0.36 µg/m³ | 0.66 µg/m³ |
+| Annual PM2.5, level (µg/m³) | random | 2015 | 0.33 µg/m³ | +0.00 µg/m³ | 0.93 µg/m³ |
+| Annual PM2.5, level (µg/m³) | region-matched | 2015 | 0.29 µg/m³ | -0.48 µg/m³ | 0.81 µg/m³ |
+| Winter PM2.5 (Oct-Feb), log | random | 2014 | 0.0059 | +0.0001 | 0.0165 (1.6% fall) |
+| Winter PM2.5 (Oct-Feb), log | region-matched | 2014 | 0.0057 | -0.0020 | 0.0158 (1.6% fall) |
+| Winter PM2.5 (Oct-Feb), log | random | 2015 | 0.0055 | +0.0001 | 0.0155 (1.5% fall) |
+| Winter PM2.5 (Oct-Feb), log | region-matched | 2015 | 0.0053 | -0.0051 | 0.0148 (1.5% fall) |
+| Non-winter PM2.5 (Mar-Sep), log | random | 2014 | 0.0054 | +0.0001 | 0.0151 (1.5% fall) |
+| Non-winter PM2.5 (Mar-Sep), log | region-matched | 2014 | 0.0053 | +0.0003 | 0.0147 (1.5% fall) |
+| Non-winter PM2.5 (Mar-Sep), log | random | 2015 | 0.0059 | +0.0002 | 0.0164 (1.6% fall) |
+| Non-winter PM2.5 (Mar-Sep), log | region-matched | 2015 | 0.0055 | -0.0048 | 0.0155 (1.5% fall) |
+| Winter minus non-winter, log (H2) | random | 2014 | 0.0072 | -0.0000 | 0.0201 (≈ 2.0 pp) |
+| Winter minus non-winter, log (H2) | region-matched | 2014 | 0.0077 | -0.0023 | 0.0215 (≈ 2.1 pp) |
+| Winter minus non-winter, log (H2) | random | 2015 | 0.0065 | -0.0001 | 0.0182 (≈ 1.8 pp) |
+| Winter minus non-winter, log (H2) | region-matched | 2015 | 0.0068 | -0.0003 | 0.0191 (≈ 1.9 pp) |
 
-**Carried into the plan** (the largest over both designs and both fake years): annual PM2.5 **1.2%** (1.2 log points; 0.9 µg/m³ on the level scale); winter 1.6%, non-winter 1.6%; winter minus non-winter 2.1 log points.
+**Carried into the plan** (the largest over both designs and both fake years): annual PM2.5 **1.2% fall** (0.0117 in log units), which at the NCAP units' 2010-2018 mean of 51.7 µg/m³ is **0.6 µg/m³**; winter 1.6%, non-winter 1.6%; winter minus non-winter 0.0215 in log units (≈ 2.1 percentage points).
 
-**Offset in the null.** Region-matched placebo sets are not centred exactly on zero: the largest mean placebo ATT on the log scale is -0.51 log points (region-matched sets, winter PM2.5, fake adoption 2015), against a Monte Carlo error of about 0.02 log points. SDID carries a small bias when the treated set shares a regional structure the donors lack; it is well below one SE and is reported, not corrected.
+**Why the µg/m³-scale MDE is larger (0.9 µg/m³).** It comes from a separate SDID fit on the µg/m³ scale, not from converting the % MDE. That fit's SE is 1.1-1.4 times the log-scale SE multiplied by the pool's mean level, because absolute noise is concentrated in the most polluted units. Per control unit, year-to-year noise around its own 2010-2018 trend is 3.8 times larger in µg/m³ in the dirtiest third (median 83 µg/m³) than in the cleanest third (median 31 µg/m³), but only 1.4 times larger in proportional terms; the dirtiest third holds 71% of the µg/m³ noise variance. The primary outcome is on the log scale, so the % MDE is the one the plan uses.
+
+**Offset in the null.** Region-matched placebo sets are not centred exactly on zero: the largest mean placebo ATT is -0.0051 in log units (-0.51%; region-matched sets, winter PM2.5, fake adoption 2015), against a Monte Carlo error of about 0.0002. SDID carries a small bias when the treated set shares a regional structure the donors lack; it is below one SE and is reported, not corrected. Because this null is not centred on zero, permutation p-values are equal-tailed (twice the smaller tail share), not based on |ATT|.
 
 Percentiles of the null draws (a check that the SD is a fair summary):
 
-| Null design | Outcome (log pts) | Fake adoption | 2.5% | 97.5% |
+| Null design | Outcome (log units) | Fake adoption | 2.5% | 97.5% |
 |---|---|---|---|---|
-| random | log_annual | 2014 | -0.77 | 0.83 |
-| random | log_annual | 2015 | -0.76 | 0.85 |
-| random | log_nonwinter | 2014 | -1.11 | 1.01 |
-| random | log_nonwinter | 2015 | -1.24 | 1.17 |
-| random | log_winter | 2014 | -1.16 | 1.11 |
-| random | log_winter | 2015 | -1.01 | 1.09 |
-| random | winter_minus_nonwinter | 2014 | -1.44 | 1.41 |
-| random | winter_minus_nonwinter | 2015 | -1.36 | 1.27 |
-| region_matched | log_annual | 2014 | -0.61 | 0.83 |
-| region_matched | log_annual | 2015 | -1.0 | 0.43 |
-| region_matched | log_nonwinter | 2014 | -0.99 | 1.0 |
-| region_matched | log_nonwinter | 2015 | -1.58 | 0.5 |
-| region_matched | log_winter | 2014 | -1.3 | 0.91 |
-| region_matched | log_winter | 2015 | -1.5 | 0.6 |
-| region_matched | winter_minus_nonwinter | 2014 | -1.63 | 1.3 |
-| region_matched | winter_minus_nonwinter | 2015 | -1.25 | 1.35 |
+| random | log_annual | 2014 | -0.0077 | +0.0083 |
+| random | log_annual | 2015 | -0.0076 | +0.0085 |
+| random | log_nonwinter | 2014 | -0.0111 | +0.0101 |
+| random | log_nonwinter | 2015 | -0.0124 | +0.0117 |
+| random | log_winter | 2014 | -0.0116 | +0.0111 |
+| random | log_winter | 2015 | -0.0101 | +0.0109 |
+| random | winter_minus_nonwinter | 2014 | -0.0144 | +0.0141 |
+| random | winter_minus_nonwinter | 2015 | -0.0136 | +0.0127 |
+| region_matched | log_annual | 2014 | -0.0061 | +0.0083 |
+| region_matched | log_annual | 2015 | -0.0100 | +0.0043 |
+| region_matched | log_nonwinter | 2014 | -0.0099 | +0.0100 |
+| region_matched | log_nonwinter | 2015 | -0.0158 | +0.0050 |
+| region_matched | log_winter | 2014 | -0.0130 | +0.0091 |
+| region_matched | log_winter | 2015 | -0.0150 | +0.0060 |
+| region_matched | winter_minus_nonwinter | 2014 | -0.0163 | +0.0130 |
+| region_matched | winter_minus_nonwinter | 2015 | -0.0125 | +0.0135 |
 
 **Why the MDE may be optimistic.** ACAG PM2.5 is a smooth, calibrated product and the estimate averages over a hundred units, so pre-period noise is small. But (1) the placebo designs have 4-5 pre-years and 4-5 post-years, while the real design has 9 pre-years and post-years reaching 6 years after adoption (2019, 2021-2024), where synthetic controls drift more; (2) the placebo assigns all units at once, while the real estimator averages per-cohort SDIDs (the 2021 cohort alone is small); (3) even region-matched sets are more dispersed within regions than the real treated set; (4) the post-2019 period contains shocks the pre-period does not (COVID, BS-VI). Read the MDE as a lower bound on what the real design can detect.
 
 ## 5. Pre-period placebo on the real NCAP units
 
-The same estimator with the actual treated units and fake adoption years, still on data up to 2018. SE and the permutation p-value come from the region-matched null draws in §4. A CI that excludes 0 would mean NCAP units were already diverging from their synthetic controls before NCAP.
+The same estimator with the actual treated units and fake adoption years, still on data up to 2018. SE and the equal-tailed permutation p-value come from the region-matched null draws in §4. A CI that excludes 0 would mean NCAP units were already diverging from their synthetic controls before NCAP.
 
-| Outcome | Fake adoption | Placebo ATT | 95% CI | Permutation p |
+| Outcome | Fake adoption | Placebo ATT | 95% CI | Permutation p (equal-tailed) |
 |---|---|---|---|---|
-| Annual PM2.5, level (ug/m3) | 2014 | -0.12 ug/m3 | -0.58 ug/m3 to 0.34 ug/m3 | 0.870 |
-| Annual PM2.5, level (ug/m3) | 2015 | -0.29 ug/m3 | -0.86 ug/m3 to 0.27 ug/m3 | 0.739 |
-| Annual PM2.5, log (primary) | 2014 | 0.47 log pts | -0.25 log pts to 1.18 log pts | 0.218 |
-| Annual PM2.5, log (primary) | 2015 | -0.41 log pts | -1.14 log pts to 0.32 log pts | 0.405 |
-| Winter minus non-winter, log (H2) | 2014 | -0.75 log pts | -2.25 log pts to 0.75 log pts | 0.363 |
-| Winter minus non-winter, log (H2) | 2015 | -0.53 log pts | -1.87 log pts to 0.81 log pts | 0.447 |
+| Annual PM2.5, level (µg/m³) | 2014 | -0.12 µg/m³ | -0.58 to +0.34 µg/m³ | 0.311 |
+| Annual PM2.5, level (µg/m³) | 2015 | -0.29 µg/m³ | -0.86 to +0.27 µg/m³ | 0.527 |
+| Annual PM2.5, log (primary) | 2014 | +0.0047 (+0.47%) | -0.0025 to +0.0118 (-0.24% to +1.19%) | 0.319 |
+| Annual PM2.5, log (primary) | 2015 | -0.0041 (-0.41%) | -0.0114 to +0.0032 (-1.13% to +0.32%) | 0.750 |
+| Winter minus non-winter, log (H2) | 2014 | -0.0075 (-0.75 pp) | -0.0225 to +0.0075 (-2.25 pp to +0.75 pp) | 0.507 |
+| Winter minus non-winter, log (H2) | 2015 | -0.0053 (-0.53 pp) | -0.0187 to +0.0081 (-1.87 pp to +0.81 pp) | 0.483 |
 
 ## 6. Ground PM10: is a minimum detectable effect meaningful?
 

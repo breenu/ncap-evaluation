@@ -50,8 +50,10 @@ dependencies:
   # did, DRDID and fastglm are not installable from conda-forge (its r-did needs an r-drdid that
   # does not exist), so workflow/scripts/install_r_extra.R installs them from a dated CRAN snapshot,
   # and synthdid from a pinned GitHub commit. Their dependencies come from conda-forge below.
+  # mgcv also comes from that snapshot, not conda-forge: conda-forge's Windows build fails to load
+  # on some boots (MinGW 32-bit pseudo-relocation out of range; DEC-093).
   - r-base=4.5
-  - r-mgcv
+  - r-nlme           # mgcv
   - r-arrow
   - r-yaml
   - r-remotes

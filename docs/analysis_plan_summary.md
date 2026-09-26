@@ -16,9 +16,9 @@
 
 If 2 or 3 fails, we say the design cannot identify the effect. If the interval includes zero, we say "no detectable effect", never "no effect". We also say which effect sizes are ruled out, against NCAP's own 20–40% targets.
 
-**How small an effect we could see.** A fake NCAP start in 2014 or 2015, on pre-2019 data only, with 500 random groups of 113 control cities, gives a minimum detectable effect of about **<!--g:mde_pct-->1.2<!--/g-->%** (<!--g:mde_ugm3-->0.9<!--/g--> µg/m³).
+**How small an effect we could see.** A fake NCAP start in 2014 or 2015, on pre-2019 data only, with 500 random groups of 113 control cities, gives a minimum detectable effect of about a **<!--g:mde_pct-->1.2<!--/g-->% fall** (about <!--g:mde_ugm3_implied-->0.6<!--/g--> µg/m³ at the NCAP cities' pre-2019 average of <!--g:level_treated-->51.7<!--/g--> µg/m³).
 - Read it as a *best case*: the real analysis is noisier.
-- The real NCAP cities, given the same fake starts, show no pre-2019 divergence: <!--g:placebo_2014_logpts-->0.47<!--/g--> and <!--g:placebo_2015_logpts-->-0.41<!--/g--> log points, both with intervals spanning zero.
+- The real NCAP cities, given the same fake starts, show no pre-2019 divergence: <!--g:placebo_2014_pct-->+0.47%<!--/g--> and <!--g:placebo_2015_pct-->-0.41%<!--/g-->, both with intervals spanning zero.
 
 **Second question (H2), asked only if H1 is "yes".** Is the drop bigger in winter (Oct–Feb)? Asking it only after a "yes" keeps the overall false-positive risk at 5% without halving the threshold.
 
@@ -41,14 +41,16 @@ If 2 or 3 fails, we say the design cannot identify the effect. If the interval i
 | Satellite V5.GL.06 | V6.GL.03; V6.GL.02.04 |
 | 10 towns without a GHSL centre left out | Included as small circles |
 | Patancheruvu kept (intention to treat) | Dropped |
-| Raniganj inside the Asansol unit | Asansol alone (**new; please confirm**) |
+| Raniganj inside the Asansol unit | Asansol alone |
 | Hour valid with any 15-minute value | Needs 3 of 4 |
 | Calendar 2025 is the last ground year | Add Jan–Mar 2026 (provisional) |
 | The 5 stations placed by your decision | All 5 dropped |
-| Treated from first listing | From first funding (the next calendar year); 2018 for the 94 cities already on the 2017 list |
+| Treated from first listing | From first funding (the next calendar year), sensitivity only because funding is partly performance-linked; 2018 for the 94 cities already on the 2017 list |
 | No spillover buffer | Controls within 25 km dropped (<!--g:n_buffered-->754<!--/g--> left) |
 
-**Decisions for you at approval.**
-1. Listing date vs funding date as primary (the plan says listing).
-2. Adding H4, H5 and the Asansol-alone check.
-3. Whether to register on OSF before the gate opens.
+**Your decisions (2026-09-27).**
+1. First listing is the primary treatment date; first funding is a sensitivity check only.
+2. H4, H5 (from your proposal of 25 September 2026, written before any data were downloaded) and the Asansol-alone check are in.
+3. You will register the plan on OSF before the gate opens.
+
+**What is left:** approve the final text, register on OSF, then the gate is flipped in its own commit.
