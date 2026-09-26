@@ -186,7 +186,24 @@ Where agreement is partial, this shows whether it is a period (a feed change) an
 |---|---|---|---|---|---|---|
 | 2018 | 3 | 64 | 0.460 | 55.000 | 0.949 | 8.116 |
 
-## 6. NO2 units in OpenAQ
+## 6. Processing level: the mirror holds validated data, OpenAQ the raw feed
+
+Where both hold data for a slot they agree (above), but they do not hold the same slots. Per year (15-minute OpenAQ data at matched stations): the share of OpenAQ values at or below zero; at those slots, the share where the mirror has no value; and the rate of PM2.5 exceeding PM10 by more than max(5 ug/m3, 10%) in each source. If the mirror is empty where OpenAQ holds an impossible value, and the mirror rarely has PM2.5 > PM10 where OpenAQ often does, the mirror (CPCB's data repository) is validated data and OpenAQ is the raw real-time feed. This matters for January-March 2026, which comes only from OpenAQ.
+
+| year | pm25_openaq_values | pm25_le0_share | pm25_le0_mirror_empty_share | pm10_le0_share | pm10_le0_mirror_empty_share | openaq_pm25_gt_pm10 | mirror_pm25_gt_pm10 |
+|---|---|---|---|---|---|---|---|
+| 2015 | 6890 | 0.001 | 1.000 | 0.001 | 1.000 | 0.044 | 0.020 |
+| 2016 | 84151 | 0.003 | 0.951 | 0.000 | 0.158 | 0.008 | 0.015 |
+| 2017 | 157127 | 0.014 | 0.912 | 0.013 | 0.945 | 0.007 | 0.012 |
+| 2018 | 465136 | 0.028 | 0.953 | 0.019 | 0.960 | 0.019 | 0.009 |
+| 2019 | 1561856 | 0.023 | 0.967 | 0.014 | 0.966 | 0.014 | 0.001 |
+| 2020 | 1625905 | 0.025 | 0.958 | 0.022 | 0.979 | 0.015 | 0.000 |
+| 2021 | 756551 | 0.032 | 0.977 | 0.025 | 0.988 | 0.018 | 0.001 |
+| 2022 | 271290 | 0.029 | 0.735 | 0.026 | 0.771 | 0.016 | 0.000 |
+| 2025 | 7989710 | 0.026 | 1.000 | 0.023 | 1.000 | 0.014 | 0.000 |
+| 2026 | 1985032 | 0.020 | 1.000 | 0.019 | 1.000 | 0.011 |  |
+
+## 7. NO2 units in OpenAQ
 
 OpenAQ labels NO2 'ppb' from 2025. If the values were really ppb, the mirror (ug/m3) would be about 1.88 times OpenAQ's; a ratio of 1 with exact matches means the label is wrong and the values are ug/m3.
 

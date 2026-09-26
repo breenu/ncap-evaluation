@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-09-26. Phase 3 part A done (ingest, cross-check, station metadata, NCAP-UCDB matching); **stopped at the checkpoint for Reenu's review**. Part B (audit flags, reliability, EDA, analysis plan) not started.*
+*Last updated: 2026-09-26. Phase 3 complete (parts A and B), committed, **stopped for Reenu's review**. Gate closed. Next: Phase 4 after approval.*
 
 ## Status
 
@@ -12,7 +12,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 0 Plan | ✅ approved 2026-09-26 (answers in PLAN.md §8) |
 | 1 Skeleton | ✅ approved 2026-09-26; pushed; CI green |
 | 2 Acquisition | ✅ approved 2026-09-26; pushed. FIRMS pending (Reenu will run it from another network with a new key) |
-| 3 Storage, cleaning, audit, EDA | 🟡 part A done, at checkpoint (see "Phase 3 checkpoint" below) |
+| 3 Storage, cleaning, audit, EDA | ✅ done 2026-09-26; awaiting Reenu's review (5 station decisions, DEC-064, DEC-070, analysis plan) |
 | 4–10 | not started |
 
 Pre-registration gate: **closed** (`config/gate.yaml`). No post-2019 effect estimates exist.
@@ -67,85 +67,66 @@ snakemake -n all               # dry run
 snakemake --cores 8 pregate
 ```
 
-## Next: Phase 3 (storage, cleaning, audit, EDA for RQ1)
+## Next: Phase 4 (analysis-plan gate), after Reenu approves Phase 3
 
-Follow PLAN.md §4 (Phase 3) and CLAUDE.md. Start with a short plan of files and functions, then build. Draft `docs/analysis_plan.md` during Phase 3, in OSF format (DEC-017). The gate stays closed, and no figure or table may compare NCAP with non-NCAP after 2018 (blinding rule).
+1. Reenu reviews and edits `docs/analysis_plan.md` (draft, OSF format), and may register it on OSF.
+2. Pre-gate computations, pre-2019 data only (plan §6):
+   - the MDE, by placebo-in-time on 2010–2018 satellite data;
+   - baseline balance of treated units vs the control pool.
+   Their numbers go into the plan before approval.
+3. After approval: commit the plan. Then, in a *separate* commit citing the plan's hash, flip `config/gate.yaml`.
 
-Inputs are all in `data/raw/` (see `docs/data-cards/`). Things Phase 3 must apply:
+The gate stays **closed**. Blinding still applies: no NCAP vs non-NCAP comparison after 2018 until the gate opens.
 
-- **Mirror timestamps:** subtract `mirror.stored_minus_utc_hours` (5.5 h) from the *stored* instant, read with DuckDB `TimeZone='UTC'` (DEC-054; DEC-040's "11 h" was measured on local-zone rendering). Store UTC and aggregate days in IST. The raw files stay unchanged.
-- **Mirror rows are padded:** count non-null values, never rows.
-- **OpenAQ:**
-  - several location ids per station, so de-duplicate them (crosswalk: `data/interim/station_crosswalk.csv`);
-  - the only source for Jan–Mar 2026;
-  - its pre-2023 CPCB values are not identical to the mirror's, so compare with tolerances.
-- **Station coordinates:** 19 stations have none, so give them a GHSL urban-centre coordinate. Stations whose OpenAQ ids disagree (up to 30 km) go on the metadata review list (DEC-045).
-- **Clock or solar-sensor outliers:** flag stations in the lowest decile of `data/interim/mirror_checks/timezone_solar.csv`.
-- **ERA5:** clip `ssrd` at 0 (Phase 5); stations without coordinates need their ERA5 cells added once located.
-- **NCAP units** (`data/interim/ncap_cities.csv`), for the NCAP-city ↔ UCDB matching table:
-  - Bhilai = the Durg-Bhilai twin city, covering both towns (DEC-047);
-  - Asansol & Raniganj is one unit (DEC-050);
-  - Bhubaneswar & Cuttack and Angul & Talcher are enrolled cities whose combined-row funding uses combined population (DEC-048);
-  - Patancheruvu is enrolled from its listing date, with an exclusion sensitivity (DEC-049);
-  - the J&K state row is excluded (DEC-051);
-  - addition dates are interval-censored (DEC-043/044); the treatment definition is decided in `analysis_plan.md`.
-- **Region map:** finalise `config/regions.yaml`.
+## Phase 3: what was built (2026-09-26)
 
-**FIRMS (pending, Reenu):** from a network where `firms.modaps.eosdis.nasa.gov` is reachable, put the new key in `.env` as `FIRMS_MAP_KEY`, then run `python -m src.acquire.firms` (or `snakemake --cores 4 data/interim/_flags/acquire_firms.done`). It is VIIRS S-NPP only, from 2012 (DEC-039).
+Part A (checkpoint approved by Reenu): see "Phase 3 checkpoint" below. Part B, after Reenu's rulings (DEC-063 to DEC-078):
 
-## Phase 3 plan (written 2026-09-26, before coding)
+- **Towns and satellite units:** `src/clean/towns.py` → `data/interim/geonames_towns.csv`, `data/interim/sat_units.gpkg`.
+  - GeoNames town points; buffer rule r = 1.87 km (DEC-063).
+  - Raniganj joined to Asansol as its GHSL polygon (DEC-064, **flagged for Reenu**).
+  - 1,932 units; the 10 no-centre towns are sensitivity-only.
+- **Regions:** `src/clean/regions.py` → `data/interim/unit_regions.csv`, `station_regions.csv`; `config/regions.yaml` final (DEC-075).
+- **Station-hour and station-day:** `src/clean/hourly.py` + `src/clean/flags.py` → `data/processed/station_hour/`, `station_day.parquet`.
+  - Ceilings detected from the data; flatline ≥ 4 h; PM2.5 > PM10 with tolerance (DEC-068).
+  - OpenAQ supplies Jan–Mar 2026.
+- **Satellite:** `src/clean/zonal.py` → `unit_year_sat.parquet`, `unit_month_sat.parquet`, `station_year_sat.parquet`. Population-weighted primary, area-weighted sensitivity (DEC-070).
+- **Audit checks:**
+  - `src/clean/spatial.py`: neighbours within 25 km, and the satellite (DEC-071)
+  - `src/clean/changepoints.py`: penalty calibrated against a block-shuffled null (DEC-072, DEC-078)
+  - `src/clean/reliability.py`: completeness variants and score (DEC-073)
+  - `src/clean/missingness.py` (DEC-074)
+- **EDA and figures:** `src/viz/eda.py` + `src/viz/style.py` → `reports/figures/`:
+  - fig2 station-entry map; fig8 quality heatmap;
+  - seasonal cycles by region; city trends; ground vs satellite; new vs existing stations.
+- **Generated reports:** `docs/audit_report.md` (`src/clean/audit_report.py`), `docs/station_metadata_review.md`, `docs/ncap_ucdb_review.md`, `docs/mirror-openaq-crosscheck.md`, `docs/mirror-checks.md` (with the corrected-clock solar check, DEC-077).
+- **New sources:** GeoNames and Natural Earth coastline (data cards, manifests).
+- **Snakemake:** `workflow/rules/clean.smk` and `eda.smk` hold the real Phase 3 rules; `pregate` builds everything through the audit report.
+- **Phase note:** `docs/phase-notes/03-audit.md`. **Draft analysis plan:** `docs/analysis_plan.md`.
 
-Part A, then a checkpoint report to Reenu before Part B.
+**Waiting on Reenu (end of Phase 3):**
+1. `docs/station_metadata_review.md` §3: 5 stations whose candidate coordinates are in different centres, each with a recommendation.
+2. DEC-064: Raniganj joined as the GHSL polygon containing its point (UCDB calls it "Mejia"), rather than as a buffer. Confirm.
+3. DEC-070: the oversized-polygon rule (population-weighted mean for every unit; area-weighted as sensitivity). Confirm.
+4. `docs/analysis_plan.md`: review and edit.
+5. Repo visibility: public after Phase 3 (DEC-020), once Reenu approves.
 
-**Part A: ingest, cross-check, station metadata**
-- `src/clean/ingest.py`
-  - `mirror`: raw yearly Parquet → `data/interim/mirror_15min/year=YYYY/` (sid, ts_utc, date_ist, pm25, pm10, no2). Stored instant minus 5.5 h (DEC-054); rows with no PM/NO2 dropped; duplicates across year files resolved and counted.
-  - `openaq`: zips → `data/interim/openaq_obs/year=YYYY/` (location_id, ts_utc, parameter, value), µg/m³ only.
-- `src/clean/crosscheck.py`: mirror vs OpenAQ for every matched station-year-pollutant.
-  - Metrics: exact share at 15 min, hourly and daily agreement, correlation, bias; broken down by year and operating agency.
-  - Output: `docs/mirror-openaq-crosscheck.md` (generated).
-- `src/clean/geo.py`: UCDB India polygons, state boundaries, and the NCAP-city ↔ UCDB matching table `data/interim/ncap_ucdb_match.csv` (DEC-047 to DEC-051).
-- `src/clean/station_meta.py`: resolves coordinates.
-  - Unmatched stations: value-matched against unused OpenAQ locations.
-  - Conflicting OpenAQ ids: which id's data match the mirror, plus coordinate plausibility (state polygon, city's urban centre).
-  - What is left gets an urban-centre coordinate, flagged approximate, and goes on the review list.
-  - Outputs: `data/processed/stations.csv` and `docs/station_metadata_review.md`.
-- `src/clean/hourly.py`: `data/processed/station_hour/` (IST-hour bins), with the mirror up to its end and OpenAQ after it.
-
-**Part B (after the checkpoint)**
-- `src/clean/flags.py` (one pure function per rule), `changepoints.py`, `spatial.py`, `reliability.py`, `missingness.py`
-- `src/clean/zonal.py`: ACAG over UCDB
-- `src/viz/eda_*.py`: seasonal cycles, raw trends, ground vs satellite, station-entry map, quality heatmap
-- `src/clean/audit_report.py` → `docs/audit_report.md`
-- `docs/analysis_plan.md` (draft)
-- `config/regions.yaml` finalised
-
-## Phase 3 checkpoint (part A done, 2026-09-26)
+## Phase 3 checkpoint (part A, approved 2026-09-26 with rulings DEC-063 to DEC-069)
 
 Built and run (all generated, all in Snakemake `workflow/rules/clean.smk`):
 - `src/clean/ingest.py` → `data/interim/mirror_15min/`, `data/interim/openaq_obs/` (DEC-055, DEC-056)
 - `src/clean/crosscheck.py` → `docs/mirror-openaq-crosscheck.md` (DEC-057)
-- `src/clean/station_meta.py` → `data/processed/stations.csv`, `docs/station_metadata_review.md` (DEC-058 to DEC-060)
-- `src/clean/geo.py` → `data/interim/ghsl/ucdb_india.gpkg`, `data/interim/ncap_ucdb_match.csv`, `docs/ncap_ucdb_review.md` (DEC-061, DEC-062)
-- `src/acquire/mirror_checks.py` re-run on the machine-independent clock (DEC-054); `docs/mirror-checks.md` regenerated
-- Tests: 91 passing (`tests/test_ingest.py`, `tests/test_station_geo.py` new).
-
-Waiting on Reenu:
-1. Accept DEC-054 (clock restated as stored − 5.5 h)?
-2. Hour-validity rule for completeness: any quarter-hour (Phase 2's rule) or ≥3 of 4? It changes valid station-years (e.g. PM10 2018: 69 vs 56).
-3. `docs/station_metadata_review.md` §3: 54 stations to review (coordinates, overrides).
-4. `docs/ncap_ucdb_review.md` §5: 10 NCAP cities without an urban centre need a town-coordinate source; Raniganj (WB) and Patancheruvu geography.
-
-Next (part B, after approval): `src/clean/hourly.py` (station-hour, IST bins; OpenAQ for 2026-Q1), flags, changepoints, spatial checks, reliability score, missingness, ACAG zonal stats, EDA figures (station-entry map, quality heatmap), `docs/audit_report.md`, draft `docs/analysis_plan.md`, `config/regions.yaml` final.
+- `src/clean/station_meta.py` → `data/processed/stations.csv`, `docs/station_metadata_review.md` (DEC-058 to DEC-060, DEC-067)
+- `src/clean/geo.py` → `data/interim/ghsl/ucdb_india.gpkg`, `data/interim/ncap_ucdb_match.csv`, `docs/ncap_ucdb_review.md` (DEC-061, DEC-062, DEC-076)
+- `src/acquire/mirror_checks.py` re-run on the machine-independent clock (DEC-054, confirmed by DEC-077)
 
 ## Open problems
 
-- **FIRMS not downloaded**: host unreachable from the current network; Reenu will run it later with a new key (DEC-039). Lowest priority (cut item #4).
-- **Mirror provenance** is one step removed from CPCB (DEC-037). Mitigations: sha256 pinning, cross-check against OpenAQ, and ODbL for any derived dataset we publish.
-- **Pre-2018 ground network is thin** (DEC-033). It limits the ground-layer baseline, not Layer A.
-- **OpenAQ's pre-2023 CPCB feed is not value-identical to the mirror** (about 2% exact matches), so the Phase 3 cross-check must use correlations and tolerances, not equality.
-- **Station metadata:** some OpenAQ ids for one station disagree by up to 30 km; 19 stations have no coordinates (DEC-045).
+- **FIRMS not downloaded**: the host is unreachable from the current network; Reenu will run it later with a new key (DEC-039). Lowest priority (cut item #4).
+- **Mirror provenance** is one step removed from CPCB (DEC-037). Mitigations: sha256 pinning, the cross-check (2019–21 value-identical), and ODbL for any derived dataset we publish.
+- **Pre-2018 ground network is tiny**: PM10 has 9 valid station-years in 2017 and 66 in 2018. Ground-based and PM10 results are secondary (analysis plan §0).
+- **Stations with no coordinate anywhere** keep an approximate city point (count in `docs/station_metadata_review.md`); 5 await Reenu's decision.
+- **ERA5 cells for newly located stations**: stations located in Phase 3 (by identity or locality) may sit in 0.25° cells not yet downloaded. Check and fetch in Phase 5 (small, under 2 GB).
 - **V6.GL.03 has no methods note.** If one appears, revisit DEC-001.
-- `config/regions.yaml` is a draft (IGP membership of Jharkhand, coastal distance, whether "peninsular/other" needs splitting). It gets finalised in Phase 3.
-- **Treatment definition** (listed vs funded; interval-censored addition dates, DEC-044) is decided in Phase 4's analysis plan.
-- Possible extension (not scheduled): official PRANA/NAMP PM10 series as a "reported" reference (DEC-016).
+- **The treatment definition** (listed vs funded; interval-censored dates) is proposed in `docs/analysis_plan.md` and decided at the Phase 4 gate.
+- Possible extension (not scheduled): the official PRANA/NAMP PM10 series as a "reported" reference (DEC-016).

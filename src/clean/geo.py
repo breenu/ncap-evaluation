@@ -125,14 +125,18 @@ def name_candidates(city: str, state: str, uc: pd.DataFrame, cfg: dict) -> list[
     """Centres in the city's state that list the city's name (or its configured UCDB names)."""
     wanted = {norm(n) for n in cfg.get("ucdb_name", {}).get(city, [city])}
     st = norm(state)
-    hits = []
+    main, listed_only = [], []
     for r in uc.itertuples():
         if norm(r.state or "") != st:
             continue
-        listed = {norm(n) for n in str(r.uc_names or "").split(";")} | {norm(r.uc_name)}
-        if wanted & listed:
-            hits.append(int(r.uc_id))
-    return hits
+        listed = {norm(n) for n in str(r.uc_names or "").split(";")}
+        if norm(r.uc_name) in wanted:
+            main.append(int(r.uc_id))
+        elif wanted & listed:
+            listed_only.append(int(r.uc_id))
+    # A centre whose main name is the city's beats one that merely lists it among its settlements
+    # (UCDB lists a village "Durgapur" inside a South 24 Parganas centre).
+    return main or listed_only
 
 
 def station_candidates(

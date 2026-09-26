@@ -34,6 +34,22 @@ Matched values by year ('match' = identical 15-minute value, or hourly mean with
 | 2024 | 376 | 4.79 | 5.06 | 5.28 | 5.47 | 5.74 |
 | 2025 | 362 | 4.74 | 4.98 | 5.26 | 5.47 | 5.75 |
 
+**b2. Sun on the corrected clock** (stored - 5.5 h, read with TimeZone='UTC'): SR-weighted centre of the day minus local solar noon, hours. 0 = the daily solar peak lands at local solar noon. A small negative median is expected: the centroid reads early when afternoons are hazier, and a 15-minute value stamped at its interval start sits 7.5 minutes before its centre. `within_30min` = share of stations within +-0.5 h of solar noon.
+
+| year | stations | median | p25 | p75 | within_30min |
+|---|---|---|---|---|---|
+| 2015 | 27 | -0.295 | -0.408 | -0.161 | 0.889 |
+| 2016 | 37 | -0.199 | -0.367 | 0.041 | 0.784 |
+| 2017 | 52 | -0.24 | -0.316 | -0.086 | 0.865 |
+| 2018 | 98 | -0.188 | -0.338 | -0.065 | 0.847 |
+| 2019 | 147 | -0.239 | -0.436 | -0.054 | 0.803 |
+| 2020 | 168 | -0.239 | -0.461 | -0.032 | 0.786 |
+| 2021 | 199 | -0.22 | -0.419 | -0.067 | 0.774 |
+| 2022 | 250 | -0.237 | -0.473 | -0.062 | 0.756 |
+| 2023 | 369 | -0.292 | -0.504 | -0.067 | 0.718 |
+| 2024 | 376 | -0.224 | -0.441 | -0.03 | 0.729 |
+| 2025 | 362 | -0.245 | -0.52 | -0.026 | 0.682 |
+
 **c. ERA5.** 15 stations (2019): the lag that best aligns station SR with ERA5 surface solar radiation (true UTC): median +5.0 h (values: +5 h x6, +5.25 h x5, +5.5 h x2, +4.75 h x1, +4.5 h x1); median correlation 0.93.
 
 **Applied correction** (config/params.yaml, `mirror.stored_minus_utc_hours`): +5.5 h from the stored timestamp to UTC.

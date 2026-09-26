@@ -1,0 +1,16 @@
+# GeoNames lookups for towns without a GHSL urban centre (src/clean/towns.py; DEC-063, DEC-064).
+#
+# Rule: exact match (normalised as in src/clean/geo.py) on a GeoNames populated place (feature class P)
+# in the town's state, on its name, ASCII name or any alternate name. Several matches: the largest
+# population; a tie: the lowest geonameid (GeoNames' original gazetteer import), flagged for review.
+# No P match: an administrative-area record (feature class A) of the same name, flagged
+# 'admin_centroid'. Anything else is written here with why. No fuzzy matching.
+
+name:   # town -> the name GeoNames uses
+  Patancheruvu: [Patancheru]        # Telugu/English spellings of one town (config/ncap_city_aliases.yaml maps "Patencheru" here too)
+  Naya Nangal: [Nangal]             # Naya ("new") Nangal is the planned township of Nangal, Rupnagar district; GeoNames lists only Nangal
+  Byrnihat: [Barni Hat]             # spelling; the GeoNames point lies 2.9 km from the Byrnihat CAAQMS station (site_5669)
+  Kalinga Nagar: [Kalinganagar]     # written as one word in GeoNames
+
+state:  # town -> state to search when it differs from the NCAP list
+  {}

@@ -1,8 +1,17 @@
-# Region assignment for EDA (proposal stage 4) and moderators (stage 8):
-# Indo-Gangetic Plain, coastal, peninsular, north-east.
-# DRAFT: finalised in Phase 3, with a DECISIONS entry, once state boundaries are loaded.
+# Region of each satellite unit / urban centre (src/clean/regions.py), final in Phase 3 (DEC-075).
+# Used for seasonal cycles by region (proposal stage 4), the region x year effects (stage 7) and the
+# IGP / coastal moderators (stage 8). Assigned per urban centre, not per state, in this order:
+#   1. north-east  centre in a north-eastern state
+#   2. igp         centre in an IGP-plains state AND mean elevation (UCDB GE_ELV_AVG_2025) below
+#                  igp_max_elevation_m: the plain, without the Himalayan foothills and hills
+#                  (Darjeeling 1,393 m, Dehradun 654 m, Rishikesh 365 m out; Chandigarh 323 m,
+#                  Haridwar 293 m in)
+#   3. coastal     polygon within coastal_max_km of the Natural Earth 1:10m coastline
+#   4. peninsular/other  everything else (peninsula, Rajasthan, Gujarat inland, central India,
+#                  Himalayan and J&K centres). Kept as one group, as in the proposal; splitting out
+#                  Himalayan centres is a sensitivity option in docs/analysis_plan.md.
 
-igp_states:        # draft list; whether to add Jharkhand is open
+igp_states:        # Jharkhand is left out: it lies on the Chota Nagpur plateau, not the plain
   - Punjab
   - Haryana
   - Chandigarh
@@ -10,6 +19,9 @@ igp_states:        # draft list; whether to add Jharkhand is open
   - Uttar Pradesh
   - Bihar
   - West Bengal
+  - Uttarakhand     # only its plains centres pass the elevation rule (e.g. Haridwar, Roorkee)
+
+igp_max_elevation_m: 350
 
 northeast_states:
   - Arunachal Pradesh
@@ -21,9 +33,4 @@ northeast_states:
   - Sikkim
   - Tripura
 
-# Coastal is a city-level rule (distance from the urban-centre polygon to the coastline),
-# not a state rule, because coastal states contain inland cities (e.g. Pune, Nagpur).
-coastal_max_km: null
-
-# All remaining cities are "peninsular / other". Phase 3 decides whether that group is too
-# mixed (e.g. Rajasthan, Himalayan states) and needs splitting.
+coastal_max_km: 50   # sea-breeze reach; distance from the centre's polygon edge to the coastline

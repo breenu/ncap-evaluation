@@ -391,6 +391,30 @@ def main() -> None:
             _md(by),
             "",
         ]
+        # DEC-054 confirmation: on the corrected clock the solar peak should sit at local solar noon
+        corr = params()["mirror"]["stored_minus_utc_hours"]
+        res = (
+            b.assign(residual_h=b.implied_offset_h - corr)
+            .groupby("year")
+            .residual_h.agg(
+                stations="size",
+                median="median",
+                p25=lambda s: s.quantile(0.25),
+                p75=lambda s: s.quantile(0.75),
+                within_30min=lambda s: (s.abs() <= 0.5).mean(),
+            )
+            .round(3)
+        )
+        lines += [
+            f"**b2. Sun on the corrected clock** (stored - {corr:g} h, read with TimeZone='UTC'): SR-weighted "
+            "centre of the day minus local solar noon, hours. 0 = the daily solar peak lands at local solar "
+            "noon. A small negative median is expected: the centroid reads early when afternoons are hazier, "
+            "and a 15-minute value stamped at its interval start sits 7.5 minutes before its centre. "
+            "`within_30min` = share of stations within +-0.5 h of solar noon.",
+            "",
+            _md(res),
+            "",
+        ]
     if len(c):
         lines += [
             f"**c. ERA5.** {len(c)} stations (2019): the lag that best aligns station SR with ERA5 surface "

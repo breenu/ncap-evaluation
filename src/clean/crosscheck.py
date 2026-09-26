@@ -20,7 +20,7 @@ Per station-year-pollutant-location the metrics are:
   hourly_stamp   hourly pairs only: whether OpenAQ's hourly stamp marks the hour's start or end
                  (whichever correlates better; recorded, not assumed)
 
-Outputs: data/interim/crosscheck/{pairs,monthly,anomalous_months}.csv and
+Outputs: data/interim/crosscheck/{pairs,monthly,anomalous_months,validation_level}.csv and
 docs/mirror-openaq-crosscheck.md (generated).
 
     python -m src.clean.crosscheck
@@ -235,6 +235,54 @@ def anomalous_months(
     )
 
 
+def validation_level(con: duckdb.DuckDBPyConnection) -> pd.DataFrame:
+    """Is one source more processed than the other? Per year (15-minute OpenAQ data): OpenAQ values
+    <= 0, and at those slots whether the mirror has a value; and the rate of PM2.5 > PM10 (beyond
+    max(5 ug/m3, 10%)) in each source. Needs the temp tables built by pair_metrics (m, o, map)."""
+    le0 = con.execute(
+        """select year(o.ts_utc + interval 330 minute) as year, o.parameter,
+                  count(*) as openaq_values, sum((o.value <= 0)::int) as openaq_le0,
+                  sum((o.value <= 0 and m.value is null)::int) as le0_where_mirror_empty
+           from o join map using (location_id)
+           left join m on m.sid = map.sid and m.parameter = o.parameter and m.ts_utc = o.ts_utc
+           where o.parameter in ('pm25', 'pm10') and minute(o.ts_utc) <> 0
+           group by all"""
+    ).df()
+    ratio = con.execute(
+        """with ow as (
+             select map.sid, o.ts_utc, avg(value) filter (where parameter = 'pm25') as p25,
+                    avg(value) filter (where parameter = 'pm10') as p10
+             from o join map using (location_id) where minute(o.ts_utc) <> 0 group by all),
+           mw as (
+             select sid, ts_utc, avg(value) filter (where parameter = 'pm25') as p25,
+                    avg(value) filter (where parameter = 'pm10') as p10
+             from m where sid in (select sid from map) group by all),
+           r as (
+             select 'openaq' as src, year(ts_utc + interval 330 minute) as year,
+                    avg((p25 - p10 > greatest(5, 0.1 * p10))::int) as pm25_gt_pm10_rate
+             from ow where p25 > 0 and p10 > 0 group by all
+             union all
+             select 'mirror', year(ts_utc + interval 330 minute),
+                    avg((p25 - p10 > greatest(5, 0.1 * p10))::int)
+             from mw where p25 > 0 and p10 > 0 group by all)
+           select year, max(pm25_gt_pm10_rate) filter (where src = 'openaq') as openaq_pm25_gt_pm10,
+                  max(pm25_gt_pm10_rate) filter (where src = 'mirror') as mirror_pm25_gt_pm10
+           from r group by year"""
+    ).df()
+    t = le0.pivot_table(index="year", columns="parameter",
+                        values=["openaq_values", "openaq_le0", "le0_where_mirror_empty"], aggfunc="sum")  # fmt: skip
+    t.columns = [f"{p}_{v}" for v, p in t.columns]
+    t = t.reset_index().merge(ratio, on="year", how="left")
+    for p in ("pm25", "pm10"):
+        t[f"{p}_le0_share"] = t[f"{p}_openaq_le0"] / t[f"{p}_openaq_values"]
+        t[f"{p}_le0_mirror_empty_share"] = t[f"{p}_le0_where_mirror_empty"] / t[
+            f"{p}_openaq_le0"
+        ].where(t[f"{p}_openaq_le0"] > 0)
+    keep = ["year", "pm25_openaq_values", "pm25_le0_share", "pm25_le0_mirror_empty_share", "pm10_le0_share",
+            "pm10_le0_mirror_empty_share", "openaq_pm25_gt_pm10", "mirror_pm25_gt_pm10"]  # fmt: skip
+    return t[keep].sort_values("year")
+
+
 def location_map(crosswalk: pd.DataFrame) -> pd.DataFrame:
     x = crosswalk.dropna(subset=["openaq_location_ids"])
     rows = [
@@ -245,7 +293,7 @@ def location_map(crosswalk: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def run(crosswalk: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def run(crosswalk: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     con = duckdb.connect()
     con.execute("set TimeZone = 'UTC'")
     con.execute("set memory_limit = '8GB'")
@@ -254,10 +302,16 @@ def run(crosswalk: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFra
     p = pair_metrics(con)
     monthly = monthly_agreement(con)
     anomalies = anomalous_months(con, monthly)
+    validation = validation_level(con)
     names = crosswalk.set_index("sid").sname
     p["agency"] = p.sid.map(names).map(agency)
     p["sname"] = p.sid.map(names)
-    return p.sort_values(["parameter", "year", "sid", "location_id"]), monthly, anomalies
+    return (
+        p.sort_values(["parameter", "year", "sid", "location_id"]),
+        monthly,
+        anomalies,
+        validation,
+    )
 
 
 # ------------------------------------------------------------------ report
@@ -346,6 +400,7 @@ def write_report(
     p: pd.DataFrame,
     monthly: pd.DataFrame,
     anomalies: pd.DataFrame,
+    validation: pd.DataFrame,
     path=DOCS / "mirror-openaq-crosscheck.md",
 ) -> None:
     yr = by_year(p)
@@ -409,7 +464,19 @@ def write_report(
         "",
         _fmt(anomalies) if len(anomalies) else "(none)",
         "",
-        "## 6. NO2 units in OpenAQ",
+        "## 6. Processing level: the mirror holds validated data, OpenAQ the raw feed",
+        "",
+        "Where both hold data for a slot they agree (above), but they do not hold the same slots. Per year "
+        "(15-minute OpenAQ data at matched stations): the share of OpenAQ values at or below zero; at those "
+        "slots, the share where the mirror has no value; and the rate of PM2.5 exceeding PM10 by more than "
+        "max(5 ug/m3, 10%) in each source. If the mirror is empty where OpenAQ holds an impossible value, and "
+        "the mirror rarely has PM2.5 > PM10 where OpenAQ often does, the mirror (CPCB's data repository) is "
+        "validated data and OpenAQ is the raw real-time feed. This matters for January-March 2026, which "
+        "comes only from OpenAQ.",
+        "",
+        _fmt(validation),
+        "",
+        "## 7. NO2 units in OpenAQ",
         "",
         "OpenAQ labels NO2 'ppb' from 2025. If the values were really ppb, the mirror (ug/m3) would be "
         "about 1.88 times OpenAQ's; a ratio of 1 with exact matches means the label is wrong and the "
@@ -424,11 +491,12 @@ def write_report(
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     x = pd.read_csv(INTERIM / "station_crosswalk.csv")
-    p, monthly, anomalies = run(x)
+    p, monthly, anomalies, validation = run(x)
+    validation.to_csv(OUT / "validation_level.csv", index=False)
     p.to_csv(OUT / "pairs.csv", index=False)
     monthly.to_csv(OUT / "monthly.csv", index=False)
     anomalies.to_csv(OUT / "anomalous_months.csv", index=False)
-    write_report(p, monthly, anomalies)
+    write_report(p, monthly, anomalies, validation)
     print(by_year(p).to_string(index=False))
     print(by_agency(p).to_string(index=False))
 

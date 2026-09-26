@@ -45,6 +45,16 @@ def test_name_candidates_are_exact_and_state_bound(ucs):
     assert geo.name_candidates("Delta", "State A", ucs, {"ucdb_name": {"Delta": ["Beta"]}}) == [2]
 
 
+def test_main_name_beats_listed_name(ucs):
+    ucs = ucs.copy()
+    ucs.loc[2, ["state", "uc_names"]] = [
+        "State A",
+        "Alpha Village; Gamma",
+    ]  # centre 3 also lists Gamma
+    ucs.loc[1, "uc_name"] = "Gamma"  # centre 2's main name is Gamma
+    assert geo.name_candidates("Gamma", "State A", ucs, {}) == [2]
+
+
 def test_match_table_flags_shared_and_disagree(ucs):
     ncap = pd.DataFrame({"city": ["Alpha", "Gamma", "Beta"], "state": ["State A"] * 3})
     stations = gpd.GeoDataFrame(
@@ -106,3 +116,40 @@ def test_aqi_pm25_breakpoints():
     assert aqi_pm25(0) == 0 and aqi_pm25(30) == 50 and aqi_pm25(60) == 100
     assert aqi_pm25(75) == 150  # halfway through the 60-90 band -> halfway through 100-200
     assert aqi_pm25(1000) == 500
+
+
+def test_town_lookup_rules():
+    """GeoNames lookup (src/clean/towns.py). SYNTHETIC gazetteer rows."""
+    from src.clean import towns
+
+    g = pd.DataFrame(
+        {
+            "geonameid": [1, 2, 3, 4, 5],
+            "name": ["Alpha", "Alpha", "Beta", "Gamma Nagar", "Delta"],
+            "fclass": ["P", "P", "P", "A", "P"],
+            "fcode": ["PPL", "PPL", "PPL", "ADM3", "PPL"],
+            "population": [100, 5000, 0, 900, 0],
+            "lat": [1.0, 2.0, 3.0, 4.0, 5.0],
+            "lon": [1.0, 2.0, 3.0, 4.0, 5.0],
+            "state": ["S", "S", "S", "S", "T"],
+        }
+    )
+    g["names"] = g.name.map(lambda n: {geo.norm(n)})
+    cfg = {"name": {"Gamma": ["Gamma Nagar"]}}
+    alpha = towns.lookup("Alpha", "S", g, cfg)
+    assert alpha["geonameid"] == 2 and not alpha["tie"]  # larger population wins
+    assert (
+        towns.lookup("Gamma", "S", g, cfg)["method"] == "admin_centroid"
+    )  # no P record: A fallback
+    assert towns.lookup("Delta", "S", g, cfg)["method"] == "none"  # exists only in another state
+
+
+def test_region_rule_order():
+    from src.clean.regions import assign
+
+    cfg = {"northeast_states": ["Assam"], "igp_states": ["Bihar", "West Bengal"], "igp_max_elevation_m": 350,
+           "coastal_max_km": 50}  # fmt: skip
+    assert assign("Assam", 50, 10, cfg) == "north-east"
+    assert assign("West Bengal", 6, 0, cfg) == "igp"  # IGP wins over coastal (Kolkata)
+    assert assign("West Bengal", 1400, 400, cfg) == "peninsular/other"  # hills are not the plain
+    assert assign("Kerala", 10, 5, cfg) == "coastal"

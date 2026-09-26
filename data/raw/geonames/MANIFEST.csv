@@ -1,0 +1,4 @@
+file,url,remote_id,downloaded_utc,sha256,bytes,notes
+readme.txt,https://download.geonames.org/export/dump/readme.txt,"228b-65c59084b28b9 | Sat, 26 Sep 2026 01:48:41 GMT | 8843 bytes",2026-09-26T10:03:20+00:00,b1957379b6c1242c700c98ac9a8aa0a09f56c3c0a50ee72175527005f48ef2c5,8843,
+admin1CodesASCII.txt,https://download.geonames.org/export/dump/admin1CodesASCII.txt,"2501f-65c5929042c3c | Sat, 26 Sep 2026 01:57:50 GMT | 151583 bytes",2026-09-26T10:03:21+00:00,1da92a6323a5fec3176f3f743bf4cf4040fd56a876da55e46fbca23c863aa60a,151583,
+IN.zip,https://download.geonames.org/export/dump/IN.zip,"f05aa0-65c5919858be1 | Sat, 26 Sep 2026 01:53:30 GMT | 15751840 bytes",2026-09-26T10:03:37+00:00,a7673b154abd3717b274c55794ea645a114f656fd4593d8fedc5842b7d761fed,15751840,

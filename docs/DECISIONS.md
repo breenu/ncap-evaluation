@@ -230,3 +230,91 @@ Result: 505 `station`, 19 `station_unconfirmed`, 38 `urban_centre`, 3 `none`; 54
 - DEC-051: the J&K state row is not a city.
 
 **DEC-062: Urban centres get their state from DataMeet boundaries at the polygon's interior point, or the nearest state for coastal centres whose point falls offshore (one case, Dahanu).**
+
+## 2026-09-26: Phase 3 checkpoint review (Reenu's rulings) and part B
+
+**DEC-063: The 10 NCAP towns with no GHSL urban centre stay out of the primary satellite estimate; they enter one sensitivity analysis as buffered GeoNames points (Reenu).**
+Controls are all GHSL centres of 100k+, and treated and control units must be defined the same way. Town points come from GeoNames (`docs/data-cards/geonames.md`) by exact name in the town's state (`config/geonames_towns.yaml`; aliases with reasons; ties go to the lowest geonameid and are flagged: Kala Amb). Kalinga Nagar has only an administrative-area record, flagged `admin_centroid`. **Buffer rule:** a circle with the median area of India's smallest GHSL centres (2020 population 50,000–99,999): 11 km², radius 1.87 km, computed from the data (`src/clean/towns.py`). Three town points lie inside another GHSL centre: Dera Bassi (Chandigarh), Patancheruvu (Hyderabad) and Parwanoo (Kalka, Haryana). Kalka is therefore marked `contains_ncap_town`; the analysis plan proposes dropping it from the control pool.
+
+**DEC-064: Asansol & Raniganj is one unit covering both towns (Reenu). Raniganj joins as a GHSL polygon, not a buffer.**
+Raniganj's GeoNames point (1258470; population 131,261) lies inside UCDB centre 11128. UCDB names that centre "Mejia", but it holds Raniganj's built-up area and 2 of the unit's stations. Reenu asked for a buffered point joined to Asansol. Joining the containing GHSL polygon meets the same intent, a unit covering both towns, and keeps the unit made only of GHSL polygons like every control. The buffer rule applies only if the point is outside every centre. **Flagged for Reenu's confirmation.**
+
+**DEC-065: The coastal region uses the Natural Earth 1:10m coastline (public domain; `docs/data-cards/naturalearth.md`).** UCDB has no documented distance-to-coast field.
+
+**DEC-066: Mirror accepted as the primary ground source for 2015–2022 (Reenu), on the cross-check (DEC-057).** OpenAQ's March 2018 PM2.5 fault and the NO2 unit mislabel are recorded in `docs/data-cards/openaq.md`.
+
+**DEC-067: Station review rules (Reenu: resolve by a stated rule; bring only stations whose candidates would put them in a different city or urban centre).**
+- **R1.** When a station's plausible, data-confirmed coordinates disagree by more than 1 km but all lie in the same urban centre (or all outside any centre), the most recently used one is taken (DEC-045's rule), with `coord_uncertainty_km` = the spread. This settles 19 stations.
+- **R2.** A station with no OpenAQ coordinate at all whose site name matches exactly one GeoNames populated place inside the city's centre gets that point (`coord_quality` = `locality`). This settles 3.
+- **Decisions for Reenu:** 5 stations are listed, with a recommendation, in `docs/station_metadata_review.md` §3. Until decided, each keeps its city's approximate point and stays out of neighbour tests.
+- Stations with no candidate coordinate anywhere keep an approximate city point. They are used for city assignment and ERA5 cells, not neighbour tests.
+- The Aurangabad state correction (DEC-060) is accepted (Reenu).
+
+**DEC-068: Flag thresholds, set from the data (`config/params.yaml: flags`).**
+- **Impossible values:** none at or below zero exist in the mirror; the rule stays for new vintages.
+- **Ceilings** are detected, not typed in. A value ≥ 500 µg/m³ counts if it is more than 10 times as frequent as other values *of the same precision* within ±10 µg/m³, at ≥ 5 stations and ≥ 500 times.
+  - A first version compared all neighbours and flagged hundreds of ordinary integers: many analysers report whole numbers, so any integer is far more frequent than a 2-decimal value. It was caught and fixed before any output was used, and a test covers it.
+  - Detected: PM2.5 842, 887, 985, 995, 999.99, 1000; PM10 985, 999.99, 1000 (`data/interim/audit/ceilings.csv`).
+- **Flatline:** identical hourly means for ≥ 4 consecutive hours. Runs of 2–3 hours occur at the rate expected by chance given the instruments' precision (the 2→3 decay predicts the observed 3-hour count); from 4 hours, counts exceed chance about 3-fold, with a long tail of stuck analysers.
+- **PM2.5 > PM10:** flagged when PM2.5 − PM10 > max(5 µg/m³, 10% of PM10) at the same station-hour, allowing for the two analysers' separate noise; both pollutants are flagged for that hour.
+- Flags are applied to 15-minute values (impossible, ceiling) and to hourly means (the other two), and flagged values are removed before daily means.
+
+**DEC-069: Valid hour. Primary: any 15-minute value present; sensitivity: at least 3 of 4 (Reenu).** The analysis plan quotes the primary rule's counts and reports both. After flagged hours are removed, PM10 valid station-years are 9 (2017) and 66 (2018). The 69 quoted before Phase 3 was counted before flagging.
+
+**DEC-070: The oversized-polygon rule: the primary satellite city value is the population-weighted mean over the unit's polygon, for every unit, treated and control alike. The area-weighted, unclipped mean is the sensitivity check.** Replaces the area-weighted primary of DEC-006 and `config/params.yaml`.
+- Weights: GHS-POP 2020, 30 arc-seconds, summed onto each ACAG grid.
+- Why: it is what residents breathe, it needs no arbitrary clipping radius or core definition, and it treats every unit identically.
+- Oversized polygons are not only an NCAP problem. Rural-dense control centres in Bihar, Kerala and West Bengal are also 600–3,000 km².
+- A clip-to-core rule was rejected. A core circle needs a centre point, and for shared or oversized centres (Muzaffarpur inside the "Hajipur" polygon) the polygon's own centre is not the NCAP city's.
+- The audit report (§11) shows how much the choice matters.
+
+**DEC-071: Spatial consistency checks** (`src/clean/spatial.py`).
+- **Neighbour radius: 25 km.** Station spacing is bimodal (city clusters vs isolated stations); 25 km gives 59% of located stations two neighbours in the same airshed, and larger radii add few until 50 km, which starts comparing different cities.
+- **Checks:** a station-year is flagged if its daily correlation with the neighbours' median, or (PM2.5) its log ratio to its ACAG cell, lies more than 3 robust SDs from that year's network. A check that cannot run is not a failure.
+
+**DEC-072: Changepoints** (`src/clean/changepoints.py`).
+- **Method:** PELT (L2 cost) on the weekly departure from the neighbours' median, scaled by a robust noise estimate; penalty 3 × log(n); minimum segment 8 weeks; only steps ≥ 25% count.
+- **Stations without neighbours** use their own deseasonalised series, and are labelled so.
+- **Limitation:** a step cannot be told apart from a real local change beside the monitor, and the report says so.
+
+**DEC-073: Completeness variants and the reliability score** (`src/clean/reliability.py`).
+- **Completeness:** a threshold applies to both levels (hours per day and days per year). The variants are 75% primary, 60% and 90%, plus the 3-of-4 hour rule. The 2026 year counts January–March only.
+- **Score:** 100 × completeness × (1 − flagged share) × 0.8 per failed check (neighbour, satellite, changepoint in that year).
+- The score describes; it does not exclude data.
+
+**DEC-074: Missingness design** (`src/clean/missingness.py`).
+- **Models:** linear probability models with station fixed effects, year effects and station-clustered standard errors.
+  - Season model: all stations.
+  - Pollution-level model: the neighbours' level on the day, in within-station terciles. It is observed even when the station is missing, which makes a missing-not-at-random test possible.
+- **Bias:** the effect on annual means, from filling missing days as exp(neighbour reference + the station-year's median residual).
+
+**DEC-075: Regions final** (`config/regions.yaml`, `src/clean/regions.py`).
+- Assigned per urban centre, in order:
+  1. north-east (by state);
+  2. IGP (plains states, including Uttarakhand, with centre mean elevation < 350 m);
+  3. coastal (≤ 50 km from the coastline);
+  4. peninsular/other.
+- **Jharkhand is out of the IGP** (Chota Nagpur plateau).
+- **The 350 m cutoff** keeps Chandigarh (323 m) and Haridwar (293 m) in, and leaves Rishikesh (365 m), Dehradun and the hills out.
+- The four groups follow the proposal; a Himalayan split is a sensitivity option.
+- Limitation: buffered towns take the nearest centre's elevation, which matters only for IGP membership of the Punjab buffers.
+
+**DEC-076: UCDB name matching prefers a centre's main name over its list of settlements.** UCDB lists a village "Durgapur" among the 37 settlements of a South 24 Parganas centre (11408), about 130 km from Durgapur city; the first version matched both. One list-only match remains: Kashipur → the "Thakurdwara" centre, which lists Kashipur and lies in Uttarakhand.
+
+**DEC-077: DEC-054 confirmed independently (Reenu's request).** On the corrected clock (stored − 5.5 h, read with DuckDB `TimeZone='UTC'`), the station solar-radiation peak lands within about 15 minutes of local solar noon in every year 2015–2025 (median −0.19 to −0.30 h; `docs/mirror-checks.md` §1 b2). The small early bias is expected: afternoon haze, and a 15-minute value stamped at its interval start.
+
+**DEC-078: The changepoint penalty is calibrated against a no-shift null, not chosen by eye. Refines DEC-072.**
+- **What went wrong first.** The first version scaled each weekly series by its week-to-week differences and used segments of 8 weeks or more. It found about 6,500 level shifts, roughly 11 per station. Week-to-week differences understate the spread of autocorrelated weekly residuals, so PELT split the series at every slow wobble. This was caught before any output was used.
+- **Now:**
+  - Scale by the series' own robust spread (1.4826 × MAD).
+  - Segments of at least 26 weeks: a shift that matters for annual means lasts months. Break dates every 2 weeks.
+  - For each series type, the penalty is the smallest on a grid (3–20 × log n) at which ≤ 5% of block-shuffled series show a changepoint. The series are shuffled in 4-week blocks, which keeps short-range autocorrelation but destroys any lasting shift.
+- **Result:** penalty 8 for neighbour-referenced series (2.7% false alarms; 40% of real series show a shift), and 5 for own-season series (2.8%; 54%). That gives 653 level shifts at 317 stations. The calibration table is in `docs/audit_report.md` §5.
+
+**DEC-079: CPCB's repository (the mirror) holds validated data; OpenAQ holds the raw real-time feed. January–March 2026, which comes only from OpenAQ, is provisional.**
+- **Evidence:** in every overlapping year, OpenAQ carries 2–3% PM values at or below zero (including −9999 sentinels), and the mirror is empty at more than 95% of those slots (100.0% in 2025). OpenAQ's PM2.5 > PM10 rate is 1.4–1.8%, against 0.04–0.12% in the mirror since 2019 (`docs/mirror-openaq-crosscheck.md` §6).
+- **What the pipeline does:** it removes the ≤ 0 values and flags PM2.5 > PM10 hours in 2026 as in every year. Whatever else CPCB's validation removes cannot be reproduced.
+- **Proposed in the analysis plan:** ground analyses use calendar years to 2025 as primary; January–March 2026 enters only as a sensitivity check (FY2025-26).
+- **Two consequences:**
+  - The Phase 2 statement that the two sources are "identical in 2025" holds only on slots where both hold a value.
+  - The pre-2019 mirror has a PM2.5 > PM10 rate of 0.9–2%, so CPCB's validation was less strict before 2019. That is part of why the baseline years score lower on reliability.

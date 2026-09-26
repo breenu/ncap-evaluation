@@ -1,0 +1,2 @@
+file,url,remote_id,downloaded_utc,sha256,bytes,notes
+ne_10m_coastline.zip,https://naciscdn.org/naturalearth/10m/physical/ne_10m_coastline.zip,"7b79c23ead071ef6417f9e83ebe3ab20 | Wed, 08 Dec 2021 00:46:48 GMT | 3069451 bytes",2026-09-26T10:03:41+00:00,bfa04cdbcbef07ef90dfca1dabb48062eca29900a113df0f389303e255484017,3069451,

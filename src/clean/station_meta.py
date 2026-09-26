@@ -13,22 +13,24 @@ Evidence used
              station if >= 50% of >= 500 shared 15-minute PM2.5 slots are equal AND it passes that bar
              for no other station. The report shows the full distribution of scores.
   overrides  config/station_overrides.yaml: documented corrections to mirror metadata (e.g. a
-             wrong state), each with its evidence; all go on the review list.
+             wrong state), each with its evidence (column state_corrected).
   plausible  A coordinate is plausible for a station if it lies in the station's state (DataMeet
              boundaries) and within `near_km` of the urban centre that holds the station's city
              (the centre holding the city's other located stations, else its name match).
 
 coord_quality
-  station     one plausible coordinate from a data-confirmed OpenAQ location (or several that agree
-              within 1 km). If the plausible coordinates spread up to 3 km, the most recently used
-              one is taken (DEC-045's rule), coord_uncertainty_km records the spread, and the
-              station is reviewed.
-  station_unconfirmed   name match only (no overlapping data to confirm), plausible
-  urban_centre          no usable station coordinate; the city's urban-centre point (approximate:
-                        good for city assignment and a 0.25 degree ERA5 cell, not for neighbour
-                        tests)
-  none                  nothing usable; on the review list
-  Only 'station' and 'station_unconfirmed' count as station-level (coord_is_station_level).
+  station     a plausible coordinate from a data-confirmed OpenAQ location. Candidates within 1 km
+              agree (resolved_by 'agree'). Candidates further apart but all in the same urban centre
+              (or all outside any centre) are settled by DEC-067 R1: the most recently used one,
+              with coord_uncertainty_km = the spread. Candidates in different centres are not
+              chosen: decision_needed, with a recommendation, for Reenu.
+  station_unconfirmed   as above, from a name match only (no overlapping data to confirm)
+  locality    no OpenAQ coordinate at all; the site name matches exactly one GeoNames populated place
+              inside the city's centre (DEC-067 R2)
+  urban_centre          the city's urban-centre point (approximate: good for city assignment and a
+                        0.25 degree ERA5 cell, not for neighbour tests)
+  none                  nothing usable
+  station, station_unconfirmed and locality count as station-level (coord_is_station_level).
 
 Outputs
   data/processed/stations.csv
@@ -40,6 +42,7 @@ Outputs
 
 import glob
 import json
+import re
 from pathlib import Path
 
 import duckdb
@@ -225,6 +228,8 @@ def resolve(
     x["state_dm"] = x.state.map(smap)
     ref = city_reference(x.assign(state=x.state_dm), uc)
     confirmed = identified(ident)
+    no_cand = x[x.openaq_location_ids.isna() & ~x.sid.isin(confirmed.sid)]
+    localities = locality_points(no_cand, ref, uc)
 
     rows, cands = [], []
     for r in x.itertuples():
@@ -287,11 +292,15 @@ def resolve(
             "coord_quality": "none",
             "coord_location_id": np.nan,
             "coord_uncertainty_km": np.nan,
-            "review": r.state != r.state_mirror,
+            "state_corrected": r.state != r.state_mirror,
             "note": f"state corrected from {r.state_mirror} (config/station_overrides.yaml)"
             if r.state != r.state_mirror
             else "",
         }
+        if len(cand):
+            cand["cand_uc"] = uc_containing(cand.lat, cand.lon, uc)
+        rec.update(resolved_by="", decision_needed=False, recommendation="")
+        notes = [rec["note"]] if rec["note"] else []
         good = cand[cand.plausible] if len(cand) else cand
         pool = good[good.data_confirmed] if len(good) and good.data_confirmed.any() else good
         quality = "station" if len(pool) and pool.data_confirmed.any() else "station_unconfirmed"
@@ -301,25 +310,32 @@ def resolve(
                 for a in pool.itertuples()
                 for b in pool.itertuples()
             )
-            notes = [rec["note"]] if rec["note"] else []
-            if spread <= USABLE_KM:
-                # DEC-045's rule: the coordinate in use most recently
-                best = pool.sort_values(
-                    ["last_seen", "rows"], ascending=False, na_position="last"
-                ).iloc[0]
+            # DEC-045's rule: the coordinate in use most recently
+            best = pool.sort_values(
+                ["last_seen", "rows"], ascending=False, na_position="last"
+            ).iloc[0]
+            same_uc = pool.cand_uc.nunique(dropna=False) == 1
+            if spread <= AGREE_KM:
+                rule = "agree"
+            elif same_uc:
+                # DEC-067 R1: the candidates disagree but all lie in the same urban centre (or all
+                # outside any centre), so the choice cannot move the station to another city.
+                rule = "R1_same_centre"
+                notes.append(
+                    f"{len(pool)} coordinates up to {spread:.1f} km apart, all in "
+                    f"{_uc_label(best.cand_uc)}; most recent used"
+                )
+            else:
+                rule = "decision"
+            if rule != "decision":
                 rec.update(
                     lat=best.lat,
                     lon=best.lon,
                     coord_quality=quality,
                     coord_location_id=best.location_id,
                     coord_uncertainty_km=round(spread, 2),
+                    resolved_by=rule,
                 )
-                if spread > AGREE_KM:
-                    rec["review"] = True
-                    notes.append(
-                        f"{len(pool)} plausible coordinates up to {spread:.1f} km apart; most recent used"
-                    )
-                # plausible coordinates set aside because their id's data do not confirm the station
                 aside = good[~good.location_id.isin(pool.location_id)]
                 far = [
                     a
@@ -345,38 +361,110 @@ def resolve(
                         )
                     )
             else:
-                rec["review"] = True
+                rec.update(
+                    decision_needed=True,
+                    recommendation=f"id {best.location_id} ({best.lat:.5f}, {best.lon:.5f}), in "
+                    f"{_uc_label(best.cand_uc)}: the most recently used data-confirmed coordinate",
+                )
                 notes.append(
-                    f"{len(pool)} plausible coordinates up to {spread:.1f} km apart; not chosen"
+                    f"{len(pool)} coordinates up to {spread:.1f} km apart in different centres: "
+                    + ", ".join(sorted({_uc_label(u) for u in pool.cand_uc}))
                 )
-            rec["note"] = "; ".join(notes)
         elif len(cand):
-            rec["review"] = True
-            rec["note"] = "; ".join(
-                filter(
-                    None,
-                    [
-                        rec["note"],
-                        "every candidate coordinate is implausible (wrong state or far from the city)",
-                    ],
-                )
+            # every candidate is outside the state or far from the city: any choice relocates it
+            conf = cand[cand.data_confirmed]
+            best = (
+                (conf if len(conf) else cand)
+                .sort_values("last_seen", ascending=False, na_position="last")
+                .iloc[0]
             )
+            where = (
+                f"is {best.km_from_city_uc} km from the city's centre"
+                if pd.notna(best.km_from_city_uc)
+                else "cannot be checked against a city centre (the city has none)"
+            )
+            rec.update(
+                decision_needed=True,
+                recommendation=f"keep the approximate city point; the best candidate, id {best.location_id} "
+                f"({best.lat:.5f}, {best.lon:.5f}, in {_uc_label(best.cand_uc)}, in_state={best.in_state}), {where}",
+            )
+            notes.append(
+                "every candidate coordinate is implausible (wrong state or far from the city)"
+            )
+        if rec["coord_quality"] == "none" and not rec["decision_needed"] and not len(cand):
+            loc = localities.get(r.sid)
+            if loc is not None:
+                rec.update(
+                    lat=loc["lat"],
+                    lon=loc["lon"],
+                    coord_quality="locality",
+                    resolved_by="R2_locality",
+                )
+                notes.append(
+                    f"GeoNames locality '{loc['name']}' (geonameid {loc['geonameid']}) inside the city's centre"
+                )
         if rec["coord_quality"] == "none":
             if city_uc is not None:
                 p = uc[uc.uc_id == city_uc].geometry.iloc[0].representative_point()
                 rec.update(lat=p.y, lon=p.x, coord_quality="urban_centre")
-                rec["note"] = (
-                    rec["note"] + "; " if rec["note"] else ""
-                ) + f"approximate: urban centre {city_uc}"
+                notes.append(f"approximate: urban centre {city_uc}")
             else:
-                rec["note"] = (
-                    rec["note"] + "; " if rec["note"] else ""
-                ) + "no urban centre found for the city"
-            rec["review"] = True
+                notes.append("no urban centre found for the city")
+        rec["note"] = "; ".join(notes)
         rows.append(rec)
     out = pd.DataFrame(rows)
-    out["coord_is_station_level"] = out.coord_quality.isin(["station", "station_unconfirmed"])
+    out["coord_is_station_level"] = out.coord_quality.isin(STATION_LEVEL)
     return out, pd.concat(cands, ignore_index=True)
+
+
+STATION_LEVEL = ("station", "station_unconfirmed", "locality")
+
+
+def _uc_label(u) -> str:
+    return "no urban centre" if pd.isna(u) else f"centre {int(u)}"
+
+
+def uc_containing(lat: pd.Series, lon: pd.Series, uc: gpd.GeoDataFrame) -> list:
+    pts = gpd.GeoDataFrame(geometry=gpd.points_from_xy(lon, lat), crs=4326)
+    j = gpd.sjoin(pts, uc[["uc_id", "geometry"]], how="left", predicate="within")
+    return j[~j.index.duplicated()].uc_id.tolist()
+
+
+LOCALITY_DROP = (
+    r"\b(sector|phase|near|opp|opposite|office|campus|station|ground|school|college|hospital)\b"
+)
+
+
+def locality_points(stations: pd.DataFrame, ref: dict, uc: gpd.GeoDataFrame) -> dict:
+    """DEC-067 R2, for stations with no OpenAQ coordinate at all: the station's site name (before the
+    comma) equals exactly one GeoNames populated place (normalised name, same state) lying inside the
+    city's urban centre. Names that describe a building rather than a place are not tried."""
+    from src.clean.towns import load_geonames
+
+    g = load_geonames()
+    g = g[g.fclass == "P"]
+    out = {}
+    for r in stations.itertuples():
+        site = norm(str(r.sname).split(",")[0])
+        city_uc = ref.get((r.state_dm, r.city))
+        if not site or city_uc is None or re.search(LOCALITY_DROP, site):
+            continue
+        hit = g[
+            (g.state.map(norm) == norm(r.state_dm)) & g.names.map(lambda s, site=site: site in s)
+        ]
+        if hit.empty:
+            continue
+        hit = hit.assign(u=uc_containing(hit.lat, hit.lon, uc))
+        hit = hit[hit.u == city_uc]
+        if len(hit) == 1:
+            h = hit.iloc[0]
+            out[r.sid] = {
+                "lat": float(h.lat),
+                "lon": float(h.lon),
+                "name": h["name"],
+                "geonameid": int(h.geonameid),
+            }
+    return out
 
 
 def overrides() -> dict:
@@ -403,7 +491,7 @@ def write_report(
     was_unmatched = set(crosswalk[crosswalk.match == "unmatched"].sid)
     newly = s[s.sid.isin(was_unmatched) & s.coord_is_station_level]
     conflicted = set(crosswalk[crosswalk.coord_spread_km > AGREE_KM].sid)
-    rev = s[s.review]
+    dec = s[s.decision_needed]
     scored = ident[ident.shared >= IDENTITY_MIN_SLOTS]
     bands = [0, 0.01, 0.05, AMBIGUOUS_SHARE, 0.2, IDENTITY_MIN_SHARE, 0.8, 0.95, 1.0]
     dist = (
@@ -435,7 +523,7 @@ def write_report(
         "",
         f"{len(s)} mirror stations. Coordinate quality: "
         + ", ".join(f"{k} {v}" for k, v in q.items())
-        + ". Only `station` and `station_unconfirmed` are used for neighbour tests and station-level maps.",
+        + f". Station-level (used for neighbour tests and station maps): {', '.join(STATION_LEVEL)}.",
         "",
         "## 1. Stations found by their data",
         "",
@@ -499,48 +587,74 @@ def write_report(
         if over
         else "(none)",
         "",
-        "## 2. Stations whose OpenAQ ids disagreed on coordinates",
+        "## 2. How each coordinate was settled (DEC-059, DEC-067)",
         "",
-        f"{len(conflicted)} stations had OpenAQ ids more than {AGREE_KM:g} km apart (DEC-045). Every coordinate each "
-        "id has ever had is checked: is it in the station's state, and within "
-        f"{NEAR_KM:g} km of the urban centre holding the city's other stations? Outcome:",
+        "Rules, in order: `agree` = the station's plausible, data-confirmed coordinates agree within "
+        f"{AGREE_KM:g} km. `R1_same_centre` = they disagree, but all lie in the same urban centre (or all "
+        "outside any centre), so the choice cannot move the station to another city; the most recently "
+        "used one is taken and `coord_uncertainty_km` is the spread. `R2_locality` = no OpenAQ coordinate "
+        "exists; the site name matches exactly one GeoNames populated place inside the city's centre. "
+        "Otherwise the city's urban-centre point is used, marked `urban_centre` (approximate, kept out of "
+        "neighbour tests).",
+        "",
+        tbl(
+            s.groupby(["coord_quality", "resolved_by"], dropna=False)
+            .size()
+            .rename("stations")
+            .reset_index()
+        ),
+        "",
+        f"Stations whose OpenAQ ids were more than {AGREE_KM:g} km apart in Phase 2 (DEC-045), and their outcome:",
         "",
         tbl(
             s[s.sid.isin(conflicted)][
-                ["sid", "sname", "coord_quality", "coord_location_id", "review", "note"]
+                ["sid", "sname", "coord_quality", "resolved_by", "coord_uncertainty_km", "note"]
             ]
         ),
         "",
-        "## 3. For Reenu: what could not be settled",
+        "Resolved by locality (R2):",
         "",
-        f"{len(rev)} stations. Stations with an `urban_centre` coordinate are usable for city-level work "
-        "(assignment to a city, an ERA5 cell) but are excluded from neighbour-based checks until located.",
+        tbl(s[s.resolved_by == "R2_locality"][["sid", "sname", "lat", "lon", "note"]].round(5))
+        if (s.resolved_by == "R2_locality").any()
+        else "(none)",
         "",
-        tbl(rev[["sid", "sname", "coord_quality", "note"]]),
+        "Still approximate (no OpenAQ coordinate and no unique locality): usable for city assignment and an "
+        "ERA5 cell, excluded from neighbour tests.",
         "",
-        "Candidate coordinates for the reviewed stations whose plausible coordinates disagree "
-        "(first_seen/last_seen: when OpenAQ's archive used that coordinate, UTC):",
+        tbl(s[(s.coord_quality == "urban_centre") & ~s.decision_needed][["sid", "sname", "city"]]),
+        "",
+        "## 3. For Reenu: stations where the choice would put the station in a different city or centre",
+        "",
+        f"{len(dec)} stations. Until decided, each keeps its city's approximate point and is kept out of "
+        "neighbour tests.",
+        "",
+        tbl(dec[["sid", "sname", "coord_quality", "recommendation", "note"]])
+        if len(dec)
+        else "(none)",
+        "",
+        "Their candidate coordinates (first_seen/last_seen: when OpenAQ's archive used that coordinate, UTC):",
         "",
         tbl(
-            cand[cand.sid.isin(rev.sid) & cand.plausible]
-            .groupby("sid")
-            .filter(lambda g: len(g) > 1)[
+            cand[cand.sid.isin(dec.sid)][
                 [
                     "sid",
                     "location_id",
                     "data_confirmed",
+                    "plausible",
                     "lat",
                     "lon",
+                    "cand_uc",
                     "first_seen",
                     "last_seen",
                     "rows",
                 ]
-            ]
-            .assign(
+            ].assign(
                 first_seen=lambda d: pd.to_datetime(d.first_seen).dt.date,
                 last_seen=lambda d: pd.to_datetime(d.last_seen).dt.date,
             )
-        ),
+        )
+        if len(dec)
+        else "(none)",
         "",
         "## 4. Candidate coordinates behind each decision",
         "",
@@ -564,7 +678,12 @@ def main() -> None:
     s.to_csv(STATIONS, index=False)
     cand.to_csv(OUT / "candidates.csv", index=False)
     write_report(s, cand, ident, crosswalk)
-    print(s.coord_quality.value_counts().to_dict(), "review:", int(s.review.sum()))
+    print(
+        s.coord_quality.value_counts().to_dict(),
+        s.resolved_by.value_counts().to_dict(),
+        "decisions:",
+        int(s.decision_needed.sum()),
+    )
 
 
 if __name__ == "__main__":

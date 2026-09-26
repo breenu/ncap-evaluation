@@ -46,15 +46,15 @@ A city-average satellite value over these polygons mixes the city with a wide be
 
 | city | state | uc_id | uc_name | method | stations_in_uc | pop_2025 | uc_area_km2 |
 |---|---|---|---|---|---|---|---|
-| Bangalore | Karnataka | 9558 | Bengaluru | name+stations | 13 | 15,178,533 | 1,008 |
+| Bangalore | Karnataka | 9558 | Bengaluru | name+stations | 14 | 15,178,533 | 1,008 |
 | Barrackpore | West Bengal | 11352 | Kolkata | name+stations | 1 | 23,314,585 | 2,482 |
 | Chennai | Tamil Nadu | 10300 | Chennai | name+stations | 8 | 11,466,400 | 1,052 |
-| Delhi | Delhi | 7963 | New Delhi | name+stations | 35 | 31,422,508 | 2,139 |
+| Delhi | Delhi | 7963 | New Delhi | name+stations | 36 | 31,422,508 | 2,139 |
 | Faridabad | Haryana | 7963 | New Delhi | stations | 4 | 31,422,508 | 2,139 |
 | Ghaziabad | Uttar Pradesh | 7963 | New Delhi | stations | 4 | 31,422,508 | 2,139 |
 | Howrah | West Bengal | 11352 | Kolkata | name+stations | 3 | 23,314,585 | 2,482 |
 | Kolkata | West Bengal | 11352 | Kolkata | name+stations | 7 | 23,314,585 | 2,482 |
-| Muzaffarpur | Bihar | 10576 | Hajipur | name+stations | 2 | 9,755,303 | 3,166 |
+| Muzaffarpur | Bihar | 10576 | Hajipur | name+stations | 3 | 9,755,303 | 3,166 |
 | Noida | Uttar Pradesh | 7963 | New Delhi | stations | 3 | 31,422,508 | 2,139 |
 
 ## 5. For Reenu: cities with no urban centre

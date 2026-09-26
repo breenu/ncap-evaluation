@@ -107,6 +107,8 @@ rule acquire:
         f"{FLAGS}/acquire_boundaries.done",
         f"{FLAGS}/acquire_era5_monthly.done",
         f"{FLAGS}/acquire_era5_timeseries.done",
+        f"{FLAGS}/acquire_geonames.done",
+        f"{FLAGS}/acquire_naturalearth.done",
         "data/interim/ncap_cities.csv",
         "docs/mirror-checks.md",
         # FIRMS (cut item #4) is built on request: snakemake data/interim/_flags/acquire_firms.done
@@ -114,3 +116,13 @@ rule acquire:
         f"{STUB}/acquire.done",
     run:
         stub_done(output[0])
+
+
+rule acquire_geonames:
+    output: f"{FLAGS}/acquire_geonames.done"
+    shell: f"{PY} src.acquire.geonames"
+
+
+rule acquire_naturalearth:
+    output: f"{FLAGS}/acquire_naturalearth.done"
+    shell: f"{PY} src.acquire.naturalearth"
