@@ -170,3 +170,25 @@ There are about 430,000 daily files. The members are byte-identical, and an `_in
 
 **DEC-046: The pipeline must run inside the activated conda environment (`conda activate ncap` or `conda run -n ncap`). Calling `envs/ncap/python.exe` directly is not supported.**
 On this machine Oracle XE puts its own `mkl_rt.dll` on the system PATH. Without activation NumPy loads it, and any BLAS call (e.g. `corrcoef`) crashes with Windows error 0xc06d007f. Activation puts the environment's `Library\bin` first.
+
+## 2026-09-26: Phase 2 review (Reenu's rulings on docs/ncap_extraction_mismatches.md)
+
+Phase 2 approved. All 37 items were checked by hand.
+
+**DEC-047: The 13 name mappings made by judgement are correct. 'Durg' → Bhilai means the Durg-Bhilai twin city: one unit covering both Durg and Bhilai.**
+The master list has only "Bhilai"; the XV-FC documents name the unit "Durg Bhilainagar UA". Phase 3 defines the unit's geography (UCDB polygon, stations) to include both towns.
+
+**DEC-048: Combined rows (Bhubaneswar & Cuttack; Angul & Talcher): both cities in each pair are enrolled. Funding per head for a combined row uses the pair's combined population.**
+Amounts printed for a combined row cannot be split between the two cities, so the pair is the unit for dose calculations.
+
+**DEC-049: Patancheruvu stays enrolled from its listing date (intention to treat), with a sensitivity analysis that excludes it.**
+It was listed from 2017 and is absent only from the 2026 list (DEC-044). Dropping it would condition on a post-treatment event.
+
+**DEC-050: Asansol and Raniganj are one enrolled unit covering both towns.** This matches the 2022 CPCB list and the XV-FC "Asansol UA". The separate entries in the 2020–21 lists are the same unit.
+
+**DEC-051: The Jammu & Kashmir state-level row (AU5104) is excluded from city-level analysis.** It is not attributable to Jammu or Srinagar.
+
+**DEC-052: Utilisation above release, and small drops in cumulative releases between documents, are kept as printed.**
+They affect only the funding dose analysis, and that uses allocations, not releases or utilisation (proposal stage 8).
+
+**DEC-053: Column totals that differ from the rows by 0.01–0.05 are accepted as rounding in the source documents.**
