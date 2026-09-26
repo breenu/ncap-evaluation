@@ -44,6 +44,8 @@ So the mirror's times are Indian time shifted forward a *second* time. Where the
 
 *If asked "how do you know it isn't OpenAQ that's wrong?":* the solar test does not use OpenAQ, and it gives the same answer.
 
+> **Correction (2026-09-26, Phase 3; DEC-054).** The "second 5.5 hours" was ours, not the mirror's. The tests read timestamps through DuckDB, whose display time zone defaults to the computer's own (IST on this laptop), so every timestamp was shown 5.5 h later than the instant stored in the file before the offset was measured. Measured against the stored instant, the offset is **5.5 h**: the mirror holds Indian clock times stamped as UTC, exactly what its `parse.py` suggests. The station-year counts above were computed consistently on this laptop and are unchanged after re-running on the corrected clock, but the "11 h" rule would have been 5.5 h wrong on any other computer. Every reader now fixes DuckDB's time zone to UTC, and a test checks that the result does not depend on the machine's zone.
+
 ## Finding 3: the NCAP city and funding numbers reconcile
 
 The proposal took some facts from secondary sources (131 cities; 49 funded through the Finance Commission and 82 by the Ministry), while other sources said 130 and 48. Fourteen official documents were extracted with pdfplumber. Every extracted row records its document and page, and every table was checked against its own printed totals.

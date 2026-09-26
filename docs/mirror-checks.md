@@ -4,39 +4,39 @@
 
 ## 1. Timezone of the mirror's timestamps
 
-Offsets are hours to subtract from the mirror's label to get UTC. IST is +5.5.
+Offsets are hours to subtract from the mirror's stored timestamp (read as UTC, DuckDB TimeZone='UTC') to get true UTC. Labels in UTC would give 0 h; Indian times stamped as UTC give +5.5 h.
 
-**a. Matched values.** 40 station-years at 11 stations, PM2.5, 15-minute values, offsets scanned from -12 h to +12 h in 15-minute steps. Best offset: +11 h at 30 station-years, +10.5 h at 8 station-years, +10.75 h at 2 station-years. Median share of exactly equal values at the best offset: 73.4%; at +5.5 h: 0.2%; at 0 h (labels taken as UTC): 0.1%.
+**a. Matched values.** 40 station-years at 11 stations, PM2.5, 15-minute values, offsets scanned from -12 h to +12 h in 15-minute steps. Best offset: +5.5 h at 30 station-years, +5 h at 8 station-years, +5.25 h at 2 station-years. Median share of exactly equal values at the best offset: 73.4%; at +5.5 h: 24.1%; at 0 h (stored times taken as UTC): 0.2%.
 
 Matched values by year ('match' = identical 15-minute value, or hourly mean within 1 ug/m3 where OpenAQ holds hourly data):
 
 | year | openaq_resolution | station_years | best_offset_median | match_share_at_best |
 |---|---|---|---|---|
-| 2017 | 15-min | 1 | 10.75 | 0.996 |
-| 2019 | 15-min | 9 | 11.0 | 0.016 |
-| 2021 | 15-min | 10 | 11.0 | 0.018 |
-| 2022 | hourly | 9 | 10.5 | 0.223 |
-| 2025 | 15-min | 11 | 11.0 | 1.0 |
+| 2017 | 15-min | 1 | 5.25 | 0.996 |
+| 2019 | 15-min | 9 | 5.5 | 0.016 |
+| 2021 | 15-min | 10 | 5.5 | 0.018 |
+| 2022 | hourly | 9 | 5.0 | 0.223 |
+| 2025 | 15-min | 11 | 5.5 | 1.0 |
 
 **b. Sun.** Stations with a working solar-radiation (SR) sensor. The SR-weighted centre of the day on the label clock, minus the station's solar noon in UTC (12:00 - longitude/15). Labels in UTC would give about 0 h; in IST about +5.5 h. The centroid reads slightly early when afternoons are hazier than mornings.
 
 | year | stations | p10 | p25 | median | p75 | p90 |
 |---|---|---|---|---|---|---|
-| 2015 | 27 | 6.89 | 7.83 | 10.57 | 10.77 | 10.95 |
-| 2016 | 37 | 7.33 | 10.48 | 10.69 | 10.88 | 11.22 |
-| 2017 | 52 | 10.41 | 10.66 | 10.75 | 10.89 | 11.11 |
-| 2018 | 98 | 9.88 | 10.62 | 10.78 | 10.92 | 11.06 |
-| 2019 | 147 | 7.74 | 10.54 | 10.74 | 10.93 | 11.09 |
-| 2020 | 168 | 6.86 | 10.49 | 10.75 | 10.94 | 11.06 |
-| 2021 | 199 | 7.0 | 10.4 | 10.76 | 10.91 | 11.07 |
-| 2022 | 250 | 7.11 | 10.44 | 10.74 | 10.92 | 11.12 |
-| 2023 | 369 | 7.37 | 10.38 | 10.68 | 10.9 | 11.14 |
-| 2024 | 376 | 7.71 | 10.41 | 10.72 | 10.92 | 11.17 |
-| 2025 | 362 | 6.83 | 10.33 | 10.71 | 10.94 | 11.16 |
+| 2015 | 27 | 4.98 | 5.09 | 5.2 | 5.34 | 5.46 |
+| 2016 | 37 | 4.87 | 5.13 | 5.3 | 5.54 | 5.79 |
+| 2017 | 52 | 4.92 | 5.18 | 5.26 | 5.41 | 5.61 |
+| 2018 | 98 | 4.98 | 5.16 | 5.31 | 5.44 | 5.6 |
+| 2019 | 147 | 4.86 | 5.06 | 5.26 | 5.45 | 5.65 |
+| 2020 | 168 | 4.85 | 5.04 | 5.26 | 5.47 | 5.58 |
+| 2021 | 199 | 4.82 | 5.08 | 5.28 | 5.43 | 5.58 |
+| 2022 | 250 | 4.79 | 5.03 | 5.26 | 5.44 | 5.67 |
+| 2023 | 369 | 4.76 | 5.0 | 5.21 | 5.43 | 5.67 |
+| 2024 | 376 | 4.79 | 5.06 | 5.28 | 5.47 | 5.74 |
+| 2025 | 362 | 4.74 | 4.98 | 5.26 | 5.47 | 5.75 |
 
-**c. ERA5.** 15 stations (2019): the lag that best aligns station SR with ERA5 surface solar radiation (true UTC): median +10.5 h (values: +10.5 h x6, +10.75 h x5, +11 h x2, +10.25 h x1, +10 h x1); median correlation 0.93.
+**c. ERA5.** 15 stations (2019): the lag that best aligns station SR with ERA5 surface solar radiation (true UTC): median +5.0 h (values: +5 h x6, +5.25 h x5, +5.5 h x2, +4.75 h x1, +4.5 h x1); median correlation 0.93.
 
-**Applied correction** (config/params.yaml, `mirror.label_minus_utc_hours`): +11 h from label to UTC.
+**Applied correction** (config/params.yaml, `mirror.stored_minus_utc_hours`): +5.5 h from the stored timestamp to UTC.
 
 ## 2. Station-years with valid data (mirror)
 

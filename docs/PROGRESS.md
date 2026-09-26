@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-09-26, Phase 2 approved and pushed. FIRMS download pending (Reenu runs it later). Next: Phase 3.*
+*Last updated: 2026-09-26. Phase 3 part A done (ingest, cross-check, station metadata, NCAP-UCDB matching); **stopped at the checkpoint for Reenu's review**. Part B (audit flags, reliability, EDA, analysis plan) not started.*
 
 ## Status
 
@@ -12,7 +12,8 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 0 Plan | ✅ approved 2026-09-26 (answers in PLAN.md §8) |
 | 1 Skeleton | ✅ approved 2026-09-26; pushed; CI green |
 | 2 Acquisition | ✅ approved 2026-09-26; pushed. FIRMS pending (Reenu will run it from another network with a new key) |
-| 3–10 | not started |
+| 3 Storage, cleaning, audit, EDA | 🟡 part A done, at checkpoint (see "Phase 3 checkpoint" below) |
+| 4–10 | not started |
 
 Pre-registration gate: **closed** (`config/gate.yaml`). No post-2019 effect estimates exist.
 
@@ -46,7 +47,7 @@ Pre-registration gate: **closed** (`config/gate.yaml`). No post-2019 effect esti
     - `src/acquire/firms.py`: written, **not yet run** (DEC-039)
   - `src/acquire/stations.py`: mirror ↔ OpenAQ crosswalk with coordinates → `data/interim/station_crosswalk.csv` (DEC-045).
   - `src/acquire/mirror_checks.py` → `docs/mirror-checks.md`:
-    - timezone: **mirror labels = UTC + 11 h**, corrected via `config/params.yaml: mirror.label_minus_utc_hours` (DEC-040)
+    - timezone: mirror stores Indian times stamped as UTC; true UTC = stored − 5.5 h (`mirror.stored_minus_utc_hours`, DEC-054, which corrects DEC-040's "11 h")
     - PM2.5 and PM10 station-year tables
   - NCAP: `ncap_pdfs.py` → `ncap_extract.py` → `ncap_validate.py`. Sources in `config/ncap_sources.yaml`, aliases in `config/ncap_city_aliases.yaml`.
     - Outputs: `data/interim/ncap_cities.csv`, `ncap_funding_clean.csv`, and **`docs/ncap_extraction_mismatches.md` (for Reenu)**.
@@ -72,7 +73,7 @@ Follow PLAN.md §4 (Phase 3) and CLAUDE.md. Start with a short plan of files and
 
 Inputs are all in `data/raw/` (see `docs/data-cards/`). Things Phase 3 must apply:
 
-- **Mirror timestamps:** subtract `mirror.label_minus_utc_hours` (11 h) to get UTC (DEC-040). Store UTC and aggregate days in IST. The raw files stay unchanged.
+- **Mirror timestamps:** subtract `mirror.stored_minus_utc_hours` (5.5 h) from the *stored* instant, read with DuckDB `TimeZone='UTC'` (DEC-054; DEC-040's "11 h" was measured on local-zone rendering). Store UTC and aggregate days in IST. The raw files stay unchanged.
 - **Mirror rows are padded:** count non-null values, never rows.
 - **OpenAQ:**
   - several location ids per station, so de-duplicate them (crosswalk: `data/interim/station_crosswalk.csv`);
@@ -91,6 +92,51 @@ Inputs are all in `data/raw/` (see `docs/data-cards/`). Things Phase 3 must appl
 - **Region map:** finalise `config/regions.yaml`.
 
 **FIRMS (pending, Reenu):** from a network where `firms.modaps.eosdis.nasa.gov` is reachable, put the new key in `.env` as `FIRMS_MAP_KEY`, then run `python -m src.acquire.firms` (or `snakemake --cores 4 data/interim/_flags/acquire_firms.done`). It is VIIRS S-NPP only, from 2012 (DEC-039).
+
+## Phase 3 plan (written 2026-09-26, before coding)
+
+Part A, then a checkpoint report to Reenu before Part B.
+
+**Part A: ingest, cross-check, station metadata**
+- `src/clean/ingest.py`
+  - `mirror`: raw yearly Parquet → `data/interim/mirror_15min/year=YYYY/` (sid, ts_utc, date_ist, pm25, pm10, no2). Stored instant minus 5.5 h (DEC-054); rows with no PM/NO2 dropped; duplicates across year files resolved and counted.
+  - `openaq`: zips → `data/interim/openaq_obs/year=YYYY/` (location_id, ts_utc, parameter, value), µg/m³ only.
+- `src/clean/crosscheck.py`: mirror vs OpenAQ for every matched station-year-pollutant.
+  - Metrics: exact share at 15 min, hourly and daily agreement, correlation, bias; broken down by year and operating agency.
+  - Output: `docs/mirror-openaq-crosscheck.md` (generated).
+- `src/clean/geo.py`: UCDB India polygons, state boundaries, and the NCAP-city ↔ UCDB matching table `data/interim/ncap_ucdb_match.csv` (DEC-047 to DEC-051).
+- `src/clean/station_meta.py`: resolves coordinates.
+  - Unmatched stations: value-matched against unused OpenAQ locations.
+  - Conflicting OpenAQ ids: which id's data match the mirror, plus coordinate plausibility (state polygon, city's urban centre).
+  - What is left gets an urban-centre coordinate, flagged approximate, and goes on the review list.
+  - Outputs: `data/processed/stations.csv` and `docs/station_metadata_review.md`.
+- `src/clean/hourly.py`: `data/processed/station_hour/` (IST-hour bins), with the mirror up to its end and OpenAQ after it.
+
+**Part B (after the checkpoint)**
+- `src/clean/flags.py` (one pure function per rule), `changepoints.py`, `spatial.py`, `reliability.py`, `missingness.py`
+- `src/clean/zonal.py`: ACAG over UCDB
+- `src/viz/eda_*.py`: seasonal cycles, raw trends, ground vs satellite, station-entry map, quality heatmap
+- `src/clean/audit_report.py` → `docs/audit_report.md`
+- `docs/analysis_plan.md` (draft)
+- `config/regions.yaml` finalised
+
+## Phase 3 checkpoint (part A done, 2026-09-26)
+
+Built and run (all generated, all in Snakemake `workflow/rules/clean.smk`):
+- `src/clean/ingest.py` → `data/interim/mirror_15min/`, `data/interim/openaq_obs/` (DEC-055, DEC-056)
+- `src/clean/crosscheck.py` → `docs/mirror-openaq-crosscheck.md` (DEC-057)
+- `src/clean/station_meta.py` → `data/processed/stations.csv`, `docs/station_metadata_review.md` (DEC-058 to DEC-060)
+- `src/clean/geo.py` → `data/interim/ghsl/ucdb_india.gpkg`, `data/interim/ncap_ucdb_match.csv`, `docs/ncap_ucdb_review.md` (DEC-061, DEC-062)
+- `src/acquire/mirror_checks.py` re-run on the machine-independent clock (DEC-054); `docs/mirror-checks.md` regenerated
+- Tests: 91 passing (`tests/test_ingest.py`, `tests/test_station_geo.py` new).
+
+Waiting on Reenu:
+1. Accept DEC-054 (clock restated as stored − 5.5 h)?
+2. Hour-validity rule for completeness: any quarter-hour (Phase 2's rule) or ≥3 of 4? It changes valid station-years (e.g. PM10 2018: 69 vs 56).
+3. `docs/station_metadata_review.md` §3: 54 stations to review (coordinates, overrides).
+4. `docs/ncap_ucdb_review.md` §5: 10 NCAP cities without an urban centre need a town-coordinate source; Raniganj (WB) and Patancheruvu geography.
+
+Next (part B, after approval): `src/clean/hourly.py` (station-hour, IST bins; OpenAQ for 2026-Q1), flags, changepoints, spatial checks, reliability score, missingness, ACAG zonal stats, EDA figures (station-entry map, quality heatmap), `docs/audit_report.md`, draft `docs/analysis_plan.md`, `config/regions.yaml` final.
 
 ## Open problems
 

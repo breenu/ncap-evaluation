@@ -192,3 +192,41 @@ It was listed from 2017 and is absent only from the 2026 list (DEC-044). Droppin
 They affect only the funding dose analysis, and that uses allocations, not releases or utilisation (proposal stage 8).
 
 **DEC-053: Column totals that differ from the rows by 0.01–0.05 are accepted as rounding in the source documents.**
+
+## 2026-09-26: Phase 3, part A (ingest, cross-check, station metadata, NCAP-UCDB matching)
+
+**DEC-054: The mirror's stored timestamps are Indian clock times stamped as UTC: true UTC = stored instant − 5.5 h (`config/params.yaml: mirror.stored_minus_utc_hours`). Corrects DEC-040's "11 h" and its explanation.**
+DuckDB shows `TIMESTAMP WITH TIME ZONE` values in its session time zone, which defaults to the machine's zone (Asia/Calcutta on this laptop). Phase 2's three tests therefore measured the offset on timestamps displayed 5.5 h after the stored instant, and found 11 h. Read with `TimeZone='UTC'` (and confirmed with pyarrow), the stored first row of 2025 is 2025-01-01 00:00 UTC, and the exact-match test gives 100% at 5.5 h against 0.2% at 0 h and at 11 h. The regenerated `docs/mirror-checks.md` puts all three tests at 5.0–5.5 h. There is no unexplained "second 5.5 h"; the mirror is exactly what its `parse.py` implies. Phase 2's station-year counts were computed consistently within the IST rendering and are identical after the re-run (e.g. PM10: 9 in 2017, 69 in 2018). Every DuckDB connection that reads the mirror now sets `TimeZone='UTC'`, the parameter was renamed so its old meaning cannot be reused silently, and `tests/test_ingest.py` checks that the result is the same under three session zones.
+
+**DEC-055: Ingest layout.** The mirror is stored as `data/interim/mirror_15min/year=YYYY/` (sid, ts_utc, date_ist, pm25, pm10, no2): rows with no PM2.5, PM10 or NO2 are dropped (padding), and data are partitioned by Indian date. Duplicate station-slots across year files would be collapsed (identical copies → one; conflicting copies → null, counted); none were found. OpenAQ is stored as `data/interim/openaq_obs/year=YYYY/` with its unit labels kept. Days are Indian days throughout; hourly bins will be Indian clock hours.
+
+**DEC-056: OpenAQ's "ppb" label on 2025+ NO2 is wrong; the values are µg/m³.** They are identical to the mirror's µg/m³ values (median exact share 100%, median ratio 1.000; `docs/mirror-openaq-crosscheck.md` §6). OpenAQ's CO in 2025 is labelled ppb but reads like CPCB's mg/m³. So Jan–Mar 2026 NO2 from OpenAQ is used as µg/m³.
+
+**DEC-057: The mirror is relied on for 2015–2022. Why Phase 2 saw about 2% exact matches.** Phase 2's value test sampled the first 11 crosswalk stations in id order, and 7 of them are IMD-operated. Across all 1,608 matched station-years, on the corrected clock:
+- 2019–2021: median exact-match share is 100%, and 94–97% of station-years are at least 95% identical.
+- The exceptions are IMD-operated stations (7 stations, 24 station-years). Their 15-minute values differ from OpenAQ's (median exact share 1.3%) with no bias, but daily means agree to a median 0.4% (95th-percentile day about 1.5–2%). That is consistent with the two pipelines receiving separately averaged 15-minute values from the same analysers; the cause is not verified.
+- 2016–2017: 50–85% exact, and daily means within about 0.5%.
+- 2022: March–October partly differ, by a median of 0.1–0.6 µg/m³ (small revisions).
+- March 2018: OpenAQ's PM2.5 is not a concentration series. It correlates with the mirror's trailing 24-hour mean (median r 0.95; 0.46 at the same time), and sits a median 8 index points from CPCB's AQI sub-index of that mean. This is an OpenAQ ingestion artefact; February and April 2018 match the mirror again.
+Since daily means are the unit of analysis, none of these differences threatens the mirror's use.
+
+**DEC-058: Station ↔ OpenAQ identity rule.** A location is the same station if at least 50% of at least 500 shared 15-minute PM2.5 slots are equal *and* it passes that bar for no other station. Across all 65,000+ station-location pairs, coincidental overlap is at most about 10%. The 10–50% band (16 pairs) mixes IMD stations' own ids with ids that carried a neighbouring station's data for part of their life: R K Puram and Punjabi Bagh appear swapped in OpenAQ (ids 6357/7044). That band is listed and not used. One OpenAQ id (6959) passes for two mirror stations (Worli MPCB and Siddharth Nagar-Worli IITM), so it is evidence for neither. This replaces Phase 2's name-only matching as the basis for coordinates; 17 previously unmatched stations were found this way.
+
+**DEC-059: Station coordinate rules.** Candidates are every coordinate each matched OpenAQ id has had in the archive, not only the API snapshot (96 locations changed coordinates over time). A coordinate is plausible if it is in the station's state and within 15 km of the urban centre holding the city's other stations. Among plausible, data-confirmed coordinates:
+- if they agree within 1 km, the coordinate is used;
+- if they spread up to 3 km, the most recently used one is taken (DEC-045's rule), `coord_uncertainty_km` records the spread, and the station is reviewed;
+- beyond 3 km, none is chosen, and the station gets its city's urban-centre point, marked `urban_centre`: usable for city assignment and an ERA5 cell, excluded from neighbour tests.
+Result: 505 `station`, 19 `station_unconfirmed`, 38 `urban_centre`, 3 `none`; 54 on the review list (`docs/station_metadata_review.md`). This replaces DEC-045's `city_centroid` fallback. Phase 2 said coordinate conflicts reach "up to 30 km"; the largest is 313 km (Manali Village, Chennai: one id is placed at 11.26 N, 77.55 E, 313 km from the Chennai centre).
+
+**DEC-060: Mirror metadata can be wrong; corrections live in `config/station_overrides.yaml` with their evidence.** The first entries: three MPCB (Maharashtra board) Aurangabad stations that the mirror labels Bihar, whose identical-value OpenAQ locations lie inside Aurangabad, Maharashtra. Every override is on the review list.
+
+**DEC-061: NCAP city ↔ UCDB matching (`data/interim/ncap_ucdb_match.csv`, `docs/ncap_ucdb_review.md`).** Evidence comes from exact names (after `config/ncap_ucdb_names.yaml`, each mapping with its reason) and from the centres holding the city's station-level coordinates, restricted to the same state.
+- The *primary* centre (the name match, else the centre holding most of the city's stations) defines the satellite unit. Centres holding a few outlying stations (e.g. Mejia for Asansol, Siltara for Raipur) are *secondary* and not part of the unit.
+- Result: 121 of 131 cities matched; 10 have no centre.
+- Four polygons are shared by several NCAP cities: New Delhi (Delhi, Faridabad, Ghaziabad, Noida); Kolkata (with Howrah, Barrackpore); Mumbai (with Navi Mumbai, Thane); Kalyan-Dombivli (Badlapur, Ulhasnagar).
+- DEC-047 (Bhilai) → centre "Durg"; DEC-048 pairs are separate centres.
+- DEC-050: "Asansol & Raniganj" uses the Asansol centre only. UCDB's "Raniganj" (10988) is Raniganj in Araria, Bihar, and the Asansol polygon stops west of Raniganj (WB); this is on the review list.
+- DEC-049: Patancheruvu has no centre of its own; whether it lies in the Hyderabad polygon needs a town coordinate.
+- DEC-051: the J&K state row is not a city.
+
+**DEC-062: Urban centres get their state from DataMeet boundaries at the polygon's interior point, or the nearest state for coastal centres whose point falls offshore (one case, Dahanu).**

@@ -1,0 +1,21 @@
+# Corrections to CPCB mirror station metadata (src/clean/station_meta.py). Raw data are not changed.
+# Each entry is a judgement from evidence, recorded with why; all are listed in
+# docs/station_metadata_review.md for Reenu. Never add an entry without independent evidence.
+
+state:
+  site_198:
+    to: Maharashtra
+    why: >-
+      Mirror says Bihar. Operator is MPCB (Maharashtra Pollution Control Board); the OpenAQ location
+      whose values are identical to this station's (5642) lies in Maharashtra, inside the
+      Chhatrapati Sambhajinagar (Aurangabad, MH) urban centre.
+  site_5788:
+    to: Maharashtra
+    why: >-
+      Mirror says Bihar. Operator MPCB; identical-value OpenAQ location 3409460 lies inside the
+      Chhatrapati Sambhajinagar (Aurangabad, MH) urban centre.
+  site_5789:
+    to: Maharashtra
+    why: >-
+      Mirror says Bihar. Operator MPCB; identical-value OpenAQ location 3409461 lies inside the
+      Chhatrapati Sambhajinagar (Aurangabad, MH) urban centre.

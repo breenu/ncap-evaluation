@@ -1,0 +1,59 @@
+# NCAP city -> GHSL UCDB R2024A urban centre (src/clean/geo.py). Read with DECISIONS DEC-047 to DEC-051.
+#
+# Matching is exact after normalisation (lower case, '&' -> 'and', punctuation removed) against the
+# names UCDB lists for each centre (GC_UCN_MAI_2025, GC_UCN_LIS_2025) in the same state, plus the
+# centres holding the city's located monitoring stations. Anything else is written here, with why.
+# No fuzzy matching. Every entry was checked against the centre's state and extent.
+#
+# ucdb_name:    NCAP city -> the name(s) UCDB uses for it
+# station_city: NCAP city -> the City value(s) the CPCB mirror uses for its stations
+# ucdb_ids:     NCAP city -> centre id(s) fixed by a documented judgement
+#
+# Deliberately NOT mapped (see docs/ncap_ucdb_review.md, generated):
+#   Raniganj (part of "Asansol & Raniganj", DEC-050): UCDB's "Raniganj" (10988) is Raniganj in
+#     Araria district, Bihar, a different town. The Asansol polygon ends at 87.05 E, west of
+#     Raniganj (WB). The unit uses the Asansol centre only; Raniganj's own area is a review item.
+#   Parwanoo (HP): nearest centre is Kalka (7380), in Haryana; a different town.
+#   Kalinga Nagar (Odisha): not Jajpur town (11182).
+#   Baddi (HP): its station lies outside the Nalagarh centre (7073).
+#   Dera Baba Nanak (half of "Pathankot/Dera Baba"): no centre; the unit uses Pathankot only.
+#   Patancheruvu (DEC-049): no centre of its own; whether it lies in the Hyderabad polygon needs a
+#     town coordinate (the ICRISAT station's coordinates are unresolved).
+
+ucdb_name:
+  Allahabad: [Prayagraj]            # renamed 2018
+  Asansol & Raniganj: [Asansol]     # DEC-050; Raniganj not in UCDB (see above)
+  Aurangabad: [Chhatrapati Sambhajinagar]  # renamed 2023 (the Maharashtra city; NCAP lists it under MH)
+  Bangalore: [Bengaluru]            # renamed
+  Bareily: [Bareilly]               # spelling
+  Chitoor: [Chittoor]               # spelling
+  Delhi: [New Delhi]                # UCDB's main name for the polygon covering Delhi NCT
+  Devanagere: [Davanagere]          # spelling
+  Gobindgarh: [Mandi Gobindgarh]    # full name of the same town
+  Gulburga: [Kalaburagi]            # renamed
+  Hubli-Dharwad: [Hubli, Dharwad]   # twin city; UCDB has two centres
+  Pathankot/Dera Baba: [Pathankot]  # Dera Baba Nanak has no centre
+  Rajahmundry: [Rajamahendravaram]  # renamed
+  Sibsagar: [Sivasagar]             # renamed
+  Sunder Nagar: [Sundarnagar]       # spelling
+  Trichy: [Tiruchirappalli]         # short form
+  Vishakhapatnam: [Visakhapatnam]   # spelling
+
+station_city:
+  Allahabad: [Prayagraj]
+  Asansol & Raniganj: [Asansol]
+  Bangalore: [Bengaluru]
+  Bareily: [Bareilly]
+  Bhilai: [Bhilai, Durg]            # DEC-047: Durg-Bhilai twin city
+  Chitoor: [Chittoor]
+  Devanagere: [Davanagere]
+  Gobindgarh: [Mandi Gobindgarh]
+  Gulburga: [Kalaburagi]
+  Hubli-Dharwad: [Hubballi, Dharwad]
+  Pathankot/Dera Baba: [Pathankot]
+  Rajahmundry: [Rajamahendravaram]
+  Sibsagar: [Sivasagar]
+  Trichy: [Tiruchirappalli]
+  Vishakhapatnam: [Visakhapatnam]
+
+ucdb_ids: {}

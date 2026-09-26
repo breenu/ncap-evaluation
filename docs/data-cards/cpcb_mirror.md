@@ -16,8 +16,9 @@
 
 ## Verified
 
-- **Timestamps are not UTC.** The labels are 11 h ahead of UTC (5.5 h ahead of IST), constant 2015–2025, on three independent tests (DEC-040, `docs/mirror-checks.md`). The mirror's `parse.py` stamps CPCB's naive times with `replace_time_zone("UTC")` without converting. Ingest subtracts `mirror.label_minus_utc_hours` from `config/params.yaml`.
-- **Values are CPCB's.** 15-minute PM2.5 values are identical to OpenAQ's independent copy of CPCB data at matched stations (2025: 100% at the corrected offset).
+- **Timestamps are not UTC.** The stored instants are Indian clock times stamped as UTC (the mirror's `parse.py` uses `replace_time_zone("UTC")` without converting), so true UTC = stored − 5.5 h, constant 2015–2025, on three independent tests (DEC-054, which corrects DEC-040's "11 h"; `docs/mirror-checks.md`). Read the file with DuckDB `TimeZone='UTC'` (or pyarrow), never in the machine's local zone. Ingest subtracts `mirror.stored_minus_utc_hours` from `config/params.yaml`.
+- **Values are CPCB's.** 15-minute PM2.5 values are identical to OpenAQ's independent copy of CPCB data at matched stations. The exceptions are explained: IMD-operated stations differ quarter-hour by quarter-hour but agree on daily means within a fraction of a percent, and OpenAQ's March 2018 PM2.5 is an index, not a concentration (`docs/mirror-openaq-crosscheck.md`, DEC-057).
+- **Metadata errors.** Three MPCB Aurangabad stations are labelled Bihar; corrected in `config/station_overrides.yaml` (DEC-060). No station coordinates.
 - **Station-years with valid PM2.5/PM10**, by year: see `docs/mirror-checks.md` §2. The network before 2018 is small in every source (DEC-033).
 
 ## Known issues

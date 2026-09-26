@@ -35,6 +35,17 @@ from src.common.paths import DOCS, INTERIM, params, raw_dir
 OUT = INTERIM / "mirror_checks"
 MIRROR = (raw_dir("cpcb_mirror") / "*.parquet").as_posix()
 OFFSETS_H = np.arange(-12, 12.25, 0.25)
+
+
+def _con() -> duckdb.DuckDBPyConnection:
+    """DuckDB renders TIMESTAMPTZ in its session zone, which defaults to the machine's zone (IST on
+    the build laptop). Every check reads the mirror's stored instant, so the zone is pinned to UTC
+    (DEC-054): results must not depend on the machine."""
+    con = duckdb.connect()
+    con.execute("set TimeZone = 'UTC'")
+    return con
+
+
 MATCH_TOL = 0.05  # ug/m3: values are printed to 2 decimals, so equal values differ by < this
 
 
@@ -63,7 +74,7 @@ def mirror_series(sid: str, year: int, column: str) -> pd.DataFrame:
     """Mirror values for one station-year on the label clock (tz dropped): label, value."""
     q = f"""select "Timestamp" as label, "{column}" as value from read_parquet('{MIRROR}')
             where "Station ID" = ? and year("Timestamp") = ? and "{column}" is not null"""
-    d = duckdb.connect().execute(q, [sid, year]).df()
+    d = _con().execute(q, [sid, year]).df()
     d["label"] = pd.to_datetime(d.label).dt.tz_localize(None)
     return d
 
@@ -166,7 +177,7 @@ def solar_test(crosswalk: pd.DataFrame, year: int = 2024) -> pd.DataFrame:
             from read_parquet('{MIRROR}')
             where year("Timestamp") = {year} and "SR (W/mt2)" is not null and "SR (W/mt2)" >= 0
             group by 1, 2"""
-    d = duckdb.connect().execute(q).df()
+    d = _con().execute(q).df()
     lon = crosswalk.set_index("sid").lon
     out = []
     for sid, g in d.groupby("sid"):
@@ -236,8 +247,8 @@ def era5_test(crosswalk: pd.DataFrame, year: int = 2019, max_stations: int = 15)
 def station_years() -> pd.DataFrame:
     c = params()["completeness"]
     hours_needed = int(np.ceil(24 * c["min_hour_share_per_day"]))
-    # days are Indian (IST) days: label - (label_minus_utc - 5.5) hours
-    shift_min = int(round((params()["mirror"]["label_minus_utc_hours"] - 5.5) * 60))
+    # days are Indian (IST) days: stored - (stored_minus_utc - 5.5) hours, on the UTC session clock
+    shift_min = int(round((params()["mirror"]["stored_minus_utc_hours"] - 5.5) * 60))
     q = f"""
     with hourly as (
       select "Station ID" as sid, date_trunc('hour', "Timestamp" - interval {shift_min} minute) as h,
@@ -253,7 +264,7 @@ def station_years() -> pd.DataFrame:
              sum((h25 > 0)::int) as any25, sum((h10 > 0)::int) as any10
       from daily group by 1, 2)
     select * from yearly order by year, sid"""
-    con = duckdb.connect()
+    con = _con()
     # bounded memory, spilling to disk: the query scans ~150 million 15-minute rows
     con.execute(
         f"set memory_limit='6GB'; set threads=6; set temp_directory='{(INTERIM / 'duckdb_tmp').as_posix()}'"
@@ -319,7 +330,8 @@ def main() -> None:
         "",
         "## 1. Timezone of the mirror's timestamps",
         "",
-        "Offsets are hours to subtract from the mirror's label to get UTC. IST is +5.5.",
+        "Offsets are hours to subtract from the mirror's stored timestamp (read as UTC, DuckDB "
+        "TimeZone='UTC') to get true UTC. Labels in UTC would give 0 h; Indian times stamped as UTC give +5.5 h.",
         "",
     ]
     if len(a):
@@ -331,7 +343,7 @@ def main() -> None:
             + ", ".join(f"{k:+g} h at {v} station-years" for k, v in vc.items())
             + ". "
             f"Median share of exactly equal values at the best offset: {a.exact_share_at_best.median():.1%}; "
-            f"at +5.5 h: {a['exact_share_at_5.5h'].median():.1%}; at 0 h (labels taken as UTC): "
+            f"at +5.5 h: {a['exact_share_at_5.5h'].median():.1%}; at 0 h (stored times taken as UTC): "
             f"{a.exact_share_at_0h.median():.1%}.",
             "",
         ]
@@ -393,8 +405,8 @@ def main() -> None:
             "",
         ]
     lines += [
-        f"**Applied correction** (config/params.yaml, `mirror.label_minus_utc_hours`): "
-        f"{params()['mirror']['label_minus_utc_hours']:+g} h from label to UTC.",
+        f"**Applied correction** (config/params.yaml, `mirror.stored_minus_utc_hours`): "
+        f"{params()['mirror']['stored_minus_utc_hours']:+g} h from the stored timestamp to UTC.",
         "",
         "## 2. Station-years with valid data (mirror)",
         "",

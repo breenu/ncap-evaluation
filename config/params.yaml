@@ -12,10 +12,12 @@ windows:
   ncap_launch_year: 2019              # proposal: NCAP launched January 2019
 
 mirror:                               # CPCB mirror (DEC-037); evidence in docs/mirror-checks.md
-  # The mirror's "UTC" timestamps are not UTC. Exact 15-minute matches with OpenAQ and the solar
-  # cycle at every station put them 11 h ahead of UTC (5.5 h ahead of IST), constant 2015-2025
-  # (DEC-040). Raw files are not changed; ingest subtracts this.
-  label_minus_utc_hours: 11.0
+  # The mirror stores Indian wall-clock times stamped as UTC (its parse.py uses
+  # replace_time_zone("UTC")), so a stored instant is 5.5 h ahead of true UTC. Measured against the
+  # stored instant read with DuckDB TimeZone='UTC' (exact 15-minute matches with OpenAQ; solar cycle;
+  # ERA5). Replaces DEC-040's "11 h", which was the same offset measured on timestamps rendered in
+  # this laptop's local zone (IST, +5.5 h) (DEC-054). Raw files are not changed; ingest subtracts this.
+  stored_minus_utc_hours: 5.5
 
 pollutants:
   primary: [pm25, pm10]
