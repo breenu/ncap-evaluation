@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-09-27. Phase 4 built and reviewed; Reenu's rulings and the units correction are in the plan (DEC-091 to DEC-093); mgcv fixed; full pregate rebuild from raw data done in the rebuilt environment. Gate still closed. **Next: Reenu approves the plan text and registers it on OSF** (see "Next: the gate" below).*
+*Last updated: 2026-09-27. Phase 4 built and reviewed; Reenu's rulings and the units correction are in the plan (DEC-091 to DEC-093); mgcv fixed; full pregate rebuild from raw data done in the rebuilt environment. Gate still closed. Final pre-registration changes made (DEC-095 to DEC-098). **Next: Reenu registers the plan on OSF and returns with the link** (see "Next: the gate" below).*
 
 ## Status
 
@@ -13,7 +13,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 1 Skeleton | ✅ approved 2026-09-26; pushed; CI green |
 | 2 Acquisition | ✅ approved 2026-09-26; pushed. FIRMS pending (Reenu will run it from another network with a new key) |
 | 3 Storage, cleaning, audit, EDA | ✅ approved 2026-09-26; pushed (DEC-080 to DEC-082) |
-| 4 Analysis-plan gate | 🟡 built 2026-09-26; reviewed 2026-09-27 (DEC-091 to DEC-093); plan awaiting final approval and OSF registration |
+| 4 Analysis-plan gate | 🟡 built 2026-09-26; reviewed 2026-09-27 (DEC-091 to DEC-098); plan final, awaiting OSF registration |
 | 5–10 | not started |
 
 Pre-registration gate: **closed** (`config/gate.yaml`). No post-2019 effect estimates exist.
@@ -74,7 +74,9 @@ Phase 4 is built; nothing after it may start until Reenu approves the plan.
 
 **Decided 2026-09-27 (DEC-092):** first listing is the primary treatment date (funding timing is a sensitivity only); H4, H5 and the Asansol-alone check accepted; Reenu registers the plan on OSF before the gate opens.
 
-**What Reenu does next:** read `docs/analysis_plan.md` (summary: `docs/analysis_plan_summary.md`); edit prose only (see below); register it on OSF.
+**Final changes before registration (DEC-095 to DEC-098):** equivalence margin ±5% (smallest effect of interest, not the MDE); calibration-leakage split (74 treated units gained a monitor in 2019–2024, 39 did not; `pregate_checks.md` §7); HonestDiD bounds as a reported sensitivity; plan and summary rewritten in Reenu's first person (wording only, verified).
+
+**What Reenu does next:** register `docs/analysis_plan.md` on OSF and bring back the link. The plan's commit hash is recorded in DECISIONS/PROGRESS at the next step.
 
 **After approval, in this order (DEC-012):**
 1. Commit the approved plan (and summary). Note the commit hash.
@@ -86,6 +88,8 @@ Phase 4 is built; nothing after it may start until Reenu approves the plan.
 **Editing the plan:** numbers sit between `<!--g:key-->` and `<!--/g-->` markers and are written by `python -m src.causal.pregate_report sync-plan`; never type over them. `snakemake pregate` runs `check-plan` and fails if any quoted number no longer matches the pipeline (then: sync, and log the deviation).
 
 ## Phase 4 review fixes (2026-09-27)
+
+- **Pre-registration changes (DEC-095 to DEC-098):** see "Next: the gate" above. New pre-gate output `data/interim/pregate/monitor_gain.csv` (network metadata only). HonestDiD 0.2.8 is in the CRAN snapshot; install it in Phase 7 via `install_r_extra.R`.
 
 - **Units (DEC-091):** log-scale results were labelled "log points" (100 × log difference), which read as 100 times too large. All reports now give natural-log units with the implied % (e.g. placebo +0.0047 = +0.47%). No estimate changed.
 - **p-values (DEC-091):** permutation p-values are now equal-tailed, because the region-matched null is not centred on zero. Real-NCAP placebo: 2014 p = 0.32 (was 0.22), 2015 p = 0.75 (was 0.41).

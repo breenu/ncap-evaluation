@@ -70,6 +70,13 @@ deweathering:                         # proposal stage 5; plan section 4, Phase 
 robustness:                           # proposal validation table
   placebo_year: 2016
   placebo_space_permutations: 500
+  # Calibration leakage (DEC-096): treated units split by whether a CAAQMS station inside them first
+  # reported PM in the satellite post-period; a group with fewer units than the minimum is not estimated.
+  leakage_gain_years: [2019, 2024]
+  leakage_min_units: 10
+  # Smallest effect of interest for the H1 equivalence test (DEC-095): 5% = a quarter of NCAP's
+  # smallest target (20%, set for PM10).
+  equivalence_margin_pct: 5
 
 treatment:                            # docs/analysis_plan.md §2 (DEC-086)
   first_year: 2019                    # NCAP launched January 2019; earlier listings count from 2019

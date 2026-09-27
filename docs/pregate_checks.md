@@ -133,3 +133,16 @@ Valid PM10 station-years (primary completeness rule) before NCAP, by whether the
 Stations valid in both 2017 and 2018: 6 (in 5 NCAP units); non-NCAP: 0.
 
 **Verdict: no.** An MDE needs an estimate of how much the treated-minus-control change varies when there is no effect. Non-NCAP centres have 0 valid PM10 station-years before 2018, so there is no pre-period change at all on the control side, and a placebo DiD cannot be formed. For a within-city interrupted time series, only 6 stations in 5 cities give even one year-to-year change before NCAP: any variance estimate from one year-pair in a handful of cities would be a number, not an MDE. Ground PM10 results are therefore reported without an MDE and labelled as unable to test parallel trends (analysis plan §1).
+
+## 7. Calibration leakage: which NCAP units gained a monitor
+
+ACAG calibrates its satellite estimates to ground monitors, and NCAP added monitors mainly in NCAP cities, so part of any Layer A effect could reflect calibration rather than air (analysis plan §5). A treated unit counts as having gained a monitor if a CAAQMS station inside its polygon first reported PM in 2019-2024 (the satellite post-period). This uses only the year each station first reported, no pollution values. The CPCB network is a proxy for the monitors ACAG actually used.
+
+| Group | Treated units |
+|---|---|
+| Gained a monitor | 74 |
+| Did not gain one | 39 |
+| ... of which had a station before 2019 | 12 |
+| ... of which never had a station inside the polygon | 27 |
+
+Minimum group size to estimate: 10 units. Result: both groups are large enough to estimate.

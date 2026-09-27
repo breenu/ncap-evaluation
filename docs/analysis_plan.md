@@ -2,7 +2,7 @@
 
 **Weather, Monitors, or Policy? A meteorologically normalised, quasi-experimental evaluation of India's National Clean Air Programme, 2015–2025**
 
-*Status: FINAL DRAFT for Reenu's approval (Phase 4, 2026-09-26; Reenu's review decisions of 2026-09-27 incorporated: treatment timing, H4/H5, Asansol-alone check, OSF registration, units corrections, DEC-091/092). To be registered on OSF before the gate opens. Laid out in the order of the OSF Preregistration template (sections 1–6 below match its sections). Every number marked in the source as `<!--g:…-->` is written by `python -m src.causal.pregate_report sync-plan` from pipeline outputs, and `snakemake pregate` fails if any is stale. The full pre-gate tables are in [`pregate_checks.md`](pregate_checks.md) (generated). Nothing estimating post-2019 effects runs until this file is approved and committed, and `config/gate.yaml` is then flipped in a separate commit citing this file's commit hash (DEC-012).*
+*Status: final, 2026-09-27 (first drafted 2026-09-26). My decisions of 2026-09-27 are incorporated: treatment timing, H4/H5, the Asansol-alone check, OSF registration, units corrections (DEC-091/092). I will register this plan on OSF before the gate opens. Laid out in the order of the OSF Preregistration template (sections 1–6 below match its sections). Every number marked in the source as `<!--g:…-->` is written by `python -m src.causal.pregate_report sync-plan` from pipeline outputs, and `snakemake pregate` fails if any is stale. The full pre-gate tables are in [`pregate_checks.md`](pregate_checks.md) (generated). Nothing estimating post-2019 effects runs until I have approved and committed this file; I then flip `config/gate.yaml` in a separate commit citing this file's commit hash (DEC-012).*
 
 ---
 
@@ -33,22 +33,22 @@
 | H4 | Secondary (RQ1/RQ2; proposal hypothesis 1) | Reported (raw, all-station) improvements in NCAP cities exceed deweathered, composition-corrected improvements: weather and network change explain part of the reported change. | B |
 | H5 | Secondary (RQ4; proposal hypothesis 3) | Effects are smaller (less negative) in Indo-Gangetic Plain (IGP) cities, where regional sources dominate. | A |
 
-H4 and H5 are hypotheses 1 and 3 of the original proposal (dated 25 September 2026, written before any data were downloaded). They were missing from the Phase 3 draft and are restored here (see §6).
+H4 and H5 are hypotheses 1 and 3 of the original proposal (dated 25 September 2026, written before any data were downloaded). I left them out of my first draft and have restored them (see §6).
 
 ## 2. Design plan
 
 **Study type.** Observational; quasi-experimental; staggered adoption; secondary data only.
 
-**Blinding.** No one is blinded in the usual sense (single analyst, public data). The substitute is a **data-access rule**, enforced in code (`config/gate.yaml`; `src/common/gate.py`):
-- **Seen before this plan:**
+**Blinding.** I am not blinded in the usual sense: I am the only analyst and the data are public. The substitute is a **data-access rule** that I enforce in code (`config/gate.yaml`; `src/common/gate.py`):
+- **What I had seen before writing this plan:**
   - all pre-2019 data;
   - post-2019 series for individual cities, regions and the whole network, descriptively;
   - data-quality diagnostics for every year.
-- **Pre-gate computations** (all on data up to 2018; the reader filters and asserts it):
+- **My pre-gate computations** (all on data up to 2018; the code's data reader filters and asserts it):
   - the minimum detectable effect;
   - baseline balance;
   - a placebo on the real NCAP units at fake adoption years 2014 and 2015.
-- **Not computed or plotted:** any comparison of NCAP with non-NCAP units after 2018.
+- **What I have not computed or plotted:** any comparison of NCAP with non-NCAP units after 2018.
 
 **Study design: units, treatment, controls.**
 - **Units (Layer A):** GHSL UCDB R2024A urban centres, one satellite unit per centre (DEC-006).
@@ -61,7 +61,7 @@ H4 and H5 are hypotheses 1 and 3 of the original proposal (dated 25 September 20
   - Sensitivity: exclude it.
 - **Treatment timing, primary: first appearance on an official NCAP list.** Listed on or before 30 June counts as treated from that calendar year, otherwise from the next. Nothing is treated before 2019. A shared unit takes its earliest member's date.
   - Unit cohorts: 2019: <!--g:coh_2019-->89<!--/g-->; 2020: <!--g:coh_2020-->15<!--/g-->; 2021: <!--g:coh_2021-->9<!--/g-->.
-- **Treatment timing, sensitivity only: the first financial year with a recorded central release** (Reenu, 2026-09-27: XV-FC grants are partly performance-linked, so the timing of money is partly an outcome of air quality and must not define treatment), counted from the next calendar year (FY2019-20 → 2020; DEC-086). Sources: Lok Sabha AU2467 per-FY releases; XV-FC grants start in FY2020-21.
+- **Treatment timing, sensitivity only: the first financial year with a recorded central release** (my decision of 2026-09-27: XV-FC grants are partly performance-linked, so the timing of money is partly an outcome of air quality and must not define treatment), counted from the next calendar year (FY2019-20 → 2020; DEC-086). Sources: Lok Sabha AU2467 per-FY releases; XV-FC grants start in FY2020-21.
   - Unit cohorts: 2020: <!--g:fcoh_2020-->86<!--/g-->; 2021: <!--g:fcoh_2021-->25<!--/g-->; 2022: <!--g:fcoh_2022-->2<!--/g-->.
 - **Anticipation:** 94 launch cities were already on CPCB's 2017 non-attainment list. Sensitivity: treat them from 2018.
 - **Control pool:** non-NCAP centres with 2015 population ≥ 100,000. 2015 is a pre-treatment epoch, so the pool cannot depend on post-treatment growth.
@@ -90,16 +90,16 @@ H4 and H5 are hypotheses 1 and 3 of the original proposal (dated 25 September 20
 
 ## 3. Sampling plan
 
-**Existing data.** *Registration following analysis of the data.* The data exist and have been downloaded, audited and described. The analyses that bear on the hypotheses (post-2018 NCAP vs non-NCAP comparisons) have not been run, and a code-level gate prevents them from running.
+**Existing data.** *Registration following analysis of the data.* I have downloaded, audited and described the data. I have not run the analyses that bear on the hypotheses (post-2018 NCAP vs non-NCAP comparisons), and a code-level gate prevents them from running.
 
-**Explanation of existing data.** Everything was checked and recorded in manifests with checksums (`docs/data-cards/`):
+**Explanation of existing data.** I checked every source and recorded it in manifests with checksums (`docs/data-cards/`):
 - **Satellite:** ACAG V5.GL.06, V6.GL.03 and V6.GL.02.04.
 - **Ground:** the CPCB mirror 2015–2025, plus OpenAQ for January–March 2026.
 - **Weather:** ERA5.
 - **Boundaries and population:** GHSL.
 - **Treatment:** NCAP lists and funding tables from PDFs, with source page for every row.
 
-Pre-period results already seen (details in [`pregate_checks.md`](pregate_checks.md) §5): the real NCAP units show a placebo ATT of <!--g:placebo_2014_pct-->+0.47%<!--/g--> at fake adoption 2014 (95% CI <!--g:placebo_2014_ci-->-0.24% to +1.19%<!--/g-->; equal-tailed permutation p = <!--g:placebo_2014_p-->0.32<!--/g-->) and <!--g:placebo_2015_pct-->-0.41%<!--/g--> at 2015 (95% CI <!--g:placebo_2015_ci-->-1.13% to +0.32%<!--/g-->; p = <!--g:placebo_2015_p-->0.75<!--/g-->). Both are consistent with no pre-NCAP divergence.
+Pre-period results I have already seen (details in [`pregate_checks.md`](pregate_checks.md) §5): the real NCAP units show a placebo ATT of <!--g:placebo_2014_pct-->+0.47%<!--/g--> at fake adoption 2014 (95% CI <!--g:placebo_2014_ci-->-0.24% to +1.19%<!--/g-->; equal-tailed permutation p = <!--g:placebo_2014_p-->0.32<!--/g-->) and <!--g:placebo_2015_pct-->-0.41%<!--/g--> at 2015 (95% CI <!--g:placebo_2015_ci-->-1.13% to +0.32%<!--/g-->; p = <!--g:placebo_2015_p-->0.75<!--/g-->). Both are consistent with no pre-NCAP divergence.
 
 **Data collection procedures.** None; all data are secondary. The pipeline is `snakemake pregate` / `all`.
 
@@ -107,7 +107,7 @@ Pre-period results already seen (details in [`pregate_checks.md`](pregate_checks
 - **Layer A:** <!--g:n_treated-->113<!--/g--> treated and <!--g:n_controls-->923<!--/g--> control units. Years 2010–2024: nine pre-years; the primary post-period is 2019 and 2021–2024.
 - **Layer B:** NCAP-city stations with a valid 2018 baseline. In 2018 that is <!--g:pm10_2018_ncap-->56<!--/g--> PM10 station-years in <!--g:pm10_2018_ncap_units-->25<!--/g--> NCAP centres.
 
-**Sample size rationale: minimum detectable effect (MDE).** The sample is fixed by the data, so the plan reports what it can detect.
+**Sample size rationale: minimum detectable effect (MDE).** The sample is fixed by the data, so I report what the design can detect.
 - **Method:** placebo-in-time on 2010–2018 satellite data. <!--g:draws-->500<!--/g--> sets of <!--g:n_treated-->113<!--/g--> control units were given fake adoption in 2014 and in 2015, and SDID was re-estimated each time.
 - **Two null designs:** random sets, and region-matched sets (the same regional make-up as the real treated set).
 - **Formula:** SE = SD of the placebo ATTs; MDE = 2.8 × SE (5% two-sided test, 80% power). The largest over both designs and both fake years is used.
@@ -145,7 +145,7 @@ Pre-period results already seen (details in [`pregate_checks.md`](pregate_checks
 - even region-matched sets are more dispersed than the real treated set;
 - the post-period holds shocks the pre-period does not (COVID, BS-VI).
 
-The real design's own SE (joint placebo, §5) is what the confidence intervals use. The MDE sets the equivalence bound below.
+The confidence intervals use the real design's own SE (joint placebo, §5). I report the MDE for information only: it is a best-case noise level, not the smallest effect that matters, so it is **not** the equivalence margin. The margin is a substantive smallest effect of interest, ±<!--g:equiv_margin-->5<!--/g-->% (§5).
 
 **Ground PM10: no MDE.** Non-NCAP centres have no valid PM10 before 2018, so no pre-period change exists on the control side. Only <!--g:pm10_pair_stations-->6<!--/g--> stations in <!--g:pm10_pair_units-->5<!--/g--> NCAP cities are valid in both 2017 and 2018. A placebo is therefore impossible, and a variance from one year-pair would not be an MDE.
 
@@ -190,6 +190,7 @@ The real design's own SE (joint placebo, §5) is what the confidence intervals u
    - Unit effects, region × year effects, ERA5 covariates, and relative-year indicators from −9 to +5 with −1 omitted.
    - Estimated with the Sun & Abraham (2021) interaction-weighted estimator against never-treated units, which avoids the bias of two-way fixed effects under staggered adoption.
    - SEs clustered by unit. The 2020 coefficient is shown separately.
+   - **Sensitivity to pre-trends (reported, not a decision rule):** Rambachan & Roth (2023) bounds from R `HonestDiD` (0.2.8, in the same 2026-09-25 CRAN snapshot; installed in Phase 7), applied to the event-study coefficients and their clustered covariance. I report two restrictions for the average post-period effect: relative magnitudes (post-period violations at most M̄ times the largest pre-period one; M̄ = 0, 0.5, 1, 1.5, 2) and smoothness (a limit M on how much the trend's slope may change between consecutive periods; M from 0 to twice the largest pre-period coefficient's SE, in 5 equal steps). I report the robust 95% CIs and the breakdown value: the largest M̄ at which the CI still excludes 0.
 3. **Callaway & Sant'Anna (2021)**, R `did`: doubly robust, never-treated controls (primary for this estimator) and not-yet-treated (sensitivity). Simple and dynamic aggregations, with uniform bands.
 4. **Layer B.**
    - **ITS:** deweathered interrupted time series per NCAP city with valid 2018 data. It is a before–after contrast of deweathered series and cannot separate national shocks.
@@ -199,16 +200,16 @@ The real design's own SE (joint placebo, §5) is what the confidence intervals u
 
 **Transformations.** Natural log of concentrations; effects reported as % change (100 × (e^β − 1)), with µg/m³ from the level-scale fit as secondary.
 
-**Inference criteria and decision rules** (unchanged from the Phase 3 draft except where §6 says otherwise).
+**Inference criteria and decision rules** (unchanged from my first draft except where §6 says otherwise).
 - **H1 supported** if all of these hold:
   - (a) the primary SDID ATT is negative and its 95% CI excludes 0;
   - (b) the event-study pre-period coefficients (−9 to −2) are jointly insignificant (Wald p > 0.10);
   - (c) the 2016 placebo-in-time ATT's 95% CI includes 0;
   - (d) the estimate keeps its sign in Callaway & Sant'Anna, in the area-weighted outcome and in V6.GL.03.
-- **If (b) or (c) fails:** "not identified by this design", whatever the ATT.
-- **If the CI includes 0:** "no detectable effect", never "no effect". Plus an equivalence statement (two one-sided tests): effects larger than ±<!--g:mde_pct-->1.2<!--/g-->% are ruled out if the 90% CI lies within ±MDE; otherwise the result is inconclusive.
-- **Whatever the outcome:** report which effect sizes the 95% CI excludes, set against NCAP's own targets (a 20–30% reduction, later up to 40%, in PM10). A satellite PM2.5 result says nothing directly about PM10 attainment, and the report will say so.
-- **H2** (tested only if H1 is supported): the winter-minus-non-winter ATT difference, from the same joint placebo draws. Supported if the 95% CI excludes 0 in the direction of a larger winter reduction. If H1 is not supported, H2 is reported as exploratory.
+- **If (b) or (c) fails:** "not identified by this design", whatever the ATT. If (b) fails, I report the HonestDiD bounds alongside, showing how large a pre-trend violation the estimate could withstand; they do not overturn the verdict.
+- **If the CI includes 0:** "no detectable effect", never "no effect". Plus an equivalence test (two one-sided tests at 5%) against a **smallest effect of interest of ±<!--g:equiv_margin-->5<!--/g-->% in annual PM2.5**: if the 90% CI lies within ±<!--g:equiv_margin-->5<!--/g-->% (in log units, between ln 0.95 and ln 1.05), effects of that size or larger are ruled out; otherwise the result is inconclusive. Why ±<!--g:equiv_margin-->5<!--/g-->%: one quarter of NCAP's smallest target (a 20% reduction). That target was set for PM10, not PM2.5, so the margin is a judgement, not an official threshold. The MDE (<!--g:mde_pct-->1.2<!--/g-->%) is still reported.
+- **Whatever the outcome:** report which effect sizes the 95% CI excludes, set against NCAP's own targets (a 20–30% reduction, later up to 40%, in PM10). A satellite PM2.5 result says nothing directly about PM10 attainment, and I will say so.
+- **H2** (tested only if H1 is supported): the winter-minus-non-winter ATT difference, from the same joint placebo draws. Supported if the 95% CI excludes 0 in the direction of a larger winter reduction. If H1 is not supported, I report H2 as exploratory.
 - **H3:** labelled "consistent with dust control" only if all of these hold:
   - the PM2.5/PM10 ratio rises, with a 95% CI excluding 0;
   - the PM10 effect exceeds the PM2.5 effect in ≥ 2 of 3 specifications (raw, deweathered, balanced panel);
@@ -217,7 +218,13 @@ The real design's own SE (joint placebo, §5) is what the confidence intervals u
   Otherwise "inconclusive". Never "confirmed", because one pre-year cannot test parallel trends.
 - **H4:** per NCAP city with ground data, raw all-station change minus deweathered balanced-panel change, from 2018 to 2025. Supported if the mean across cities is positive with a 95% cluster-bootstrap CI excluding 0. This is descriptive (NCAP cities only), not causal.
 - **H5:** supported if the IGP coefficient's 95% credible interval lies above 0 (a less negative effect).
-- **Robustness:** a check "agrees" if it has the primary's sign and its point estimate lies inside the primary 95% CI. Every check is reported in one table, whichever way it points.
+- **Robustness:** a check "agrees" if it has the primary's sign and its point estimate lies inside the primary 95% CI. I report every check in one table, whichever way it points.
+
+**Threat: satellite calibration leakage** (pre-specified sensitivity check). ACAG calibrates satellite PM2.5 to ground monitors, and NCAP added monitors mainly in treated cities, so a Layer A effect could partly reflect calibration rather than air quality.
+- **Split.** I estimate the primary SDID (same controls, cohorts, 2020 handling and joint-placebo SE) separately for treated units that gained a CAAQMS station inside their polygon with first PM data in <!--g:leak_from-->2019<!--/g-->–<!--g:leak_to-->2024<!--/g--> (the satellite post-period) and for those that did not. The difference (gained minus not gained) gets its SE from joint placebo draws of both group sizes.
+- **Group sizes** (network metadata only, `pregate_checks.md` §7): <!--g:leak_gain-->74<!--/g--> units gained a monitor; <!--g:leak_nogain-->39<!--/g--> did not (<!--g:leak_nogain_had-->12<!--/g--> already had a station before <!--g:leak_from-->2019<!--/g-->, <!--g:leak_nogain_never-->27<!--/g--> never had one inside the polygon). A group with fewer than <!--g:leak_min-->10<!--/g--> units is not estimated, and I say that it is too small; with these sizes, <!--g:leak_estimable-->both groups are large enough to estimate<!--/g-->.
+- **Warning sign of leakage**, which I report as such beside H1: the gained group's ATT is negative with a 95% CI excluding 0 while the not-gained group's CI includes 0, or the difference is negative with a 95% CI excluding 0. It is a warning, not proof: cities that gained monitors also differ in size and pollution, so the gap could be real heterogeneity.
+- **Related evidence under the same threat:** the V6.GL.02.04 vintage comparison (calibrated to an earlier monitor set), and, if time allows, raw MAIAC aerosol optical depth, which uses no ground monitors.
 
 **Multiple comparisons.**
 - **Confirmatory family = {H1, H2}, tested in fixed sequence at α = 0.05.** H2 is tested only if H1 is supported. This keeps the familywise error rate at 5% without splitting α.
@@ -227,21 +234,21 @@ The real design's own SE (joint placebo, §5) is what the confidence intervals u
 - **Moderators other than IGP** are exploratory.
 
 **Triangulation, and how disagreement between layers is reported.**
-- Layer A remains the headline. Layer B is shown beside it, never averaged with it.
+- Layer A remains the headline. I show Layer B beside it and never average the two.
 - The like-for-like comparison is Layer A restricted to the units that have Layer B stations, PM2.5 only.
 - The pair is classified in advance as one of:
   - **consistent:** same sign and overlapping 95% CIs;
   - **different magnitude:** same sign, non-overlapping CIs;
   - **conflict:** opposite signs with at least one CI excluding 0;
   - **uninformative:** the Layer B CI contains both 0 and the Layer A estimate.
-- **Any category other than "consistent" triggers a fixed investigation**, each step reported whether or not it closes the gap:
+- **Any category other than "consistent" triggers a fixed investigation**, and I report each step whether or not it closes the gap:
   1. network composition (all stations vs balanced panel);
   2. satellite calibration to the ground (V6.GL.02.04 vintage vs V5.GL.06; the ground–satellite correlation over time);
   3. spatial coverage (station sites vs the population-weighted polygon);
   4. deweathering (raw vs deweathered).
-- PM10 on the ground and PM2.5 from satellite are never compared as "agreement".
+- I never treat ground PM10 and satellite PM2.5 as "agreement".
 
-**Primary choices and their sensitivity checks** (every one run and reported).
+**Primary choices and their sensitivity checks** (I run and report every one).
 
 | Choice | Primary | Sensitivity | Log |
 |---|---|---|---|
@@ -249,37 +256,40 @@ The real design's own SE (joint placebo, §5) is what the confidence intervals u
 | Unit value | population-weighted mean | area-weighted mean | DEC-070/081 |
 | Towns without a GHSL centre (10) | excluded | included as 1.87 km buffers | DEC-063 |
 | Patancheruvu | intention to treat | excluded | DEC-049 |
-| Asansol & Raniganj | one unit incl. the "Mejia" centre | Asansol centre alone (Reenu, 2026-09-27) | DEC-064/081 |
-| Treated-unit size | all | ≥ 100k only | draft plan |
+| Asansol & Raniganj | one unit incl. the "Mejia" centre | Asansol centre alone (added 2026-09-27) | DEC-064/081 |
+| Treated-unit size | all | ≥ 100k only | first draft |
 | Spillover | none | 25 km buffer | DEC-085 |
 | Treatment date | first listing | first funding year (never primary: funding is partly performance-linked); 2018 for the 94 on the 2017 list | DEC-086, DEC-092 |
-| 2020 | dropped | included; own coefficient | draft plan |
+| 2020 | dropped | included; own coefficient | first draft |
 | Controls (CS) | never-treated | not-yet-treated | — |
 | Valid hour (ground) | ≥ 1 of 4 quarter-hours | ≥ 3 of 4 | DEC-069 |
 | Completeness (ground) | 75% / 75% | 60%, 90% | DEC-073 |
 | Ground end | calendar 2025 | + Jan–Mar 2026 (FY2025-26, provisional) | DEC-079 |
-| Reenu-decided station coordinates (5) | recommended coordinates | drop all 5 | DEC-080 |
+| Station coordinates I set by judgement (5) | recommended coordinates | drop all 5 | DEC-080 |
 | Balanced-panel baseline | 2018 | 2019 | DEC-088 |
 | Deweathering | better-CV family | other family; none | DEC-088 |
 | Reliability | all valid station-years | drop score < 50 | DEC-073 |
+| Calibration leakage | all treated units | split by gained a monitor 2019–2024 or not; MAIAC AOD if time allows | DEC-096 |
+| Pre-trends | rule (b) | HonestDiD bounds (relative magnitudes, smoothness) | DEC-097 |
 | Other checks | — | placebo in time (2016); placebo in space (500 permutations); leave-one-out donors; exclude IGP; Himalayan region split; VIIRS fire covariate (from 2012) | proposal |
 
 **Data exclusion.** Only by the rules above (flags, completeness, control-pool rules). No outlier exclusion on outcome values.
 
 **Missing data.**
 - The satellite panel is complete (no missing unit-years).
-- Ground gaps are handled by the completeness rules; there is no imputation in the primary analysis.
-- The audit found missingness is *lower* on polluted days, which biases naive annual means slightly upward (median +0.7%, `audit_report.md`). This is reported beside Layer B.
+- The completeness rules handle ground gaps; I do not impute in the primary analysis.
+- The audit found missingness is *lower* on polluted days, which biases naive annual means slightly upward (median +0.7%, `audit_report.md`). I report this beside Layer B.
 
-**Exploratory analyses** (labelled as such):
+**Exploratory analyses** (I label them as such):
 - funding dose-response on *allocations*, with the reverse-causality caveat (cut item 1);
 - moderators other than IGP;
-- NO2 as a secondary pollutant;
-- raw MAIAC AOD, if time allows.
+- NO2 as a secondary pollutant.
+
+(Raw MAIAC AOD is listed under the calibration-leakage threat above, still conditional on time.)
 
 ## 6. Other
 
-**Changes from the Phase 3 draft, made after the pre-gate numbers were computed** (for the reviewer to judge):
+**Changes I made to my first draft after computing the pre-gate numbers** (listed here for transparency):
 1. Numbers filled in: MDE, pool, balance, cohorts.
 2. H4 and H5 restored. They are hypotheses 1 and 3 of the original proposal dated 25 September 2026, written before any data were downloaded (the proposal PDF was created 2026-09-25 18:26 UTC and committed in the repository's first commit; the earliest raw download in any manifest is 2026-09-26 04:44 UTC). So they were not chosen after seeing data.
 3. H2 made conditional on H1 (fixed sequence).
@@ -289,8 +299,13 @@ The real design's own SE (joint placebo, §5) is what the confidence intervals u
 7. The layer-disagreement categories.
 8. The deweathering-family rule.
 9. The funding-date rule.
-10. The Asansol-alone sensitivity (accepted by Reenu, 2026-09-27).
-11. Units and p-values corrected after review (DEC-091): log-scale results are given in natural-log units with the implied percentage (the draft's "log points" label read as 100 times too large), permutation p-values are equal-tailed, and the % and µg/m³ MDEs are reported separately. No estimate changed.
+10. The Asansol-alone sensitivity (added 2026-09-27).
+11. Units and p-values corrected (DEC-091): I give log-scale results in natural-log units with the implied percentage (my draft's "log points" label could be read as 100 times too large), permutation p-values are equal-tailed, and the % and µg/m³ MDEs are reported separately. No estimate changed.
+
+**Further changes I made on 2026-09-27, before OSF registration:**
+1. **Equivalence margin:** a smallest effect of interest of ±<!--g:equiv_margin-->5<!--/g-->% in annual PM2.5 (one quarter of NCAP's smallest target, 20%, which was set for PM10) replaces ±MDE. The MDE is a best-case noise level, so with it as the margin a null would almost always be "inconclusive". The MDE is still reported (DEC-095).
+2. **Calibration-leakage check:** H1 split by whether treated units gained a CAAQMS station in the satellite post-period, with group sizes, a minimum group size and a pre-stated warning rule; MAIAC AOD listed under this threat, conditional on time (DEC-096).
+3. **HonestDiD bounds** on the event study as a reported sensitivity analysis; rule (b) unchanged, and if (b) fails the bounds are reported alongside "not identified" (DEC-097).
 
 H1's decision rules (a)–(d) are unchanged.
 
@@ -312,4 +327,4 @@ H1's decision rules (a)–(d) are unchanged.
 
 <!--/g-->
 
-**Deviations** from this plan will be logged in `docs/DECISIONS.md`, dated and justified, and listed in the final report.
+**Deviations.** I will log any deviation from this plan in `docs/DECISIONS.md`, dated and justified, and list it in the final report.

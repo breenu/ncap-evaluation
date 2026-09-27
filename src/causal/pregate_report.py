@@ -146,6 +146,7 @@ def load() -> dict:
         "gcounts": pd.read_csv(OUT / "ground_counts.csv"),
         "gpairs": pd.read_csv(OUT / "ground_pairs.csv"),
         "cities": pd.read_csv(OUT / "city_cohorts.csv"),
+        "gain": pd.read_csv(OUT / "monitor_gain.csv"),
     }
 
 
@@ -349,6 +350,21 @@ def plan_values(D: dict) -> dict[str, str]:
     )
     v["null_offset_mcse"] = f"{worst.se / np.sqrt(worst.draws):.4f}"
     v.update(level_reconciliation(D))
+    R, g = params()["robustness"], D["gain"]
+    v["equiv_margin"] = f"{R['equivalence_margin_pct']:g}"
+    v["leak_from"], v["leak_to"] = (str(y) for y in R["leakage_gain_years"])
+    v["leak_min"] = f"{R['leakage_min_units']}"
+    v["leak_gain"] = f"{int(g.gained_monitor.sum())}"
+    v["leak_nogain"] = f"{int((~g.gained_monitor).sum())}"
+    v["leak_nogain_had"] = f"{int((~g.gained_monitor & (g.stations_before > 0)).sum())}"
+    v["leak_nogain_never"] = f"{int((~g.gained_monitor & (g.stations_before == 0)).sum())}"
+    small = [name for name, k in [("gained", "leak_gain"), ("did not gain", "leak_nogain")]
+             if int(v[k]) < R["leakage_min_units"]]  # fmt: skip
+    v["leak_estimable"] = (
+        "both groups are large enough to estimate"
+        if not small
+        else "too small to estimate: the group that " + " / ".join(small) + " a monitor"
+    )
     for y in fy:
         a = act.loc[("log_annual", y)]
         v[f"placebo_{y}_pct"] = pc(a.att)
@@ -472,6 +488,19 @@ def build(D: dict) -> str:
           "one year-to-year change before NCAP: any variance estimate from one year-pair in a handful of cities would "
           "be a number, not an MDE. Ground PM10 results are therefore reported without an MDE and labelled as unable "
           "to test parallel trends (analysis plan §1).", ""]  # fmt: skip
+
+    L += ["## 7. Calibration leakage: which NCAP units gained a monitor", "",
+          "ACAG calibrates its satellite estimates to ground monitors, and NCAP added monitors mainly in "
+          "NCAP cities, so part of any Layer A effect could reflect calibration rather than air (analysis plan §5). "
+          "A treated unit counts as having gained a monitor if a CAAQMS station inside its polygon first reported PM "
+          f"in {V['leak_from']}-{V['leak_to']} (the satellite post-period). This uses only the year each station first "
+          "reported, no pollution values. The CPCB network is a proxy for the monitors ACAG actually used.", "",
+          md(pd.DataFrame({"Group": ["Gained a monitor", "Did not gain one",
+                                     f"... of which had a station before {V['leak_from']}",
+                                     "... of which never had a station inside the polygon"],
+                           "Treated units": [V["leak_gain"], V["leak_nogain"], V["leak_nogain_had"],
+                                             V["leak_nogain_never"]]})),
+          "", f"Minimum group size to estimate: {V['leak_min']} units. Result: {V['leak_estimable']}.", ""]  # fmt: skip
     return "\n".join(L)
 
 

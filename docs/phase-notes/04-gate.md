@@ -149,3 +149,15 @@ So a ground placebo cannot be built. A variance from one year-pair in five citie
 - **The fix:** mgcv now comes from CRAN's build of the same version, which loaded every time even under the bad layout. The lock was updated so that removing conda-forge's r-mgcv is the only change, the environment was rebuilt from the lock, and the R test passed 10 times in a row.
 
 *If asked:* "Why did you not catch it?" The numbers were internally consistent, so every check passed; the fault was in how they were written down. That is why units are now tested as text, not only as values.
+
+## Final changes before OSF registration (2026-09-27)
+
+- **Equivalence margin: ±5%, not ±1.2%.** The MDE is how small an effect the design could see in the best case, not how small an effect *matters*. Used as a margin, it would make almost any null "inconclusive". The margin is now a smallest effect of interest: ±5% in annual PM2.5, one quarter of NCAP's smallest target (20%). That target was set for PM10, so ±5% is a judgement, and the plan says so. The MDE is still reported.
+- **Could the satellite be echoing the new monitors?** ACAG is calibrated to ground monitors, and NCAP added monitors mostly in NCAP cities. So a satellite "effect" could partly be the calibration following the new monitors.
+  - The plan now splits H1 between treated units that gained a CPCB station inside their polygon in 2019–2024 and those that did not.
+  - Group sizes, computed from station start years only, with no pollution values: 74 gained, 39 did not (27 of those never had a station).
+  - An effect only where monitors were added is a *warning*, not proof, because those cities also differ in size and pollution.
+- **HonestDiD bounds.** The joint pre-trend test (rule b) is pass/fail. Rambachan & Roth's bounds say how big a violation of parallel trends the estimate could survive. They are reported either way, and alongside "not identified" if (b) fails.
+- **Voice.** The plan and its summary are now written in the author's first person, as a registered document should be. Only the wording changed; a script compared every generated number and DEC reference before and after.
+
+*If asked "why 2019–2024 for gaining a monitor?"* ACAG ends in 2024. A station that first reported in 2025 cannot have shaped any satellite year used.

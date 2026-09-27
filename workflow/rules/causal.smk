@@ -14,6 +14,8 @@ rule pregate_panel:
         f"{INT}/unit_regions.csv",
         f"{INT}/ncap_cities.csv",
         f"{INT}/ncap_funding_clean.csv",
+        f"{INT}/eda/station_first_year.csv",
+        f"{INT}/station_regions.csv",
         "config/params.yaml",
         "src/causal/pregate.py",
         "src/causal/treatment.py",
@@ -26,6 +28,7 @@ rule pregate_panel:
         f"{INT}/pregate/balance.csv",
         f"{INT}/pregate/ground_counts.csv",
         f"{INT}/pregate/ground_pairs.csv",
+        f"{INT}/pregate/monitor_gain.csv",
     shell: f"{PY} src.causal.pregate"
 
 

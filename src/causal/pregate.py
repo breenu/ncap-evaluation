@@ -8,7 +8,7 @@ ever loaded. The MDE itself is estimated by src/causal/mde_placebo.R from the pa
     python -m src.causal.pregate
 
 Writes data/interim/pregate/: units.csv, pool_steps.csv, panel_annual.parquet, panel_season.parquet,
-balance.csv, ground_counts.csv, ground_pairs.csv.
+balance.csv, ground_counts.csv, ground_pairs.csv, monitor_gain.csv.
 """
 
 import geopandas as gpd
@@ -167,6 +167,27 @@ def balance_table(chars: pd.DataFrame, groups: dict[str, pd.Series]) -> pd.DataF
 # ---------------------------------------------------------------- ground PM10 feasibility
 
 
+def monitor_gain(
+    first_year: pd.Series, station_units: pd.DataFrame, treated: pd.Series, years: list[int]
+) -> pd.DataFrame:
+    """Per treated unit: CAAQMS stations inside its polygon before `years[0]`, and new ones whose first
+    PM data fall in years[0]..years[1] (the satellite post-period, DEC-096).
+
+    NETWORK METADATA ONLY: uses the year each station first reported, never a pollution value, and
+    no comparison with control units, so it is allowed before the gate.
+    `first_year`: sid -> first year with any PM; `station_units`: sid, unit_id, km_to_unit (0 = inside).
+    """
+    inside = station_units[station_units.km_to_unit == 0][["sid", "unit_id"]]
+    s = inside.assign(first_year=inside.sid.map(first_year)).dropna(subset=["first_year"])
+    before = s[s.first_year < years[0]].groupby("unit_id").sid.nunique()
+    new = s[s.first_year.between(years[0], years[1])].groupby("unit_id").sid.nunique()
+    out = pd.DataFrame({"unit_id": treated.values})
+    out["stations_before"] = out.unit_id.map(before).fillna(0).astype(int)
+    out["stations_new"] = out.unit_id.map(new).fillna(0).astype(int)
+    out["gained_monitor"] = out.stations_new > 0
+    return out
+
+
 def ground_counts(
     sy: pd.DataFrame, ncap_units: set[str], valid_col: str = "valid_q1_t75"
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -270,6 +291,14 @@ def build() -> None:
     counts, pairs = ground_counts(sy, ncap_units)
     counts.to_csv(OUT / "ground_counts.csv", index=False)
     pairs.to_csv(OUT / "ground_pairs.csv", index=False)
+
+    # --- calibration-leakage split: which treated units gained a monitor in the satellite post-period
+    first = pd.read_csv(INTERIM / "eda" / "station_first_year.csv").set_index("sid").first_year
+    st_units = pd.read_csv(INTERIM / "station_regions.csv")
+    treated = units.unit_id[units.role == "treated"]
+    monitor_gain(first, st_units, treated, P["robustness"]["leakage_gain_years"]).to_csv(
+        OUT / "monitor_gain.csv", index=False
+    )
 
     print(f"pregate: {int((units.role == 'treated').sum())} treated, {int((units.role == 'control').sum())} controls "
           f"({int(units.in_buffered_pool.sum())} after the {cp['spillover_buffer_km']} km buffer); "

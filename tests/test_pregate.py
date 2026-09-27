@@ -207,3 +207,17 @@ def test_log_units_are_labelled_as_log_units_and_percent():
     assert pregate_report.lg(0.0047) == "+0.0047"
     assert pregate_report.pc(0.0047) == "+0.47%"
     assert pregate_report.pc(0.47) == "+60.00%"  # what "0.47 log points" was misread as
+
+
+def test_monitor_gain_counts_only_stations_inside_and_new_in_window():
+    # SYNTHETIC: unit a gains a station in 2020; b only has a 2016 station; c's 2021 station lies outside
+    # its polygon; d has a station that first reports in 2025, after the satellite window
+    first = pd.Series({"s1": 2016, "s2": 2020, "s3": 2016, "s4": 2021, "s5": 2025})
+    st = pd.DataFrame({"sid": ["s1", "s2", "s3", "s4", "s5"], "unit_id": ["a", "a", "b", "c", "d"],
+                       "km_to_unit": [0.0, 0.0, 0.0, 3.2, 0.0]})  # fmt: skip
+    got = pregate.monitor_gain(first, st, pd.Series(["a", "b", "c", "d"]), [2019, 2024]).set_index(
+        "unit_id"
+    )
+    assert got.gained_monitor.to_dict() == {"a": True, "b": False, "c": False, "d": False}
+    assert got.stations_before["a"] == 1 and got.stations_new["a"] == 1
+    assert got.stations_before["c"] == 0  # outside the polygon: not counted
