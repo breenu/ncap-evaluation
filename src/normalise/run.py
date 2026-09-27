@@ -9,8 +9,9 @@ whose .json already exists (src.normalise.store), and runs the rest: LightGBM in
 the GAM in `workers` Rscript processes, each given its share of the tasks. Stopping the run (Ctrl+C,
 a crash, a reboot) loses at most the tasks in progress; running the same command again resumes.
 
-Run settings: pilot = 1000 draws, both resampling schemes, convergence checkpoints; main = N draws
-from config (set from the pilot's convergence check), the configured scheme only.
+Run settings: pilot = 1000 draws, both resampling schemes, convergence checkpoints; main and
+registered = N draws from config (DEC-113), the primary scheme and the sensitivity scheme (DEC-109).
+`registered` refits only the series with near-constant station-years, keeping them (DEC-110).
 """
 
 import argparse
@@ -37,7 +38,7 @@ def settings(run: str) -> tuple[int, list[str], list[int]]:
     if run == "pilot":
         return c["resamples_max"], ["seasonal", "annual"], list(c["convergence_grid"])
     n = c["resamples_default"]
-    return n, [c["resample_scheme"]], [n]
+    return n, [c["resample_scheme"], *c["resample_schemes_sensitivity"]], [n]
 
 
 def all_tasks(run: str) -> pd.DataFrame:
@@ -150,7 +151,7 @@ def cvcheck(run: str, workers: int) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("step", choices=["prepare", "fit", "cvcheck"])
-    ap.add_argument("--run", choices=["pilot", "main"], required=True)
+    ap.add_argument("--run", choices=["pilot", "main", "registered"], required=True)
     ap.add_argument("--family", choices=["lgbm", "gam", "both"], default="both")
     ap.add_argument("--sids", help="comma-separated station ids (prepare; default all)")
     ap.add_argument("--workers", type=int, default=cfg()["workers"])

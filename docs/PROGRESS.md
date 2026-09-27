@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-09-27. Phase 5 (deweathering) in progress: the **pilot is done and waits for Reenu's go-ahead** before the full run (see "Phase 5" below; `docs/deweathering_pilot.md`). Gate open since `0d9aa42` (plan `6e24eca`, https://osf.io/jksne/).*
+*Last updated: 2026-09-27. Phase 5 (deweathering): pilot approved with changes (DEC-109 to DEC-113); the **full run is in progress** (see "Phase 5" below).*
 
 ## Status
 
@@ -14,7 +14,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 2 Acquisition | ✅ approved 2026-09-26; pushed. FIRMS pending (Reenu will run it from another network with a new key) |
 | 3 Storage, cleaning, audit, EDA | ✅ approved 2026-09-26; pushed (DEC-080 to DEC-082) |
 | 4 Analysis-plan gate | ✅ 2026-09-27: plan `6e24eca` registered at https://osf.io/jksne/; gate opened in `0d9aa42` (DEC-084 to DEC-099) |
-| 5 Deweathering | pilot done 2026-09-27 (DEC-100 to DEC-108); full run waits for go-ahead |
+| 5 Deweathering | pilot approved 2026-09-27 with changes (DEC-100 to DEC-113); full run in progress |
 | 6–10 | not started |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). No post-2019 effect estimates exist yet; they belong to Phase 7.
@@ -71,7 +71,23 @@ snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (
 
 ## Phase 5 (deweathering, RQ2): IN PROGRESS. START HERE in a new chat
 
-**State (2026-09-27): the pilot is done and waiting for Reenu's go-ahead; the full run has not started.** Read `docs/deweathering_pilot.md` (generated) and DEC-100 to DEC-108.
+**State (2026-09-27, 22:45): the full run is RUNNING.** Reenu approved the pilot with changes (DEC-109 to DEC-113). The run writes to `data/interim/logs/normalise_main.log`: GAM main, then LightGBM main (the long part, about 7 h), then the registered-flags refits (66 series), then `cvcheck` for main and registered. **If the laptop slept or the run stopped, re-run the same commands. Done series are skipped:**
+```bash
+python -m src.normalise.run fit --run main --family both
+python -m src.normalise.run fit --run registered --family both
+python -m src.normalise.run cvcheck --run main
+python -m src.normalise.run cvcheck --run registered
+touch data/interim/normalise/fits/main/_all.done
+```
+Then: `python -m src.normalise.aggregate`, `python -m src.normalise.report`, `python -m src.viz.fig3_deweathered --scheme seasonal` and `--scheme annual`. Look at both figures, run the tests, commit, update this file, write `docs/phase-notes/05-deweathering.md`, then stop for Reenu.
+
+**Reenu's pilot rulings (2026-09-27), all in DECISIONS:**
+- N = 500 for both schemes (DEC-113).
+- Seasonal resampling is primary: a **registered-plan deviation** (DEC-109). Grange & Carslaw's all-year default runs on the full set; H4 and figure 3 are reported under both.
+- `last_year` CV convention accepted; both conventions keep being reported (`r2_oos_clamp`). The family choice stays as registered.
+- Within-period blocked CV (10 round-robin month folds, 7-day buffer) as a diagnostic only (DEC-112).
+- Divergence flag defined exactly (DEC-111): D needs ≥ 2 valid years. The pilot's 37 of 40: 3 series had no valid station-year.
+- Near-constant analyser rule: a **registered-plan deviation**, made before any treatment-effect estimate (DEC-110; `src/clean/nearconstant.py`, `docs/near_constant_check.md`). It flags 77 of 4,129 valid station-years (1.9%) at 33 stations. Primary analysis: excluded from the fit and from aggregates (run `main`). Sensitivity: registered flags only (run `registered` refits the 66 affected series with those years kept). All tables carry `rule`.
 
 **The plan is registered and frozen** (`docs/analysis_plan.md` at `6e24eca`; OSF https://osf.io/jksne/). Commitments binding Phase 5: LightGBM and mgcv GAM on log daily PM per station and pollutant; the primary family is the one with the better **median out-of-sample R² under blocked, forward-chaining CV by year** (DEC-088); a no-deweathering baseline is kept; no NCAP information is used and no treatment effect is estimated.
 
@@ -90,7 +106,7 @@ snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (
   - `report.py` (→ `docs/deweathering_report.md`)
 - `src/viz/fig3_deweathered.py`.
 - Snakemake: `workflow/rules/normalise.smk` (pilot and full-run rules; `normalise` is no longer a stub).
-- Tests: `tests/test_normalise.py` (18, synthetic); full suite 152 passed.
+- `src/clean/nearconstant.py` (DEC-110); tests: `tests/test_normalise.py` (21, synthetic); full suite 156 passed.
 - Pilot: 20 stations × 2 pollutants, both families, 1,000 draws, both resampling schemes (GAM about 5 min, LightGBM 44 min on 8 workers). Aggregation and figure 3 were tested on pilot outputs (`data/interim/normalise/pilot/aggregate/`, not report outputs).
 
 **Pilot findings (numbers in `docs/deweathering_pilot.md`):**
@@ -99,21 +115,12 @@ snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (
 - N = 300 meets the convergence rule, but only narrowly (LightGBM PM2.5: 0.9502 against 0.95).
 - The weather part of year-on-year changes: median 2–4%.
 - Families diverge by more than 5% in 3 of 37 series.
-- Full-run estimate: about 2.5 h wall-clock.
+- Full-run estimate: about 2.5 h wall-clock at the pilot's settings (300 draws, one scheme). The approved run (500 draws, two schemes, plus the within-period CV) scales to about 8–9 h: LightGBM resampling time grows with draws × schemes.
 
-**Decisions waiting for Reenu:**
-1. Go-ahead for the full run.
-2. N = 300 (the rule's answer, narrow) or 500 (in the proposal's 500–1,000 range; LightGBM about 3.6 h instead of 2.2 h).
-3. Confirm the seasonal resampling scheme (DEC-102) and the `last_year` CV convention (DEC-107, changed after seeing pilot output).
-4. Confirm the 5% divergence flag.
-
-**Then:**
-1. `snakemake --cores 1 normalise` (or `python -m src.normalise.run prepare --run main`, then `fit --run main --family both`; re-run the same command to resume after a crash or sleep).
-2. Aggregate, the report, and figure 3 (look at it; figure 3 may need an annual view).
-3. Tests, commit, PROGRESS, DECISIONS, `docs/phase-notes/05-deweathering.md`, then stop.
 
 **Open observations from the pilot:**
-- site_5264 (Bagalkot) has an almost constant PM series in 2022–25 (day-to-day SD of log PM 0.04–0.16). It is probably a stuck or over-smoothed analyser that escapes the 4-hour flatline rule; worth an audit look.
+- ~~Bagalkot near-constant series~~: now caught by the near-constant rule (DEC-110).
+- **Question for Reenu (found after the go-ahead, not acted on):** the trend term absorbs within-year movement. Under Grange & Carslaw resampling the deweathered series should have almost no within-year variation, but pilot series keep 12% (LightGBM) and 25% (GAM) of the raw within-year SD of log monthly means. So the trend may also absorb year-specific weather, and deweathering would under-remove it. A less flexible GAM trend (e.g. 1–2 basis functions per year instead of 4) would need a GAM re-run (about 1 h). This is a model-specification change, so it waits for Reenu. `docs/deweathering_report.md` §5 measures it on the full run.
 - LightGBM's in-sample R² (0.99) is far above its out-of-sample R² (0.3). It memorises individual days through the trend feature, a known property of this method; watch whether it under-removes weather.
 
 **Housekeeping:**

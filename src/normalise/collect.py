@@ -6,6 +6,9 @@ Per task (station x pollutant x family), on the log scale the models were fitted
                metric is the median of this over series (DEC-088).
     rmse_oos   root mean squared out-of-sample error
     r2_in      the same for the final model's in-sample fitted values
+    r2_within  the same for the within-period blocked CV (DEC-112): months held out with a 7-day
+               buffer, predicted with their own trend. A diagnostic of the weather response only;
+               never used to choose the family
     acf_oos_k  lag-k autocorrelation (k = 1..7) of out-of-sample residuals: the Pearson correlation
                of residual pairs exactly k days apart within the same test year (gaps are skipped,
                never bridged)
@@ -66,6 +69,7 @@ def metrics(out: pd.DataFrame) -> dict:
         "r2_oos": r2(test.y.to_numpy(), test.cv_pred.to_numpy()),
         "rmse_oos": float(np.sqrt(np.mean((test.y - test.cv_pred) ** 2))) if len(test) else np.nan,
         "r2_in": r2(fit.y.to_numpy(), fit.fitted.to_numpy()),
+        "r2_within": r2(fit.y.to_numpy(), fit.cvw_pred.to_numpy()) if "cvw_pred" in fit else np.nan,
         "smear": float(np.mean(np.exp(fit.y - fit.fitted))),
     }
     for k in LAGS:

@@ -13,6 +13,12 @@ data/interim/normalise/inputs/<run>/<pollutant>/<sid>/ (run = pilot or main):
                     (row t * n + k is draw k for target t). Written once and read by BOTH model
                     families, so LightGBM and the GAM normalise with identical weather draws.
     folds.parquet   the CV test years (column `year`), also read by both families.
+    wfolds.parquet  within-period blocked CV (DEC-112): `wfold` (1..K) per fit row, and one training
+                    mask per fold (`w1`..`wK`): a held-out month and the days within the buffer of
+                    it are left out of that fold's training.
+Runs (DEC-110): `main` leaves the days of near-constant station-years out of the fit (the primary
+analysis); `registered` refits, with every day the registered flags keep, only the series that have
+such station-years (the sensitivity analysis).
 Both families write their predictions in target row order (src.normalise.store).
 
 trend = years since 2015-01-01; doy = day of year (1-366); weekday = 0 (Monday) to 6.
@@ -75,6 +81,27 @@ def forward_folds(years: pd.Series, min_train: int, min_test: int) -> list[int]:
     return folds
 
 
+def within_folds(dates: pd.Series, k: int, buffer: int) -> tuple[np.ndarray, np.ndarray]:
+    """Within-period blocked CV: calendar months dealt round-robin into k folds (consecutive months
+    fall in different folds). Returns the fold of each day and a (days, k) training mask that is
+    False for the fold's test days and for every day within `buffer` days of one."""
+    ym = pd.to_datetime(dates).dt.to_period("M")
+    order = {m: i % k + 1 for i, m in enumerate(sorted(ym.unique()))}
+    fold = ym.map(order).to_numpy().astype("int16")
+    day = pd.to_datetime(dates).to_numpy().astype("datetime64[D]").astype(np.int64)
+    train = np.ones((len(day), k), dtype=bool)
+    for f in range(1, k + 1):
+        test = np.sort(day[fold == f])
+        if len(test) == 0:
+            continue
+        i = np.searchsorted(test, day)  # nearest test day is test[i] or test[i - 1]
+        right = test[np.minimum(i, len(test) - 1)]
+        left = test[np.maximum(i - 1, 0)]
+        near = np.minimum(np.abs(day - right), np.abs(day - left))
+        train[:, f - 1] = near > buffer
+    return fold, train
+
+
 def doy_distance(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     """Circular distance in days between days of year (a year of 365.25 days)."""
     d = np.abs(a.astype(float) - b.astype(float)) % 365.25
@@ -119,10 +146,17 @@ def series_dir(run: str, pollutant: str, sid: str) -> Path:
 
 
 def build_series(
-    run: str, day: pd.DataFrame, weather: pd.DataFrame, pollutant: str, n: int, schemes: list[str]
+    run: str,
+    day: pd.DataFrame,
+    weather: pd.DataFrame,
+    pollutant: str,
+    n: int,
+    schemes: list[str],
+    exclude_years: frozenset[int] = frozenset(),
 ) -> dict | None:
     """Write the input folder of one station-pollutant. `day` is that station's station-day rows,
-    `weather` the ERA5 days of its cell. Returns a summary row, or None if too few valid days."""
+    `weather` the ERA5 days of its cell; days of `exclude_years` are left out of the fit (they stay
+    targets). Returns a summary row, or None if too few valid days."""
     c = cfg()
     end = pd.Timestamp(c["fit_end"])
     y0, y1 = c["weather_pool_years"]
@@ -130,6 +164,7 @@ def build_series(
     day = day[(day.date <= end) & (day[f"{pollutant}_h1"] > 0) & (day[pollutant] > 0)]
     fit = day[day[f"{pollutant}_h1"] >= valid_day_hours()]
     fit = fit.merge(weather, on="date", how="inner")  # drops only the window's first Indian day
+    fit = fit[~fit.date.dt.year.isin(exclude_years)].reset_index(drop=True)
     if len(fit) < c["min_fit_days"]:
         return None
     fit = pd.concat(
@@ -160,10 +195,14 @@ def build_series(
         pd.DataFrame({"idx": idx.ravel()}).to_parquet(d / f"idx_{scheme}.parquet", index=False)
     folds = forward_folds(fit.year, c["cv_min_train_days"], c["cv_min_test_days"])
     pd.DataFrame({"year": pd.Series(folds, dtype="int16")}).to_parquet(d / "folds.parquet", index=False)
+    wf, wt = within_folds(fit.date, c["cv_within_folds"], c["cv_within_buffer_days"])
+    w = pd.DataFrame(wt, columns=[f"w{i + 1}" for i in range(wt.shape[1])]).assign(wfold=wf)
+    w.to_parquet(d / "wfolds.parquet", index=False)
     return {
         "sid": sid, "pollutant": pollutant, "n_fit": len(fit), "n_target": len(target),
         "first_year": int(fit.year.min()), "last_year": int(fit.year.max()),
         "n_folds": len(folds), "folds": " ".join(map(str, folds)), "n_resamples": n,
+        "excluded_years": " ".join(map(str, sorted(exclude_years))),
     }  # fmt: skip
 
 
@@ -174,9 +213,20 @@ def load_station_day(sids: list[str] | None = None) -> pd.DataFrame:
     return day.rename(columns={"date_ist": "date"})
 
 
+def near_constant_years() -> dict[tuple[str, str], frozenset[int]]:
+    """(sid, pollutant) -> years flagged near-constant (src/clean/nearconstant.py, DEC-110)."""
+    y = pd.read_parquet(PROCESSED / "station_year_near_constant.parquet")
+    y = y[y.near_constant]
+    return {k: frozenset(g.year.astype(int)) for k, g in y.groupby(["sid", "pollutant"])}
+
+
 def prepare(run: str, sids: list[str] | None, n: int, schemes: list[str]) -> pd.DataFrame:
     """Build input folders for the given stations (all if None). Returns one summary row per
-    station-pollutant, including those skipped and why."""
+    station-pollutant, including those skipped and why. `main` leaves near-constant station-years
+    out of the fit; `registered` builds only the series that have any, with nothing left out."""
+    nc = near_constant_years()
+    if run == "registered":
+        sids = sorted({s for s, _ in nc} & set(sids)) if sids else sorted({s for s, _ in nc})
     stations = pd.read_csv(PROCESSED / "stations.csv")
     cells = station_cells(stations)
     weather = pd.read_parquet(INTERIM / "normalise" / "era5_daily.parquet")
@@ -186,6 +236,9 @@ def prepare(run: str, sids: list[str] | None, n: int, schemes: list[str]) -> pd.
         for p in POLLUTANTS:
             if g[f"{p}_h1"].max() <= 0 or pd.isna(g[f"{p}_h1"].max()):
                 continue
+            if run == "registered" and (sid, p) not in nc:
+                continue
+            excl = nc.get((sid, p), frozenset()) if run == "main" else frozenset()
             if sid not in cells.index:
                 rows.append({"sid": sid, "pollutant": p, "skipped": "no coordinate"})
                 continue
@@ -193,6 +246,6 @@ def prepare(run: str, sids: list[str] | None, n: int, schemes: list[str]) -> pd.
             if w.empty:
                 rows.append({"sid": sid, "pollutant": p, "skipped": f"no ERA5 cell {cells[sid]}"})
                 continue
-            r = build_series(run, g, w, p, n, schemes)
+            r = build_series(run, g, w, p, n, schemes, excl)
             rows.append(r or {"sid": sid, "pollutant": p, "skipped": "too few valid days"})
     return pd.DataFrame(rows)

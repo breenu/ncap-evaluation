@@ -191,10 +191,12 @@ def test_station_year_variants_average_raw_and_deweathered_over_the_same_days(mo
     day = pd.DataFrame(
         {"sid": "s1", "pollutant": "pm25", "date": pd.date_range("2020-01-01", periods=3),
          "obs": [10.0, 20.0, 30.0], "h1": [24, 16, 18], "obs3": [11.0, 21.0, 31.0], "h3": [24, 10, 18],
-         "dw_lgbm": [1.0, 2.0, 3.0], "dw_gam": [4.0, 5.0, 6.0]}
+         "dw_lgbm": [1.0, 2.0, 3.0], "dw_gam": [4.0, 5.0, 6.0],
+         "dw_lgbm_annual": [7.0, 8.0, 9.0], "dw_gam_annual": [1.0, 1.0, 1.0]}
     )  # fmt: skip
     y = aggregate.station_year_table(day, "gam").set_index("variant")
     assert y.loc["q1_t75", "raw"] == 20 and y.loc["q1_t75", "dw"] == 5  # days 1 and 3 (>= 18 h)
+    assert y.loc["q1_t75", "dw_annual"] == 1 and y.loc["q1_t75", "dw_lgbm_annual"] == 8
     assert y.loc["q1_t60", "raw"] == 20 and y.loc["q1_t60", "days"] == 3  # >= 15 h: all three
     assert y.loc["q1_t90", "raw"] == 10 and not y.loc["q1_t90", "valid"]  # >= 22 h: day 1 only
     assert y.loc["q3_t75", "raw"] == 21 and y.loc["q3_t75", "dw_lgbm"] == 2  # 3-of-4 values, days 1, 3
@@ -204,8 +206,9 @@ def test_city_means_use_valid_stations_inside_the_polygon_only():
     from src.normalise.aggregate import city
 
     t = pd.DataFrame(
-        {"unit_id": "u1", "region": "igp", "pollutant": "pm25", "year": 2020, "sid": ["a", "b", "c", "d"],
-         "raw": [10.0, 20.0, 99.0, 99.0], "dw": [1.0, 3.0, 99.0, 99.0], "dw_lgbm": 1.0, "dw_gam": 1.0,
+        {"rule": "primary", "unit_id": "u1", "region": "igp", "pollutant": "pm25", "year": 2020,
+         "sid": ["a", "b", "c", "d"], "raw": [10.0, 20.0, 99.0, 99.0], "dw": [1.0, 3.0, 99.0, 99.0],
+         "dw_annual": 1.0, "dw_lgbm": 1.0, "dw_gam": 1.0, "dw_lgbm_annual": 1.0, "dw_gam_annual": 1.0,
          "valid": [True, True, False, True], "inside_unit": [True, True, True, False]}
     )  # fmt: skip
     c = city(t, "year").iloc[0]
@@ -215,13 +218,70 @@ def test_city_means_use_valid_stations_inside_the_polygon_only():
 def test_divergence_is_relative_to_each_familys_own_mean(monkeypatch):
     from src.normalise import aggregate
 
-    y = pd.DataFrame({"sid": "s", "pollutant": "pm25", "variant": "q1_t75", "valid": True,
-                      "year": [2019, 2020, 2021], "dw_lgbm": [10.0, 10.0, 10.0],
-                      "dw_gam": [20.0, 20.0, 20.0 * np.exp(0.09)]})  # fmt: skip
-    monkeypatch.setattr(aggregate, "cfg", lambda: {"divergence_flag_pct": 5})
-    d = aggregate.divergence_flags(y).iloc[0]
+    y = pd.DataFrame({"sid": ["s"] * 3 + ["t"], "pollutant": "pm25", "variant": "q1_t75", "valid": True,
+                      "rule": "primary", "year": [2019, 2020, 2021, 2019], "dw_lgbm": [10.0, 10.0, 10.0, 5.0],
+                      "dw_gam": [20.0, 20.0, 20.0 * np.exp(0.09), 50.0]})  # fmt: skip
+    monkeypatch.setattr(aggregate, "cfg", lambda: {"divergence_flag_pct": 5, "divergence_min_years": 2})
+    d = aggregate.divergence_flags(y).set_index("sid")
     # a constant level difference (x2) is not divergence; the 2021 step of 0.09 is: gap 0.06
-    assert d.D_pct == pytest.approx(6.0) and d.diverges
+    assert d.loc["s", "D_pct"] == pytest.approx(6.0) and d.loc["s", "diverges"]
+    # one valid year: D is undefined (it would be 0 by construction), and the series is not flagged
+    assert np.isnan(d.loc["t", "D_pct"]) and not d.loc["t", "diverges"]
+
+
+def test_rules_exclude_near_constant_years_only_in_the_primary_analysis():
+    from src.normalise.aggregate import with_rules
+
+    prim = pd.DataFrame({"sid": ["a", "a", "b"], "pollutant": "pm25", "year": [2022, 2023, 2022],
+                         "valid": True, "near_constant": [True, False, False], "dw": [1.0, 2.0, 3.0]})  # fmt: skip
+    reg = pd.DataFrame({"sid": ["a", "a"], "pollutant": "pm25", "year": [2022, 2023], "valid": True,
+                        "near_constant": [True, False], "dw": [9.0, 8.0]})  # fmt: skip
+    t = with_rules(prim, reg, reg[["sid", "pollutant"]].drop_duplicates())
+    p = t[t.rule == "primary"].set_index(["sid", "year"])
+    r = t[t.rule == "registered_flags"].set_index(["sid", "year"])
+    assert not p.loc[("a", 2022), "valid"] and p.loc[("a", 2023), "valid"]
+    # registered: the flagged year counts, and station a's values come from the refit that keeps it
+    assert r.loc[("a", 2022), "valid"] and r.loc[("a", 2022), "dw"] == 9 and r.loc[("b", 2022), "dw"] == 3
+    assert len(r) == 3
+
+
+def test_within_folds_hold_out_months_with_a_buffer():
+    dates = pd.Series(pd.date_range("2020-01-01", "2020-12-31"))
+    fold, train = features.within_folds(dates, 10, 7)
+    # consecutive months fall in different folds; January and November share fold 1
+    assert fold[0] == 1 and fold[31] == 2 and fold[305] == 1
+    tr = train[:, 0]  # fold 1: January and November held out
+    jan, feb7, feb8 = 0, 31 + 6, 31 + 7  # day indices from 1 Jan
+    assert not tr[jan] and not tr[feb7] and tr[feb8]  # 1-7 Feb are within 7 days of 31 Jan
+    assert not tr[(fold == 1)].any()
+
+
+def test_near_constant_rule_needs_both_calm_and_calmer_than_neighbours():
+    from src.clean.nearconstant import flag_days
+
+    t = pd.DataFrame({"region": ["igp", "igp", "igp", "coastal"],
+                      "s": [0.01, 0.01, 0.30, 0.03],
+                      "ref": [0.30, 0.02, 0.30, np.nan]})  # fmt: skip
+    t["ratio"] = t.s / t.ref
+    f = flag_days(t, {"igp": 0.05, "coastal": 0.02}, 0.2, 0.05)
+    # stuck while neighbours vary: flagged; calm spell shared by neighbours: not; normal: not;
+    # no neighbours, 0.03 is above the coastal threshold: not
+    assert f.tolist() == [True, False, False, False]
+
+
+def test_near_constant_years_are_left_out_of_the_primary_fit(tmp_path, monkeypatch):
+    monkeypatch.setattr(features, "INPUTS", tmp_path)
+    monkeypatch.setattr(features, "cfg", lambda: {
+        "fit_end": "2021-12-31", "weather_pool_years": [2020, 2021], "min_fit_days": 100,
+        "resample_window_days": 15, "cv_min_train_days": 100, "cv_min_test_days": 30,
+        "cv_within_folds": 4, "cv_within_buffer_days": 7})  # fmt: skip
+    dates = pd.date_range("2020-01-01", "2021-12-31")
+    day = pd.DataFrame({"sid": "s", "date": dates, "pm25": 10.0, "pm25_h1": 24})
+    w = pd.DataFrame({"date": dates, **{f: 1.0 for f in era5_daily.FEATURES}})
+    r = features.build_series("main", day, w, "pm25", 50, ["seasonal"], frozenset({2021}))
+    fit = pd.read_parquet(tmp_path / "main" / "pm25" / "s" / "fit.parquet")
+    target = pd.read_parquet(tmp_path / "main" / "pm25" / "s" / "target.parquet")
+    assert set(fit.year) == {2020} and len(target) == len(dates) and r["excluded_years"] == "2021"
 
 
 def test_allocate_gives_a_regions_shortfall_to_the_largest_regions():

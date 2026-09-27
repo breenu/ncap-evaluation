@@ -4,7 +4,10 @@ log(PM) = f(temp, rh, ws, wd, blh_mean, blh_pm, precip, ssrd, doy, weekday, tren
 hyperparameters from config (not tuned per station), one thread per model so that workers run in
 parallel. Steps for a task, all from the input folder written by src.normalise.features:
     1. blocked forward-chaining CV: for each test year Y, train on years < Y, predict year Y with
-       the trend clamped at the last training day (the model cannot see the future level)
+       the trend of the same day a year earlier (config cv_trend, DEC-107): the model cannot see
+       the future level
+    1b. within-period blocked CV (DEC-112, a diagnostic): months held out in 10 round-robin folds,
+       with a 7-day buffer, predicted with their own trend (no extrapolation)
     2. final model on all fit days; in-sample fitted values
     3. weather resampling (src.normalise.resample) for every target day, for each scheme
 Metrics (R2, residual autocorrelation) and the smearing factor are computed later from the saved
@@ -68,6 +71,19 @@ def cv_predict(
     return pred, fold
 
 
+def cv_within(fit: pd.DataFrame, w: pd.DataFrame, make=make_model) -> tuple[np.ndarray, np.ndarray]:
+    """Within-period blocked CV: fold f trains on rows with w{f} True and predicts rows with
+    wfold == f, each with its own trend (inside the training range: nothing is extrapolated)."""
+    pred = np.full(len(fit), np.nan)
+    for f in sorted(w.wfold.unique()):
+        tr, te = w[f"w{f}"].to_numpy(), (w.wfold == f).to_numpy()
+        if tr.sum() < 30 or te.sum() == 0:
+            continue
+        m = make().fit(fit.loc[tr, MODEL_COLUMNS], fit.y[tr])
+        pred[te] = m.predict(fit.loc[te, MODEL_COLUMNS])
+    return pred, w.wfold.to_numpy()
+
+
 def cv_only(run: str, pollutant: str, sid: str, convention: str) -> None:
     """CV predictions alone (no resampling), for comparing trend conventions in the pilot."""
     d = series_dir(run, pollutant, sid)
@@ -89,6 +105,7 @@ def run_task(run: str, pollutant: str, sid: str, schemes: list[str], checkpoints
     folds = pd.read_parquet(d / "folds.parquet").year.astype(int).tolist()
     t0 = time.perf_counter()
     cv_pred, cv_fold = cv_predict(fit, folds)
+    cvw_pred, cvw_fold = cv_within(fit, pd.read_parquet(d / "wfolds.parquet"))
     t1 = time.perf_counter()
     model = make_model().fit(fit[MODEL_COLUMNS], fit.y)
     fitted = model.predict(fit[MODEL_COLUMNS])
@@ -102,11 +119,13 @@ def run_task(run: str, pollutant: str, sid: str, schemes: list[str], checkpoints
     t3 = time.perf_counter()
 
     out = pd.concat(dws, axis=1)
-    for col, v in {"y": fit.y, "fitted": fitted, "cv_pred": cv_pred}.items():
+    for col, v in {"y": fit.y, "fitted": fitted, "cv_pred": cv_pred, "cvw_pred": cvw_pred}.items():
         out[col] = np.nan
         out.loc[fit.t_row.to_numpy(), col] = np.asarray(v)
     out["cv_fold"] = 0
     out.loc[fit.t_row.to_numpy(), "cv_fold"] = cv_fold
+    out["cvw_fold"] = 0
+    out.loc[fit.t_row.to_numpy(), "cvw_fold"] = cvw_fold
     pq, js = task_paths(run, FAMILY, pollutant, sid)
     write_atomic_parquet(out, pq)
     if run == "main":

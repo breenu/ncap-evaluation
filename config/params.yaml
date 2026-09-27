@@ -54,6 +54,13 @@ flags:                                # proposal stage 3; values set in Phase 3 
   changepoint_penalty_grid: [3, 5, 8, 10, 15, 20]   # x log(n); calibrated against a block-shuffled null (DEC-078)
   changepoint_false_alarm: 0.05       # the chosen penalty is the smallest with <= 5% false alarms
   changepoint_min_shift: 0.223        # log units: only steps of >= 25% count as level shifts
+  near_constant:                      # stuck / over-smoothed analysers (DEC-110; a deviation added in Phase 5)
+    window_days: 15                   # centred rolling SD of daily log PM over 15 calendar days...
+    min_days: 10                      # ...with at least 10 valid days in the window
+    calibration_quantile: 0.001       # thresholds = this quantile among days of clearly working stations
+    min_region_stations: 20           # S per region if it has this many working stations, else national
+    normal_min_neighbour_corr: 0.8    # "clearly working": the station-year tracks its neighbours this well
+    min_flag_days_per_year: 30        # a station-year is flagged with >= 30 flagged days (a stuck month)
 
 reliability:                          # src/clean/reliability.py (DEC-073)
   check_penalty: 0.8                  # score multiplied by this for each failed check
@@ -63,8 +70,8 @@ control_pool:
   spillover_buffer_km: 25             # sensitivity only: drop controls within 25 km of an NCAP place (DEC-085)
   spillover_buffer_report_km: [10, 25, 50]   # pool sizes shown in docs/pregate_checks.md
 
-deweathering:                         # proposal stage 5; plan section 4, Phase 5; DEC-100 to DEC-104
-  resamples_default: 300              # raised if the convergence check fails
+deweathering:                         # proposal stage 5; plan section 4, Phase 5; DEC-100 to DEC-113
+  resamples_default: 500              # full run (Reenu, DEC-113): the rule gave 300, only narrowly
   resamples_max: 1000
   # Convergence rule, fixed before the pilot (DEC-103): the smallest N on the grid at which the
   # station-month deweathered mean is within `tol` of its value at resamples_max for >= `share`
@@ -76,7 +83,8 @@ deweathering:                         # proposal stage 5; plan section 4, Phase 
   # at the station's cell within +- window days of the same day of year, in any year of the pool;
   # the day's own day of year and weekday are kept. annual: Grange & Carslaw's default, drawing
   # weather, day of year and weekday from any day (removes the seasonal cycle).
-  resample_scheme: seasonal
+  resample_scheme: seasonal           # primary (Reenu; a registered-plan deviation, DEC-109)
+  resample_schemes_sensitivity: [annual]   # Grange & Carslaw's default, run on the full set (DEC-109)
   resample_window_days: 15
   weather_pool_years: [2015, 2025]    # full calendar years of ERA5 at the cell, the same for every station
   fit_end: "2025-12-31"               # calendar 2025 is the last primary ground year (DEC-079)
@@ -87,8 +95,16 @@ deweathering:                         # proposal stage 5; plan section 4, Phase 
   # last_year = the same calendar day one year earlier (inside the training data);
   # clamp = the last training day (flawed: carries that day's season into the whole year).
   cv_trend: last_year
+  # Within-period blocked CV, a diagnostic only (DEC-112; never used to choose the family): calendar
+  # months dealt round-robin into K folds; a held-out month's neighbours within `buffer` days are
+  # left out of training too. It tests the weather response without extrapolating the trend.
+  cv_within_folds: 10
+  cv_within_buffer_days: 7
   afternoon_utc_hours: [6, 12]        # 11:30-17:30 IST, for the afternoon BLH maximum
-  divergence_flag_pct: 5              # a series "diverges" if the families' annual series differ by > 5% (pilot §7)
+  # A series "diverges" if D > 5%, D = the largest gap over its valid years between the two families'
+  # log annual deweathered means, each centred on its own mean over those years (DEC-111).
+  divergence_flag_pct: 5
+  divergence_min_years: 2             # D needs >= 2 valid station-years (with one, it is 0 by construction)
   workers: 8                          # of 10 cores; one thread per worker (LightGBM n_jobs=1, R BLAS 1)
   lgbm:                               # fixed settings, not tuned per station (DEC-101)
     n_estimators: 500

@@ -125,6 +125,20 @@ write_atomic <- function(df, path) {
   file.rename(tmp, path)
 }
 
+# Within-period blocked CV (DEC-112, a diagnostic): fold f trains on rows with w<f> TRUE and predicts
+# rows with wfold == f, each with its own trend (inside the training range).
+cv_within <- function(fit, w) {
+  pred <- rep(NA_real_, nrow(fit))
+  for (f in sort(unique(w$wfold))) {
+    tr <- w[[paste0("w", f)]]
+    te <- w$wfold == f
+    if (sum(tr) < 30 || sum(te) == 0) next
+    m <- fit_gam(fit[tr, ])
+    pred[te] <- predict_log(m, fit[te, ])
+  }
+  list(pred = pred, fold = as.integer(w$wfold))
+}
+
 run_task <- function(run, pollutant, sid) {
   d <- file.path(INPUTS, run, pollutant, sid)
   fit <- as.data.frame(read_parquet(file.path(d, "fit.parquet")))
@@ -136,6 +150,7 @@ run_task <- function(run, pollutant, sid) {
   cv <- cv_predict(fit, folds, convention)
   cv_pred <- cv$pred
   cv_fold <- cv$fold
+  cvw <- cv_within(fit, as.data.frame(read_parquet(file.path(d, "wfolds.parquet"))))
   t1 <- proc.time()[["elapsed"]]
   m <- fit_gam(fit)
   fitted <- predict_log(m, fit)
@@ -155,6 +170,10 @@ run_task <- function(run, pollutant, sid) {
   out$fitted <- NA_real_
   out$cv_pred <- NA_real_
   out$cv_fold <- 0L
+  out$cvw_pred <- NA_real_
+  out$cvw_fold <- 0L
+  out$cvw_pred[rows] <- cvw$pred
+  out$cvw_fold[rows] <- cvw$fold
   out$y[rows] <- fit$y
   out$fitted[rows] <- fitted
   out$cv_pred[rows] <- cv_pred

@@ -176,6 +176,21 @@ rule missingness:
     shell: f"{PY} src.clean.missingness"
 
 
+# Added in Phase 5 (DEC-110): stuck / over-smoothed analysers. Used by deweathering and later
+# stages; not an input of `clean`, so adding it did not invalidate the Phase 3-4 outputs.
+rule near_constant:
+    input:
+        "data/processed/station_day.parquet",
+        "data/processed/station_year_quality.parquet",
+        f"{INT}/station_regions.csv",
+        "src/clean/nearconstant.py",
+    output:
+        f"{INT}/audit/near_constant_days.parquet",
+        "data/processed/station_year_near_constant.parquet",
+        "docs/near_constant_check.md",
+    shell: f"{PY} src.clean.nearconstant"
+
+
 rule clean:
     input:
         f"{STUB}/acquire.done",

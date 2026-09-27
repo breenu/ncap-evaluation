@@ -7,6 +7,7 @@
 
 NRM = "data/interim/normalise"
 DW = "data/processed/deweathered"
+FIG3 = ["fig3_deweathered", "fig3_deweathered_grange_carslaw"]  # seasonal (primary); annual (DEC-109)
 NRM_CODE = ["src/normalise/features.py", "src/normalise/resample.py", "src/normalise/lgbm.py",
             "src/normalise/gam.R", "src/normalise/run.py"]
 
@@ -57,21 +58,31 @@ rule normalise_pilot_report:
     shell: f"{PY} src.normalise.pilot report"
 
 
+# main: near-constant station-years left out of the fit (primary); registered: the series that have
+# any, refitted with them kept (sensitivity) (DEC-110).
 rule normalise_prepare:
     input:
         "data/processed/station_day.parquet",
         "data/processed/stations.csv",
+        "data/processed/station_year_near_constant.parquet",
         f"{NRM}/era5_daily.parquet",
-        "docs/deweathering_pilot.md",  # N comes from the pilot's convergence check (DEC-103)
+        "docs/deweathering_pilot.md",  # N comes from the pilot's convergence check (DEC-103, DEC-113)
         "src/normalise/features.py",
-    output: f"{NRM}/inputs/main/series.csv"
-    shell: f"{PY} src.normalise.run prepare --run main"
+    output:
+        f"{NRM}/inputs/main/series.csv",
+        f"{NRM}/inputs/registered/series.csv",
+    shell:
+        f"{PY} src.normalise.run prepare --run main && "
+        f"{PY} src.normalise.run prepare --run registered"
 
 
 rule normalise_fit:
-    input: f"{NRM}/inputs/main/series.csv", NRM_CODE
+    input: f"{NRM}/inputs/main/series.csv", f"{NRM}/inputs/registered/series.csv", NRM_CODE
     output: touch(f"{NRM}/fits/main/_all.done")
-    shell: f"{PY} src.normalise.run fit --run main --family both"
+    shell:
+        f"{PY} src.normalise.run fit --run main --family both && "
+        f"{PY} src.normalise.run fit --run registered --family both && "
+        f"{PY} src.normalise.run cvcheck --run main"
 
 
 rule normalise_aggregate:
@@ -98,14 +109,17 @@ rule fig3:
         f"{DW}/city_year.parquet",
         "src/viz/fig3_deweathered.py",
         "src/viz/style.py",
-    output: expand("reports/figures/fig3_deweathered.{ext}", ext=["png", "svg"])
-    shell: f"{PY} src.viz.fig3_deweathered"
+    output: expand("reports/figures/{f}.{ext}", f=FIG3, ext=["png", "svg"])
+    shell:
+        f"{PY} src.viz.fig3_deweathered --scheme seasonal && "
+        f"{PY} src.viz.fig3_deweathered --scheme annual"
 
 
 rule deweathering_report:
     input:
         f"{DW}/series_metrics.parquet",
         f"{DW}/city_year.parquet",
+        "docs/near_constant_check.md",
         "src/normalise/report.py",
     output: "docs/deweathering_report.md"
     shell: f"{PY} src.normalise.report"
@@ -115,7 +129,7 @@ rule normalise:
     input:
         f"{STUB}/clean.done",
         "docs/deweathering_report.md",
-        expand("reports/figures/fig3_deweathered.{ext}", ext=["png", "svg"]),
+        expand("reports/figures/{f}.{ext}", f=FIG3, ext=["png", "svg"]),
     output:
         f"{STUB}/normalise.done",
     run:
