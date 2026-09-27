@@ -221,3 +221,19 @@ def test_monitor_gain_counts_only_stations_inside_and_new_in_window():
     assert got.gained_monitor.to_dict() == {"a": True, "b": False, "c": False, "d": False}
     assert got.stations_before["a"] == 1 and got.stations_new["a"] == 1
     assert got.stations_before["c"] == 0  # outside the polygon: not counted
+
+
+def test_osf_export_strips_markers_replaces_status_and_pins_links():
+    from src.causal import osf_export
+
+    # SYNTHETIC plan text
+    text = ("# Plan\n\n*Status: draft, with `sync-plan` notes.*\n\nMDE <!--g:mde-->1.2<!--/g-->%.\n\n"
+            "<!--g:tab-->\n\n| a |\n|---|\n| 1 |\n\n<!--/g-->\n\nSee [checks](pregate_checks.md) and "
+            "[web](https://example.org).\n")  # fmt: skip
+    out = osf_export.clean(text, "abc123", "2026-09-27")
+    assert "<!--" not in out and "MDE 1.2%." in out and "| 1 |" in out
+    assert "Status:" not in out and "commit `abc123`" in out and "version of 2026-09-27" in out
+    assert f"]({osf_export.REPO_URL}/blob/abc123/docs/pregate_checks.md)" in out
+    assert "](https://example.org)" in out  # absolute links untouched
+    with pytest.raises(ValueError):
+        osf_export.clean("# Plan\n\nno status here\n", "abc123", "2026-09-27")
