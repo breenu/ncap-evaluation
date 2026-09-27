@@ -4,13 +4,15 @@
    grid point that holds a station (data/interim/station_crosswalk.csv), over the ground
    window. The request is made at the grid point itself, so the returned cell is unambiguous.
    -> data/raw/era5_timeseries/era5ts_<lat>_<lon>.zip
+   --located adds the cells of stations located in Phase 3 (data/processed/stations.csv), some of
+   which lie in cells the Phase 2 crosswalk did not have (DEC-100).
 2. Monthly means (reanalysis-era5-single-levels-monthly-means) for an India bounding box over
    the satellite download years, for the satellite layer.
    -> data/raw/era5_monthly/era5_monthly_india_<y0>_<y1>.zip
 
 Never downloads hourly ERA5 for all of India (CLAUDE.md hard rule 6).
 
-    python -m src.acquire.era5 [--points-only | --monthly-only]
+    python -m src.acquire.era5 [--points-only | --monthly-only | --located]
 """
 
 import argparse
@@ -22,7 +24,8 @@ import pandas as pd
 
 from src.acquire.common import finish, run_parallel
 from src.common.manifest import download
-from src.common.paths import INTERIM, params, raw_dir
+from src.acquire.stations import snap_to_grid
+from src.common.paths import INTERIM, PROCESSED, params, raw_dir
 
 TS_DATASET = "reanalysis-era5-single-levels-timeseries"
 MONTHLY_DATASET = "reanalysis-era5-single-levels-monthly-means"
@@ -52,16 +55,23 @@ def cds_fetch(dataset: str, request: dict):
     return fetch
 
 
-def station_cells(crosswalk: Path | None = None) -> list[tuple[float, float]]:
+def station_cells(
+    crosswalk: Path | None = None, stations: Path | None = None
+) -> list[tuple[float, float]]:
+    """Grid points of the Phase 2 crosswalk, plus (if given) those of the located stations."""
     x = pd.read_csv(crosswalk or INTERIM / "station_crosswalk.csv")
     cells = x.dropna(subset=["era5_lat", "era5_lon"])[["era5_lat", "era5_lon"]].drop_duplicates()
-    return sorted((float(a), float(b)) for a, b in cells.itertuples(index=False))
+    out = {(float(a), float(b)) for a, b in cells.itertuples(index=False)}
+    if stations is not None:
+        s = pd.read_csv(stations).dropna(subset=["lat", "lon"])
+        out |= {(snap_to_grid(a), snap_to_grid(b)) for a, b in zip(s.lat, s.lon)}
+    return sorted(out)
 
 
-def point_tasks(dest: Path) -> list:
+def point_tasks(dest: Path, stations: Path | None = None) -> list:
     w = params()["windows"]
     tasks = []
-    for lat, lon in station_cells():
+    for lat, lon in station_cells(stations=stations):
         request = {
             "variable": VARIABLES,
             "location": {"latitude": lat, "longitude": lon},
@@ -111,8 +121,18 @@ def main() -> None:
     )
     ap.add_argument("--points-only", action="store_true")
     ap.add_argument("--monthly-only", action="store_true")
+    ap.add_argument(
+        "--located", action="store_true", help="points only, adding Phase 3's located stations"
+    )
     ap.add_argument("--workers", type=int, default=4)
     args = ap.parse_args()
+    if args.located:
+        d = raw_dir("era5_timeseries")
+        tasks = point_tasks(d, stations=PROCESSED / "stations.csv")
+        print(f"era5_timeseries (crosswalk + located stations): {len(tasks)} grid points")
+        errors = run_parallel(tasks, args.workers, "era5_timeseries")
+        finish(d, "era5_timeseries", errors, flag="acquire_era5_located")
+        return
     if not args.points_only:
         d = raw_dir("era5_monthly")
         finish(d, "era5_monthly", run_parallel([monthly_task(d)], 1, "era5_monthly"))

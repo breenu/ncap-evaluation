@@ -63,9 +63,49 @@ control_pool:
   spillover_buffer_km: 25             # sensitivity only: drop controls within 25 km of an NCAP place (DEC-085)
   spillover_buffer_report_km: [10, 25, 50]   # pool sizes shown in docs/pregate_checks.md
 
-deweathering:                         # proposal stage 5; plan section 4, Phase 5
+deweathering:                         # proposal stage 5; plan section 4, Phase 5; DEC-100 to DEC-104
   resamples_default: 300              # raised if the convergence check fails
   resamples_max: 1000
+  # Convergence rule, fixed before the pilot (DEC-103): the smallest N on the grid at which the
+  # station-month deweathered mean is within `tol` of its value at resamples_max for >= `share`
+  # of pilot station-months (both families, both pollutants).
+  convergence_grid: [50, 100, 200, 300, 500, 1000]
+  convergence_tol: 0.005
+  convergence_share: 0.95
+  # Weather resampling (DEC-102). seasonal: each day's weather vector is drawn, whole, from ERA5 days
+  # at the station's cell within +- window days of the same day of year, in any year of the pool;
+  # the day's own day of year and weekday are kept. annual: Grange & Carslaw's default, drawing
+  # weather, day of year and weekday from any day (removes the seasonal cycle).
+  resample_scheme: seasonal
+  resample_window_days: 15
+  weather_pool_years: [2015, 2025]    # full calendar years of ERA5 at the cell, the same for every station
+  fit_end: "2025-12-31"               # calendar 2025 is the last primary ground year (DEC-079)
+  min_fit_days: 365                   # a station-pollutant with fewer valid days is not deweathered
+  cv_min_train_days: 365              # a forward-chaining fold needs a year of training days...
+  cv_min_test_days: 30                # ...and a month of test days in its test year
+  # Trend value used to predict an unseen test year (DEC-107, replacing DEC-103's clamp):
+  # last_year = the same calendar day one year earlier (inside the training data);
+  # clamp = the last training day (flawed: carries that day's season into the whole year).
+  cv_trend: last_year
+  afternoon_utc_hours: [6, 12]        # 11:30-17:30 IST, for the afternoon BLH maximum
+  divergence_flag_pct: 5              # a series "diverges" if the families' annual series differ by > 5% (pilot §7)
+  workers: 8                          # of 10 cores; one thread per worker (LightGBM n_jobs=1, R BLAS 1)
+  lgbm:                               # fixed settings, not tuned per station (DEC-101)
+    n_estimators: 500
+    learning_rate: 0.05
+    num_leaves: 31
+    min_child_samples: 20
+    subsample: 0.8
+    subsample_freq: 1
+    colsample_bytree: 0.9
+  gam:                                # mgcv bam, fREML, discrete (DEC-101)
+    trend_k_per_year: 4               # basis size of the trend smooth per year of record
+    trend_k_min: 5
+    trend_k_max: 45
+  pilot:                              # DEC-104
+    n_stations: 20
+    per_region: 5                     # a region's shortfall goes to the regions with most eligible stations
+    min_valid_days: 1095              # both PM2.5 and PM10, so each pilot station tests both
 
 robustness:                           # proposal validation table
   placebo_year: 2016

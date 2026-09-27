@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-09-27. Phase 4 complete: the analysis plan (commit `6e24eca`) is registered on OSF (https://osf.io/jksne/) and the pre-registration gate is **open** (commit `0d9aa42`). **Next: Phase 5, deweathering** (see "Next: Phase 5" below).*
+*Last updated: 2026-09-27. Phase 5 (deweathering) in progress: the **pilot is done and waits for Reenu's go-ahead** before the full run (see "Phase 5" below; `docs/deweathering_pilot.md`). Gate open since `0d9aa42` (plan `6e24eca`, https://osf.io/jksne/).*
 
 ## Status
 
@@ -14,7 +14,8 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 2 Acquisition | ✅ approved 2026-09-26; pushed. FIRMS pending (Reenu will run it from another network with a new key) |
 | 3 Storage, cleaning, audit, EDA | ✅ approved 2026-09-26; pushed (DEC-080 to DEC-082) |
 | 4 Analysis-plan gate | ✅ 2026-09-27: plan `6e24eca` registered at https://osf.io/jksne/; gate opened in `0d9aa42` (DEC-084 to DEC-099) |
-| 5–10 | not started |
+| 5 Deweathering | pilot done 2026-09-27 (DEC-100 to DEC-108); full run waits for go-ahead |
+| 6–10 | not started |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). No post-2019 effect estimates exist yet; they belong to Phase 7.
 
@@ -68,33 +69,56 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Next: Phase 5 (deweathering, RQ2). START HERE in a new chat
+## Phase 5 (deweathering, RQ2): IN PROGRESS. START HERE in a new chat
 
-Per CLAUDE.md: first write a short plan of files and functions, then build; at the end run the tests, commit, update this file and DECISIONS, write `docs/phase-notes/05-deweathering.md`, and **stop** for Reenu's approval. Spec: proposal stage 5; PLAN.md §4 Phase 5.
+**State (2026-09-27): the pilot is done and waiting for Reenu's go-ahead; the full run has not started.** Read `docs/deweathering_pilot.md` (generated) and DEC-100 to DEC-108.
 
-**The plan is registered and frozen.** `docs/analysis_plan.md` (registered version: commit `6e24eca`; OSF https://osf.io/jksne/) is not edited any more. Any departure from it is logged in DECISIONS as a dated, justified deviation and listed in the final report. Commitments that bind Phase 5:
-- **Model families:** LightGBM and mgcv GAM on log daily PM, per station and pollutant (PM2.5, PM10). The primary family is the one with the better **median out-of-sample R² under blocked, forward-chaining CV by year**; the other is a sensitivity analysis; a no-deweathering baseline is also kept (DEC-088; plan §4).
-- **Validation:** blocked forward-chaining CV only, never random splits; report out-of-sample R² and residual autocorrelation (ACF lags 1–7) per station.
-- **Resampling:** Grange & Carslaw weather resampling; N from a convergence check (`deweathering.resamples_default` 300, max 1000); both families share the same resample indices.
-- **Ground rules already fixed:** valid hour = any quarter-hour (primary), 3 of 4 (sensitivity) (DEC-069); completeness 75% (60/90 sensitivity); calendar 2025 is the last primary year, Jan–Mar 2026 a sensitivity only (DEC-079); the 5 Reenu-decided stations get a drop-all-5 sensitivity (DEC-080).
-- **Aggregation:** station → city-month and city-year. The balanced panel itself (baseline 2018 primary, 2019 sensitivity) is Phase 6.
-- **No treatment effects in Phase 5.** The gate is open, but NCAP-vs-control estimation is Phase 7. Deweathering is fitted per station and never uses NCAP status.
+**The plan is registered and frozen** (`docs/analysis_plan.md` at `6e24eca`; OSF https://osf.io/jksne/). Commitments binding Phase 5: LightGBM and mgcv GAM on log daily PM per station and pollutant; the primary family is the one with the better **median out-of-sample R² under blocked, forward-chaining CV by year** (DEC-088); a no-deweathering baseline is kept; no NCAP information is used and no treatment effect is estimated.
 
-**Step 1 (small download, under 2 GB): ERA5 for 20 missing grid points.** 22 stations with a coordinate (13 station-level, 9 approximate urban-centre points) sit in 0.25° cells that have no file in `data/raw/era5_timeseries/` (283 points on disk, each ~0.3 MB). The cells were chosen in Phase 2 from the crosswalk, before Phase 3 located stations (DEC-059/067/080). Rebuild the cell list from `data/processed/stations.csv` and fetch only the missing points with `src/acquire/era5.py` (CDS key in `~/.cdsapirc`; idempotent, manifest-recorded).
+**Built so far:**
+- ERA5 for the 20 missing grid points: `python -m src.acquire.era5 --located` (303 cells, manifest verified, flag `acquire_era5_located`; DEC-100).
+- `src/normalise/`:
+  - `era5_daily.py` → `data/interim/normalise/era5_daily.parquet` (Indian-day weather per cell)
+  - `features.py` (inputs, folds, shared resample indices)
+  - `resample.py` (vectorised resampling)
+  - `lgbm.py`, `gam.R` (the two families)
+  - `store.py` (atomic writes; a task is done when its `.json` exists)
+  - `run.py` (prepare / fit / cvcheck; resumable)
+  - `collect.py` (metrics, smearing)
+  - `pilot.py` (selection + report)
+  - `aggregate.py` (family choice, station/city-month/city-year tables)
+  - `report.py` (→ `docs/deweathering_report.md`)
+- `src/viz/fig3_deweathered.py`.
+- Snakemake: `workflow/rules/normalise.smk` (pilot and full-run rules; `normalise` is no longer a stub).
+- Tests: `tests/test_normalise.py` (18, synthetic); full suite 152 passed.
+- Pilot: 20 stations × 2 pollutants, both families, 1,000 draws, both resampling schemes (GAM about 5 min, LightGBM 44 min on 8 workers). Aggregation and figure 3 were tested on pilot outputs (`data/interim/normalise/pilot/aggregate/`, not report outputs).
 
-**Inputs:**
-- `data/processed/station_day.parquet`: station-day PM with flagged values already removed (DEC-068); Indian dates (DEC-055).
-- `data/processed/station_year_quality.parquet` and `station_year.parquet`: validity flags per rule variant.
-- `data/raw/era5_timeseries/era5ts_<lat>_<lon>.zip`: hourly CSV in UTC (t2m, d2m, u10, v10, blh, tp, ssrd). Aggregate to **Indian days**; clip small negative `ssrd` to zero (DEC-035). Features (PLAN.md): daily mean T, RH from Td, vector-mean wind speed and direction, daily-mean and afternoon-max BLH, precipitation sum, SSRD sum, day of year, weekday, trend.
-- `data/processed/stations.csv`: coordinates (`coord_quality`), `reenu_decided`.
-- Snakemake: replace the `normalise` stub in `workflow/rules/normalise.smk`.
+**Pilot findings (numbers in `docs/deweathering_pilot.md`):**
+- Median out-of-sample R², all pilot series: GAM 0.315, LightGBM 0.305 (`last_year` convention); GAM is higher under both CV conventions.
+- Residual ACF at lag 1 is about 0.8: the CV must be blocked.
+- N = 300 meets the convergence rule, but only narrowly (LightGBM PM2.5: 0.9502 against 0.95).
+- The weather part of year-on-year changes: median 2–4%.
+- Families diverge by more than 5% in 3 of 37 series.
+- Full-run estimate: about 2.5 h wall-clock.
 
-**Environment notes:** mgcv 1.9-4 now comes from the CRAN snapshot via `install_r_extra.R` (DEC-093). HonestDiD 0.2.8 is installed in Phase 7 (DEC-097). Compute estimate: ~600 stations × 2 pollutants × 2 families, roughly 1–3 h on 10 cores (PLAN.md).
+**Decisions waiting for Reenu:**
+1. Go-ahead for the full run.
+2. N = 300 (the rule's answer, narrow) or 500 (in the proposal's 500–1,000 range; LightGBM about 3.6 h instead of 2.2 h).
+3. Confirm the seasonal resampling scheme (DEC-102) and the `last_year` CV convention (DEC-107, changed after seeing pilot output).
+4. Confirm the 5% divergence flag.
+
+**Then:**
+1. `snakemake --cores 1 normalise` (or `python -m src.normalise.run prepare --run main`, then `fit --run main --family both`; re-run the same command to resume after a crash or sleep).
+2. Aggregate, the report, and figure 3 (look at it; figure 3 may need an annual view).
+3. Tests, commit, PROGRESS, DECISIONS, `docs/phase-notes/05-deweathering.md`, then stop.
+
+**Open observations from the pilot:**
+- site_5264 (Bagalkot) has an almost constant PM series in 2022–25 (day-to-day SD of log PM 0.04–0.16). It is probably a stuck or over-smoothed analyser that escapes the 4-hour flatline rule; worth an audit look.
+- LightGBM's in-sample R² (0.99) is far above its out-of-sample R² (0.3). It memorises individual days through the trend feature, a known property of this method; watch whether it under-removes weather.
 
 **Housekeeping:**
-- The pre-fix environment `ncap_prev` was deleted on 2026-09-27.
-- The GitHub repo is **public** since 2026-09-27; the repository links in the registered OSF PDF resolve (checked without authentication).
-- **Still open: no LICENSE file**, and the repo is now public. Reenu to choose a code licence; any derived dataset from the CPCB mirror must be ODbL (DEC-037).
+- The GitHub repo is **public** since 2026-09-27; the repository links in the registered OSF PDF resolve.
+- **Still open: no LICENSE file.** Reenu to choose a code licence; any derived dataset from the CPCB mirror must be ODbL (DEC-037).
 - The registered PDF is `docs/osf/analysis_plan_osf.pdf` (from `6e24eca`); do not re-export it.
 
 ## Phase 4 review fixes (2026-09-27)
@@ -164,7 +188,7 @@ Built and run (all generated, all in Snakemake `workflow/rules/clean.smk`):
 - **Mirror provenance** is one step removed from CPCB (DEC-037). Mitigations: sha256 pinning, the cross-check (2019–21 value-identical), and ODbL for any derived dataset we publish.
 - **Pre-2018 ground network is tiny**: PM10 has 9 valid station-years in 2017 and 66 in 2018. Ground-based and PM10 results are secondary (analysis plan §0).
 - **Stations with no coordinate anywhere** keep an approximate city point (count in `docs/station_metadata_review.md`); they stay out of neighbour checks.
-- **ERA5 cells for newly located stations**: stations located in Phase 3 (by identity or locality) may sit in 0.25° cells not yet downloaded. Check and fetch in Phase 5 (small, under 2 GB).
+- ~~ERA5 cells for newly located stations~~: resolved in Phase 5 (20 cells fetched, DEC-100).
 - **V6.GL.03 has no methods note.** If one appears, revisit DEC-001.
 - **The treatment definition** (listed vs funded) is proposed in `docs/analysis_plan.md` (listed primary) and decided by Reenu at the gate.
 - **No LICENSE file yet, and the repo is public (since 2026-09-27).** Reenu to choose a code licence. Any derived dataset from the CPCB mirror must be ODbL (DEC-037).

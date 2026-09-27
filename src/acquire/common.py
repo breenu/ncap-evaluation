@@ -27,8 +27,9 @@ def run_parallel(tasks: Iterable[Callable[[], object]], workers: int, label: str
     return errors
 
 
-def finish(source_dir: Path, source: str, errors: list[str]) -> None:
-    """Fail loudly on any error; otherwise verify the folder and write the Snakemake flag."""
+def finish(source_dir: Path, source: str, errors: list[str], flag: str | None = None) -> None:
+    """Fail loudly on any error; otherwise verify the folder and write the Snakemake flag
+    (`acquire_<source>.done`, or `<flag>.done` for a second rule over the same source)."""
     if errors:
         for e in errors[:20]:
             print("  ERROR", e, file=sys.stderr)
@@ -36,9 +37,9 @@ def finish(source_dir: Path, source: str, errors: list[str]) -> None:
     problems = verify(source_dir)
     if problems:
         raise SystemExit(f"{source}: manifest check failed: {problems[:10]}")
-    flag = INTERIM / "_flags" / f"acquire_{source}.done"
-    flag.parent.mkdir(parents=True, exist_ok=True)
-    flag.touch()
+    flag_path = INTERIM / "_flags" / f"{flag or 'acquire_' + source}.done"
+    flag_path.parent.mkdir(parents=True, exist_ok=True)
+    flag_path.touch()
     print(f"{source}: complete and verified")
 
 

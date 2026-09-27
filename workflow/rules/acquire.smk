@@ -57,6 +57,15 @@ rule acquire_era5:
     shell: f"{PY} src.acquire.era5"
 
 
+# Phase 5: cells of stations located in Phase 3 that the crosswalk did not have (DEC-100).
+rule acquire_era5_located:
+    input:
+        f"{FLAGS}/acquire_era5_timeseries.done",
+        "data/processed/stations.csv",
+    output: f"{FLAGS}/acquire_era5_located.done"
+    shell: f"{PY} src.acquire.era5 --located"
+
+
 rule acquire_ncap_docs:
     input: "config/ncap_sources.yaml"
     output: f"{FLAGS}/acquire_ncap_docs.done"
