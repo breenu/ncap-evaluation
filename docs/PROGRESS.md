@@ -91,9 +91,10 @@ Per CLAUDE.md: first write a short plan of files and functions, then build; at t
 
 **Environment notes:** mgcv 1.9-4 now comes from the CRAN snapshot via `install_r_extra.R` (DEC-093). HonestDiD 0.2.8 is installed in Phase 7 (DEC-097). Compute estimate: ~600 stations × 2 pollutants × 2 families, roughly 1–3 h on 10 cores (PLAN.md).
 
-**Housekeeping (Reenu):**
-- The pre-fix environment `ncap_prev` can be deleted: `conda env remove -n ncap_prev`.
-- The GitHub repo is still **private**, so the repository links in the registered OSF PDF do not open for others until it is made public.
+**Housekeeping:**
+- The pre-fix environment `ncap_prev` was deleted on 2026-09-27.
+- The GitHub repo is **public** since 2026-09-27; the repository links in the registered OSF PDF resolve (checked without authentication).
+- **Still open: no LICENSE file**, and the repo is now public. Reenu to choose a code licence; any derived dataset from the CPCB mirror must be ODbL (DEC-037).
 - The registered PDF is `docs/osf/analysis_plan_osf.pdf` (from `6e24eca`); do not re-export it.
 
 ## Phase 4 review fixes (2026-09-27)
@@ -166,7 +167,7 @@ Built and run (all generated, all in Snakemake `workflow/rules/clean.smk`):
 - **ERA5 cells for newly located stations**: stations located in Phase 3 (by identity or locality) may sit in 0.25° cells not yet downloaded. Check and fetch in Phase 5 (small, under 2 GB).
 - **V6.GL.03 has no methods note.** If one appears, revisit DEC-001.
 - **The treatment definition** (listed vs funded) is proposed in `docs/analysis_plan.md` (listed primary) and decided by Reenu at the gate.
-- **No LICENSE file yet.** Reenu to choose a code licence before or when the repo goes public. Any derived dataset from the CPCB mirror must be ODbL (DEC-037).
+- **No LICENSE file yet, and the repo is public (since 2026-09-27).** Reenu to choose a code licence. Any derived dataset from the CPCB mirror must be ODbL (DEC-037).
 - **Jan–Mar 2026 ground data are provisional** (OpenAQ raw feed, DEC-079).
 - **Outputs are not byte-deterministic** (GeoPackage timestamps, tie order in DuckDB/pandas writes, SVG dates and ids; DEC-094). Content and numbers reproduce. Fix before the Phase 10 clean-clone check.
 - Possible extension (not scheduled): the official PRANA/NAMP PM10 series as a "reported" reference (DEC-016).
