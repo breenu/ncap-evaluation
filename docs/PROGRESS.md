@@ -76,7 +76,7 @@ Phase 4 is built; nothing after it may start until Reenu approves the plan.
 
 **Final changes before registration (DEC-095 to DEC-098):** equivalence margin ±5% (smallest effect of interest, not the MDE); calibration-leakage split (74 treated units gained a monitor in 2019–2024, 39 did not; `pregate_checks.md` §7); HonestDiD bounds as a reported sensitivity; plan and summary rewritten in Reenu's first person (wording only, verified).
 
-**What Reenu does next:** register `docs/analysis_plan.md` on OSF and bring back the link. The plan's commit hash is recorded in DECISIONS/PROGRESS at the next step.
+**What Reenu does next:** register `docs/analysis_plan.md` on OSF and bring back the link. **Final plan commit: `6e24ecaf38c54c1f31774c966c243e4183c1b2ca`** (the version to register). After registration, in its own commit, set `config/gate.yaml` `analysis_plan_commit` to this hash (or to a later commit if the plan is edited again) and record the OSF link in DECISIONS.
 
 **After approval, in this order (DEC-012):**
 1. Commit the approved plan (and summary). Note the commit hash.
