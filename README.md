@@ -21,11 +21,11 @@ This project separates the three, and asks whether NCAP cities saw larger falls 
 
 The specification is [`docs/proposal.pdf`](docs/proposal.pdf).
 
-**Effect estimation is pre-registered.** No post-2019 treatment effect is computed until the analysis plan ([`docs/analysis_plan.md`](docs/analysis_plan.md), finalised and awaiting approval) is approved and committed. The pipeline enforces this through [`config/gate.yaml`](config/gate.yaml): gated steps refuse to run while it is closed. Until then, no figure or table compares NCAP with non-NCAP cities after 2018.
+**Effect estimation is pre-registered.** The analysis plan ([`docs/analysis_plan.md`](docs/analysis_plan.md)) was approved, committed (`6e24eca`) and registered on OSF (https://osf.io/jksne/) before any post-2019 treatment effect was computed. The pipeline enforced this through [`config/gate.yaml`](config/gate.yaml): gated steps refused to run until it was opened, in its own commit citing the plan. Until then, no figure or table compared NCAP with non-NCAP cities after 2018.
 
 ## Status
 
-**Phases 1–3 of 10 are complete, and Phase 4 (the analysis plan) awaits approval. There are no effect estimates.** Progress and the next steps are in [`docs/PROGRESS.md`](docs/PROGRESS.md); every judgement call is logged in [`docs/DECISIONS.md`](docs/DECISIONS.md), and each phase has a plain-language note in [`docs/phase-notes/`](docs/phase-notes/).
+**Phases 1–4 of 10 are complete: the analysis plan is registered on OSF (https://osf.io/jksne/) and the pre-registration gate is open. There are no effect estimates yet.** Progress and the next steps are in [`docs/PROGRESS.md`](docs/PROGRESS.md); every judgement call is logged in [`docs/DECISIONS.md`](docs/DECISIONS.md), and each phase has a plain-language note in [`docs/phase-notes/`](docs/phase-notes/).
 
 | Phase | What it did |
 |---|---|
@@ -51,7 +51,7 @@ Figures: [station-entry map](reports/figures/fig2_station_entry.png) (where and 
 
 | Phase | |
 |---|---|
-| 4 | *Built; awaiting approval.* Pre-gate computations on pre-2019 data only ([`docs/pregate_checks.md`](docs/pregate_checks.md): minimum detectable effect, control pool, baseline balance); analysis plan in OSF Preregistration format |
+| 4 | *Complete; registered at https://osf.io/jksne/.* Pre-gate computations on pre-2019 data only ([`docs/pregate_checks.md`](docs/pregate_checks.md): minimum detectable effect, control pool, baseline balance); analysis plan in OSF Preregistration format |
 | 5 | Deweathering (RQ2): Grange & Carslaw weather normalisation with LightGBM and GAM |
 | 6 | Network-composition correction (RQ1): all stations vs a balanced station panel vs satellite |
 | 7 | Causal analysis (RQ3): satellite synthetic difference-in-differences, event study, staggered-adoption estimator, ground-station checks, full robustness table |

@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-09-27. Phase 4 built and reviewed; Reenu's rulings and the units correction are in the plan (DEC-091 to DEC-093); mgcv fixed; full pregate rebuild from raw data done in the rebuilt environment. Gate still closed. Final pre-registration changes made (DEC-095 to DEC-098). **Next: Reenu registers the plan on OSF and returns with the link** (see "Next: the gate" below).*
+*Last updated: 2026-09-27. Phase 4 complete: the analysis plan (commit `6e24eca`) is registered on OSF (https://osf.io/jksne/) and the pre-registration gate is **open** (commit `0d9aa42`). **Next: Phase 5, deweathering** (see "Next: Phase 5" below).*
 
 ## Status
 
@@ -13,10 +13,10 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 1 Skeleton | ✅ approved 2026-09-26; pushed; CI green |
 | 2 Acquisition | ✅ approved 2026-09-26; pushed. FIRMS pending (Reenu will run it from another network with a new key) |
 | 3 Storage, cleaning, audit, EDA | ✅ approved 2026-09-26; pushed (DEC-080 to DEC-082) |
-| 4 Analysis-plan gate | 🟡 built 2026-09-26; reviewed 2026-09-27 (DEC-091 to DEC-098); plan final, awaiting OSF registration |
+| 4 Analysis-plan gate | ✅ 2026-09-27: plan `6e24eca` registered at https://osf.io/jksne/; gate opened in `0d9aa42` (DEC-084 to DEC-099) |
 | 5–10 | not started |
 
-Pre-registration gate: **closed** (`config/gate.yaml`). No post-2019 effect estimates exist.
+Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). No post-2019 effect estimates exist yet; they belong to Phase 7.
 
 ## Done
 
@@ -68,34 +68,44 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Next: the gate. START HERE in a new chat
+## Next: Phase 5 (deweathering, RQ2). START HERE in a new chat
 
-Phase 4 is built; nothing after it may start until Reenu approves the plan.
+Per CLAUDE.md: first write a short plan of files and functions, then build; at the end run the tests, commit, update this file and DECISIONS, write `docs/phase-notes/05-deweathering.md`, and **stop** for Reenu's approval. Spec: proposal stage 5; PLAN.md §4 Phase 5.
 
-**Decided 2026-09-27 (DEC-092):** first listing is the primary treatment date (funding timing is a sensitivity only); H4, H5 and the Asansol-alone check accepted; Reenu registers the plan on OSF before the gate opens.
+**The plan is registered and frozen.** `docs/analysis_plan.md` (registered version: commit `6e24eca`; OSF https://osf.io/jksne/) is not edited any more. Any departure from it is logged in DECISIONS as a dated, justified deviation and listed in the final report. Commitments that bind Phase 5:
+- **Model families:** LightGBM and mgcv GAM on log daily PM, per station and pollutant (PM2.5, PM10). The primary family is the one with the better **median out-of-sample R² under blocked, forward-chaining CV by year**; the other is a sensitivity analysis; a no-deweathering baseline is also kept (DEC-088; plan §4).
+- **Validation:** blocked forward-chaining CV only, never random splits; report out-of-sample R² and residual autocorrelation (ACF lags 1–7) per station.
+- **Resampling:** Grange & Carslaw weather resampling; N from a convergence check (`deweathering.resamples_default` 300, max 1000); both families share the same resample indices.
+- **Ground rules already fixed:** valid hour = any quarter-hour (primary), 3 of 4 (sensitivity) (DEC-069); completeness 75% (60/90 sensitivity); calendar 2025 is the last primary year, Jan–Mar 2026 a sensitivity only (DEC-079); the 5 Reenu-decided stations get a drop-all-5 sensitivity (DEC-080).
+- **Aggregation:** station → city-month and city-year. The balanced panel itself (baseline 2018 primary, 2019 sensitivity) is Phase 6.
+- **No treatment effects in Phase 5.** The gate is open, but NCAP-vs-control estimation is Phase 7. Deweathering is fitted per station and never uses NCAP status.
 
-**Final changes before registration (DEC-095 to DEC-098):** equivalence margin ±5% (smallest effect of interest, not the MDE); calibration-leakage split (74 treated units gained a monitor in 2019–2024, 39 did not; `pregate_checks.md` §7); HonestDiD bounds as a reported sensitivity; plan and summary rewritten in Reenu's first person (wording only, verified).
+**Step 1 (small download, under 2 GB): ERA5 for 20 missing grid points.** 22 stations with a coordinate (13 station-level, 9 approximate urban-centre points) sit in 0.25° cells that have no file in `data/raw/era5_timeseries/` (283 points on disk, each ~0.3 MB). The cells were chosen in Phase 2 from the crosswalk, before Phase 3 located stations (DEC-059/067/080). Rebuild the cell list from `data/processed/stations.csv` and fetch only the missing points with `src/acquire/era5.py` (CDS key in `~/.cdsapirc`; idempotent, manifest-recorded).
 
-**What Reenu does next:** register `docs/analysis_plan.md` on OSF and bring back the link. **Final plan commit: `6e24ecaf38c54c1f31774c966c243e4183c1b2ca`** (the version to register). The file to upload to OSF is `docs/osf/analysis_plan_osf.pdf`, made by `python -m src.causal.osf_export` from that commit: markers stripped, the status paragraph replaced by a version line naming the commit, repository links pinned to it. If the plan is edited again, commit it and re-run the export. Note: the GitHub repo is still **private**, so the repo links in the PDF only work once Reenu makes it public. After registration, in its own commit, set `config/gate.yaml` `analysis_plan_commit` to this hash (or to a later commit if the plan is edited again) and record the OSF link in DECISIONS.
+**Inputs:**
+- `data/processed/station_day.parquet`: station-day PM with flagged values already removed (DEC-068); Indian dates (DEC-055).
+- `data/processed/station_year_quality.parquet` and `station_year.parquet`: validity flags per rule variant.
+- `data/raw/era5_timeseries/era5ts_<lat>_<lon>.zip`: hourly CSV in UTC (t2m, d2m, u10, v10, blh, tp, ssrd). Aggregate to **Indian days**; clip small negative `ssrd` to zero (DEC-035). Features (PLAN.md): daily mean T, RH from Td, vector-mean wind speed and direction, daily-mean and afternoon-max BLH, precipitation sum, SSRD sum, day of year, weekday, trend.
+- `data/processed/stations.csv`: coordinates (`coord_quality`), `reenu_decided`.
+- Snakemake: replace the `normalise` stub in `workflow/rules/normalise.smk`.
 
-**After approval, in this order (DEC-012):**
-1. Commit the approved plan (and summary). Note the commit hash.
-2. In a *separate* commit, set `config/gate.yaml`: `analysis_plan_approved: true`, `analysis_plan_commit: <hash>`. Nothing else in that commit.
-3. Record the approval and the OSF link in DECISIONS.
-4. Then Phase 5 (deweathering). mgcv is fixed (DEC-093).
-5. Housekeeping: the pre-fix environment is kept as `ncap_prev`; delete it (`conda env remove -n ncap_prev`) once Reenu is happy.
+**Environment notes:** mgcv 1.9-4 now comes from the CRAN snapshot via `install_r_extra.R` (DEC-093). HonestDiD 0.2.8 is installed in Phase 7 (DEC-097). Compute estimate: ~600 stations × 2 pollutants × 2 families, roughly 1–3 h on 10 cores (PLAN.md).
 
-**Editing the plan:** numbers sit between `<!--g:key-->` and `<!--/g-->` markers and are written by `python -m src.causal.pregate_report sync-plan`; never type over them. `snakemake pregate` runs `check-plan` and fails if any quoted number no longer matches the pipeline (then: sync, and log the deviation).
+**Housekeeping (Reenu):**
+- The pre-fix environment `ncap_prev` can be deleted: `conda env remove -n ncap_prev`.
+- The GitHub repo is still **private**, so the repository links in the registered OSF PDF do not open for others until it is made public.
+- The registered PDF is `docs/osf/analysis_plan_osf.pdf` (from `6e24eca`); do not re-export it.
 
 ## Phase 4 review fixes (2026-09-27)
 
-- **Pre-registration changes (DEC-095 to DEC-098):** see "Next: the gate" above. New pre-gate output `data/interim/pregate/monitor_gain.csv` (network metadata only). HonestDiD 0.2.8 is in the CRAN snapshot; install it in Phase 7 via `install_r_extra.R`.
+- **Pre-registration changes (DEC-095 to DEC-098):** ±5% equivalence margin; calibration-leakage split (74 vs 39 treated units); HonestDiD bounds; first-person voice. New pre-gate output `data/interim/pregate/monitor_gain.csv` (network metadata only). HonestDiD 0.2.8 is in the CRAN snapshot; install it in Phase 7 via `install_r_extra.R`.
 
 - **Units (DEC-091):** log-scale results were labelled "log points" (100 × log difference), which read as 100 times too large. All reports now give natural-log units with the implied % (e.g. placebo +0.0047 = +0.47%). No estimate changed.
 - **p-values (DEC-091):** permutation p-values are now equal-tailed, because the region-matched null is not centred on zero. Real-NCAP placebo: 2014 p = 0.32 (was 0.22), 2015 p = 0.75 (was 0.41).
 - **MDE reconciliation (DEC-091):** the 1.2% MDE is about 0.6 µg/m³ at the NCAP mean; the separate µg/m³-scale MDE (0.9) is larger because absolute noise sits in the dirtiest cities. Generated in `docs/pregate_checks.md` §4.
 - **mgcv (DEC-093):** not the Oracle MKL conflict; now installed from the 2026-09-25 CRAN snapshot. `conda-lock.yml` re-locked in update mode (only change: r-mgcv removed). The `ncap` environment was rebuilt from the lock; the R environment test passed 10/10.
 - **Full rebuild from raw (DEC-094):** `snakemake --cores 1 --forceall pregate` with `--allowed-rules` excluding downloaders, 30 jobs, 1 h 25 min; every plan number and every generated report unchanged. Intermediates are content- but not byte-reproducible (timestamps, tie order).
+- **Registration and gate (DEC-099):** OSF https://osf.io/jksne/, verified via the OSF API (public, OSF Preregistration template; archived PDF byte-identical to the export of `6e24eca`). Commit `0d9c5a4` records the link; commit `0d9aa42` opens the gate and contains only `config/gate.yaml`. `tests/test_gate.py` now checks that the committed gate is either shut or cites a full commit hash that contains the plan.
 - **Re-locking on this machine:** `PYTHONNOUSERSITE=1 uvx conda-lock lock -f environment.yml -p win-64 -p linux-64 --lockfile conda-lock.yml --update <pkg> --conda %USERPROFILE%/miniforge3/Scripts/conda.exe`. Without `PYTHONNOUSERSITE`, conda's Python picks up user-site packages and update mode fails.
 
 ## Phase 4: what was built (2026-09-26)
