@@ -1,9 +1,14 @@
 """The pre-registration gate must stay shut unless the plan is approved, recorded and present."""
 
+import re
+import shutil
+import subprocess
+
 import pytest
 
 from src.common import gate
 from src.common.gate import GateClosedError, gate_open, require_gate
+from src.common.paths import ROOT, load_yaml
 
 
 def write_gate(path, approved, commit):
@@ -47,6 +52,26 @@ def test_string_true_does_not_open_gate(tmp_path):
     assert gate_open(g, tmp_path / "plan.md") is False
 
 
-def test_repo_gate_is_closed():
-    # Until the analysis plan is approved (Phase 4), the committed gate must be shut.
-    assert gate_open(gate.GATE_FILE, gate.PLAN_FILE) is False
+def test_repo_gate_is_closed_or_cites_a_committed_plan():
+    """The committed gate is either shut, or open and naming the full hash of a commit that holds the
+    analysis plan (DEC-012). Shallow clones (CI) may lack that commit; then only the hash format is checked."""
+    cfg = load_yaml(gate.GATE_FILE)
+    if cfg.get("analysis_plan_approved") is not True:
+        assert gate_open(gate.GATE_FILE, gate.PLAN_FILE) is False
+        return
+    commit = str(cfg.get("analysis_plan_commit"))
+    assert re.fullmatch(r"[0-9a-f]{40}", commit), (
+        "analysis_plan_commit must be a full 40-character hash"
+    )
+    assert gate_open(gate.GATE_FILE, gate.PLAN_FILE) is True
+    if shutil.which("git") is None:
+        pytest.skip("git not available")
+    run = lambda *a: subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True)  # noqa: E731
+    if (
+        run("cat-file", "-e", commit).returncode != 0
+        and run("rev-parse", "--is-shallow-repository").stdout.strip() == "true"
+    ):
+        pytest.skip("shallow clone: the plan commit is not in the local history")
+    assert run("cat-file", "-e", f"{commit}:docs/analysis_plan.md").returncode == 0, (
+        "gate cites a commit without the plan"
+    )

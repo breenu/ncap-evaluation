@@ -55,4 +55,4 @@ If 2 or 3 fails, I say the design cannot identify the effect, and if 2 fails I a
 2. H4, H5 and the Asansol-alone check are in.
 3. The equivalence margin is ±<!--g:equiv_margin-->5<!--/g-->%, not the MDE; I added the monitor-gain (calibration-leakage) check and HonestDiD bounds. Rules 1–4 above are unchanged.
 
-**What happens next.** I register this plan on OSF. Only after that does the code allow any post-2019 effect to be estimated: the gate is opened in its own commit, citing this plan's commit.
+**Registration.** I registered this plan on OSF on 2026-09-27: https://osf.io/jksne/. Only after that did the code allow any post-2019 effect to be estimated: the gate was opened in its own commit, citing the registered plan's commit (`6e24eca`).
