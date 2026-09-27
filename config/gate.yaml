@@ -2,5 +2,9 @@
 # While false, every step that estimates post-2019 NCAP treatment effects refuses to run.
 # Flip to true ONLY in a dedicated commit, after docs/analysis_plan.md has been approved
 # by Reenu and committed, and put the hash of that commit in analysis_plan_commit.
-analysis_plan_approved: false
-analysis_plan_commit: null
+#
+# Opened 2026-09-27: the plan at commit 6e24eca was approved by Reenu and registered on OSF
+# (https://osf.io/jksne/; the archived PDF is byte-identical to that commit's export, DEC-099).
+analysis_plan_approved: true
+analysis_plan_commit: "6e24ecaf38c54c1f31774c966c243e4183c1b2ca"
+analysis_plan_registration: "https://osf.io/jksne/"
