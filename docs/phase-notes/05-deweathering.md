@@ -6,7 +6,7 @@
 - A new data-quality rule for stuck analysers, an extrapolation guard, and figure 3 in three views (monthly under each scheme, and annual).
 - Two generated reports: [`deweathering_pilot.md`](../deweathering_pilot.md) and [`deweathering_report.md`](../deweathering_report.md).
 
-Every number below comes from those reports, from [`near_constant_check.md`](../near_constant_check.md), or from DECISIONS (DEC-100 to DEC-118).
+Every number below comes from those reports, from [`near_constant_check.md`](../near_constant_check.md), or from DECISIONS (DEC-100 to DEC-122).
 
 No NCAP comparison was made. The models are fitted per station and never see NCAP status.
 
@@ -83,6 +83,24 @@ The registered rule picks the family with the higher median out-of-sample R², b
 
 **The families now disagree more often** about how a station's level moves from year to year: D > 5% in 355 of 822 series, against 72 before. LightGBM's trend can still follow short-lived movements; the GAM's can no longer. The LightGBM results are the "other family" sensitivity in Phases 6–7, and they should be shown beside the primary, not summarised away.
 
+## Two checks before approval (Reenu, DEC-119 to DEC-122)
+
+**Does the lockdown smear into neighbouring years?** A trend that cannot follow a two-month dip might pull 2019 and 2021 down with it.
+- **The rule, fixed before any fitting:** refit the 20 pilot stations with an indicator for India's national lockdown (25 March to 31 May 2020) and compare their 2019 and 2021 deweathered annual means with the current model. If the median change exceeds 1%, add the indicator for every station.
+- **Result: 0.55%, so the model stays as it is.**
+- The small smear that exists falls backward on 2019 (0.95% on its own, just under the line). It is reported so Phase 7 can weigh it, since 2019 is the first NCAP year.
+
+*If asked "why not add the indicator anyway?":* the decision rule was fixed before the result was known. Changing the model because the number came close would defeat the point of fixing it.
+
+**Do the two model families agree at the level H4 uses?** The earlier disagreement measure (D) is about one station's year-to-year movement. H4 asks about a city's change from 2018 to 2025, so that was checked directly, on a balanced station panel:
+- The families usually agree within 2–3 percentage points.
+- They differ by more than 5 points in about a quarter of the cities (5 of 19–23 per pollutant), and by up to 14.
+- **Kolkata is the clearest case:** its measured PM2.5 fell 18%. The GAM says almost all of that was weather (deweathered −2%); LightGBM says little of it was (−15%).
+- Most cities' panels hold a single station, so these are often one monitor's story.
+- **Consequence:** H4 must be reported under both families, never one.
+
+**Satna** (Bandhavgar Colony) keeps no special treatment. It drops out of every primary-rule panel because its near-constant years are excluded, and the registered reliability sensitivity (drop scores below 50) would not remove any of its valid years. Whether that sensitivity should reach it is Reenu's decision.
+
 ## Two resampling schemes, and why the default is not primary
 
 Grange & Carslaw's default draws weather (and the day of year) from any time of year. Reenu made the primary scheme draw only from within ±15 days of the same date, because the default pairs a date with weather that never happens then, such as monsoon rain in December. This is a dated deviation from the registered plan.
@@ -104,7 +122,7 @@ With the old flexible trend, those out-of-season pairings produced the absurd va
 
 ## What was checked
 
-- **23 unit tests on synthetic data** in `tests/test_normalise.py`, among them:
+- **25 unit tests on synthetic data** in `tests/test_normalise.py`, among them:
   - Indian-day ERA5 aggregation;
   - folds and buffers;
   - resampling windows;
@@ -116,7 +134,8 @@ With the old flexible trend, those out-of-season pairings produced the absurd va
   - the city rule;
   - divergence;
   - primary vs registered stacking;
-  - the extrapolation guard and its ratio flags.
+  - the extrapolation guard and its ratio flags;
+  - the city-level panel and disagreement.
 - The full suite passes.
 - The CV-only reruns reproduce each family's main-fit predictions exactly.
 - `snakemake -n pregate` has nothing left to do.
@@ -125,5 +144,5 @@ With the old flexible trend, those out-of-season pairings produced the absurd va
 ## Open items for Reenu
 
 1. Approval of Phase 5.
-2. **Satna, Bandhavgar Colony (site_1433).** It is the one station-year below 0.67× raw in every family (PM2.5 2018; an annual mean of 18 µg/m³ is implausibly low for central India), and the near-constant rule flags most of its other years. It is flagged, not dropped; it may deserve a station-level exclusion decision.
-3. **H4** (raw vs deweathered, composition-corrected change) moves to Phase 6. It will be reported under both schemes, both validity rules, and both competing families.
+2. **Satna, Bandhavgar Colony (site_1433):** no override (Reenu). The registered reliability < 50 sensitivity removes none of its valid station-years (its valid years score 55–94). Making that check cover it would need a different threshold or an extra named-station sensitivity. That is Reenu's choice; it is named wherever it appears in Phase 6.
+3. **H4** (raw vs deweathered, composition-corrected change) moves to Phase 6. It will be reported under both schemes, both validity rules, and both competing families; the city-level disagreement (above) makes the family comparison essential.

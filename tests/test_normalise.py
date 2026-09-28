@@ -321,3 +321,24 @@ def test_guard_flags_ratios_outside_the_band_and_keeps_every_row(monkeypatch):
     out = aggregate.guard_flags(t)
     assert out.guard_dw.tolist() == [False, True, True] and len(out) == 3
     assert not out.guard_dw_annual.any()
+
+
+def test_city_disagreement_uses_the_balanced_panel_and_percentage_points(monkeypatch):
+    from src.normalise import city_disagreement as cd
+
+    monkeypatch.setattr(cd, "params", lambda: {"watch_stations": ["b"]})
+    years = list(range(2018, 2026))
+    rows = []
+    for sid, yrs in (("a", years), ("b", [2018, 2025])):  # b is valid only in 2018 and 2025
+        for y in yrs:
+            rows.append({"sid": sid, "pollutant": "pm25", "year": y, "rule": "primary", "variant": "q1_t75",
+                         "valid": True, "inside_unit": True, "unit_id": "u1", "raw": 100.0,
+                         "dw_gam": 100.0 if y == 2018 else 90.0, "dw_lgbm": 100.0 if y == 2018 else 97.0,
+                         "dw_gam_annual": 100.0, "dw_lgbm_annual": 100.0})  # fmt: skip
+    sy = pd.DataFrame(rows)
+    strict, loose = cd.panel(sy, True), cd.panel(sy, False)
+    assert set(strict.sid) == {"a"} and set(loose.sid) == {"a", "b"}
+    t = cd.changes(strict, "strict").iloc[0]
+    assert t.chg_dw_gam == pytest.approx(-10) and t.chg_dw_lgbm == pytest.approx(-3)
+    assert t.diff_pp_seasonal == pytest.approx(-7) and t.flag_seasonal and not t.flag_grange
+    assert cd.changes(loose, "loose").iloc[0].watch_stations == "b"

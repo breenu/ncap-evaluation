@@ -93,6 +93,25 @@ def extrapolation() -> pd.DataFrame:
     return t[["scheme", "rows", "share_outside_training_range", "share_out_of_season"]]
 
 
+def watch_lines(sy: pd.DataFrame) -> str:
+    """DEC-121: where each watch station stands (valid years under each rule, reliability)."""
+    from src.common.paths import PROCESSED, params
+
+    q = pd.read_parquet(PROCESSED / "station_year_quality.parquet")
+    names = pd.read_csv(PROCESSED / "stations.csv").set_index("sid").sname
+    out = []
+    for sid in params().get("watch_stations", []):
+        y = sy[(sy.sid == sid) & (sy.variant == "q1_t75")]
+        for pol, g in y.groupby("pollutant"):
+            yrs = {r: ", ".join(map(str, sorted(g[(g.rule == r) & g.valid].year))) or "none" for r in ("primary", "registered_flags")}
+            rel = q[(q.sid == sid) & (q.pollutant == pol) & q.valid_q1_t75].reliability
+            out.append(f"- **{names.get(sid, sid)}** ({sid}), {POL[pol]}: valid years, primary rule: {yrs['primary']}; "
+                       f"registered flags only: {yrs['registered_flags']}. Reliability of its valid station-years "
+                       f"{rel.min():.1f}–{rel.max():.1f}, so the registered reliability < 50 sensitivity removes "
+                       f"{int((rel < 50).sum())} of them.")  # fmt: skip
+    return "\n".join(out)
+
+
 def main() -> None:
     c = cfg()
     choice = json.loads((OUT / "family_choice.json").read_text(encoding="utf-8"))
@@ -135,6 +154,16 @@ def main() -> None:
     wy = pd.concat(wy, axis=1).reset_index()
     cws = pd.concat([lab(city_weather_share(cy, col)).assign(scheme=name) for col, name in SCHEMES.items()])
     ta = trend_absorption(sm)
+    lt = json.loads((OUT / "lockdown_test.json").read_text(encoding="utf-8"))
+    ltt = pd.read_csv(OUT / "lockdown_test.csv")
+    ltt = ltt[ltt.valid].groupby("year").abs_diff_pct.agg(["size", "median", "max"]).reset_index()
+    from src.normalise.city_disagreement import summary as cd_summary
+
+    cdt = pd.read_csv(OUT / "city_disagreement.csv")
+    cds = cd_summary(cdt)
+    cdf = cdt[cdt.flag_seasonal | cdt.flag_grange][["panel", "city", "pollutant", "stations", "chg_raw", "chg_dw_gam",
+                                                     "chg_dw_lgbm", "diff_pp_seasonal", "diff_pp_grange"]]  # fmt: skip
+    wl = watch_lines(sy)
     imp = implausible(sm, sy)
     ext = extrapolation()
     lo_g, hi_g = c["guard_ratio"]
@@ -242,7 +271,31 @@ What (a) and (b) say together: only a small share of draws take weather outside 
 
 {md_table(lab(cy_n))}
 
-## 7. Outputs
+## 7. Lockdown smear test (DEC-119, rule fixed before the test)
+
+The one-year-knot trend cannot follow the spring-2020 lockdown dip, which might pull 2019 and 2021 deweathered annual means with it. Test: the GAM plus a 0/1 term for the national lockdown days ({c['lockdown'][0]} to {c['lockdown'][1]}), fitted on the {lt['series']} pilot series from the full-run inputs (the term entered {lt['series_with_lockdown_term']} of them), compared with the current GAM. Metric: median |difference| in deweathered annual means over valid 2019 and 2021 station-years ({lt['station_years_2019_2021']}), seasonal scheme.
+
+**Result: {lt['median_abs_diff_pct_2019_2021']:.2f}%, {"above" if lt['adopt_indicator'] else "below"} the {lt['threshold_pct']}% threshold, so {"the indicator is adopted for all stations" if lt['adopt_indicator'] else "the model is left as it is"}.** Separately: 2019 {lt['median_abs_diff_pct_2019']:.2f}%, 2021 {lt['median_abs_diff_pct_2021']:.2f}%, 2020 {lt['median_abs_diff_pct_2020']:.2f}% (largest 2019/2021 difference {lt['max_abs_diff_pct_2019_2021']:.1f}%). Any smear falls mostly backward, on 2019. By year:
+
+{md_table(ltt.rename(columns={"size": "station_years", "median": "median_abs_diff_pct", "max": "max_abs_diff_pct"}), {"median_abs_diff_pct": "{:.2f}", "max_abs_diff_pct": "{:.2f}"})}
+
+## 8. Family disagreement at city level, on the H4 quantity (DEC-120)
+
+Per urban centre: the change in the deweathered mean from 2018 to 2025 over a balanced panel of stations inside the polygon (strict: valid 2018 and every year to 2025; loose: valid in 2018 and 2025), for the GAM and LightGBM; disagreement = GAM change − LightGBM change, in percentage points (primary validity rule). Every city with a panel is included (no NCAP comparison):
+
+{md_table(lab(cds), {k: "{:.1f}" for k in ["median_abs_diff_pp", "p90_abs_diff_pp", "max_abs_diff_pp", "median_diff_pp"]})}
+
+Cities where the families differ by more than 5 pp (either scheme), with the raw change over the same panel for scale:
+
+{md_table(lab(cdf), {k: "{:+.1f}" for k in ["chg_raw", "chg_dw_gam", "chg_dw_lgbm", "diff_pp_seasonal", "diff_pp_grange"]})}
+
+Most panels hold a single station (median {int(cdt.stations.median())} per city), so a city's change here is often one monitor's. Where the families disagree by several points, how much of a city's measured change H4 attributes to weather depends on the model family; Phase 6 reports H4 under both.
+
+## 9. Named stations (DEC-121)
+
+{wl}
+
+## 10. Outputs
 
 `data/processed/deweathered/`: `series_metrics`, `family_choice.json`, `station_day`, `station_year` (2 rules × 4 completeness variants), `station_month`, `city_month` ({cm.unit_id.nunique()} urban centres), `city_year` ({cy.unit_id.nunique()}). Columns `dw` (primary family, seasonal) and `dw_annual` (primary family, Grange & Carslaw), plus each family's. City series are all-station means over stations inside the urban-centre polygon (DEC-105); the balanced panel is Phase 6. Figure 3: `reports/figures/fig3_deweathered` (seasonal) and `fig3_deweathered_grange_carslaw`.
 """

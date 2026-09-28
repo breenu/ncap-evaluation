@@ -609,3 +609,19 @@ Reenu reviewed Phase 5 and asked for a stiffer GAM trend, set by a timescale rul
   - The suspect PM2.5 2018 station-year scores 61.5. Its PM2.5 fails the satellite check in 2018–2022 (station far below the satellite value), which supports an instrument problem.
 - **Not done unilaterally.** Making the check cover it would need a different threshold (a registered value) or an extra named-station sensitivity. That choice is Reenu's; it is raised at the end of Phase 5.
 - **Naming in Phase 6.** `config/params.yaml: watch_stations: [site_1433]` lists it, so Phase 6 outputs name it wherever it contributes.
+
+**DEC-122: Results of the two checks (2026-09-28; rules in DEC-119/120, committed in `f09c22e` before the test fit).**
+- **Lockdown smear test (DEC-119).**
+  - *What was fitted:* `gam_lock` on the 40 pilot series (the lockdown term entered 35).
+  - *Result:* median |difference| in 2019/2021 deweathered annual means over 48 valid station-years = **0.55%, below the 1% threshold. The primary GAM stays as it is**, as the pre-set rule requires.
+  - *Separately:* 2019 0.95% (75th percentile 2.3%, maximum 4.2%), 2021 0.30%, 2020 1.02%. The smear that exists falls mostly backward, on 2019, which alone is just under the threshold.
+  - *Why no action on 2019:* the rule pooled 2019 and 2021, and it was applied as written.
+  - *Consequences for later phases:* Phase 7 already drops 2020 from the primary satellite panel and gives it its own indicator on the ground (plan §5). The 2019 figure is reported in `deweathering_report.md` §7 so Phase 7 can weigh it: 2019 is the first NCAP year for most cities.
+  - *Kept for the record:* the `gam_lock` fits of the pilot series (`fits/main/gam_lock/`).
+- **City-level disagreement on the H4 quantity (DEC-120).**
+  - *Panel size:* the strict 2018–2025 balanced panel holds 19 cities for PM10 and 23 for PM2.5, and most cities hold one station.
+  - *Size of the disagreement:* GAM minus LightGBM change in the deweathered city mean from 2018 to 2025 has a median absolute value of 2.4–3.2 pp and a 90th percentile of 5.5–8.6 pp. More than 5 pp in 5 cities per pollutant (primary scheme) and 3–7 (Grange & Carslaw); up to 14 pp on the loose panel.
+  - *Largest:* Kolkata PM2.5 (raw −18.4%; GAM −1.9%, LightGBM −14.6%) and Bengaluru PM2.5 on the loose panel (+13.9 pp).
+  - *Consequence:* where the families differ this much, the share of a city's measured change that H4 attributes to weather depends on the model family. Phase 6 reports H4 under both families, never one alone.
+  - Table: `deweathering_report.md` §8; `data/processed/deweathered/city_disagreement.csv`.
+- **Satna (DEC-121).** Under the primary rule it is in no 2018–2025 panel: its near-constant years (PM10 2024–25; PM2.5 2021–23 and 2025) are excluded. Under the registered-flags rule it would be. The reliability < 50 sensitivity removes 0 of its valid station-years (report §9); the question is open for Reenu.

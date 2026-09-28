@@ -156,6 +156,84 @@ What (a) and (b) say together: only a small share of draws take weather outside 
 | PM10 | 794 | 816 |
 | PM2.5 | 819 | 842 |
 
-## 7. Outputs
+## 7. Lockdown smear test (DEC-119, rule fixed before the test)
+
+The one-year-knot trend cannot follow the spring-2020 lockdown dip, which might pull 2019 and 2021 deweathered annual means with it. Test: the GAM plus a 0/1 term for the national lockdown days (2020-03-25 to 2020-05-31), fitted on the 40 pilot series from the full-run inputs (the term entered 35 of them), compared with the current GAM. Metric: median |difference| in deweathered annual means over valid 2019 and 2021 station-years (48), seasonal scheme.
+
+**Result: 0.55%, below the 1% threshold, so the model is left as it is.** Separately: 2019 0.95%, 2021 0.30%, 2020 1.02% (largest 2019/2021 difference 4.5%). Any smear falls mostly backward, on 2019. By year:
+
+| year | station_years | median_abs_diff_pct | max_abs_diff_pct |
+|---|---|---|---|
+| 2016 | 1 | 0.17 | 0.17 |
+| 2017 | 1 | 0.41 | 0.41 |
+| 2018 | 3 | 0.78 | 0.82 |
+| 2019 | 18 | 0.95 | 4.15 |
+| 2020 | 22 | 1.02 | 2.75 |
+| 2021 | 30 | 0.30 | 4.47 |
+| 2022 | 26 | 0.30 | 1.28 |
+| 2023 | 28 | 0.16 | 0.60 |
+| 2024 | 27 | 0.16 | 1.04 |
+| 2025 | 21 | 0.04 | 0.61 |
+
+## 8. Family disagreement at city level, on the H4 quantity (DEC-120)
+
+Per urban centre: the change in the deweathered mean from 2018 to 2025 over a balanced panel of stations inside the polygon (strict: valid 2018 and every year to 2025; loose: valid in 2018 and 2025), for the GAM and LightGBM; disagreement = GAM change − LightGBM change, in percentage points (primary validity rule). Every city with a panel is included (no NCAP comparison):
+
+| panel | pollutant | scheme | cities | median_abs_diff_pp | p90_abs_diff_pp | max_abs_diff_pp | median_diff_pp | cities_over_5pp |
+|---|---|---|---|---|---|---|---|---|
+| strict | PM10 | seasonal | 19 | 2.4 | 7.9 | 9.8 | 1.8 | 5 |
+| strict | PM10 | Grange & Carslaw | 19 | 2.4 | 5.5 | 10.8 | 1.7 | 3 |
+| strict | PM2.5 | seasonal | 23 | 2.6 | 8.6 | 12.7 | 0.1 | 5 |
+| strict | PM2.5 | Grange & Carslaw | 23 | 3.2 | 7.8 | 9.7 | 0.6 | 7 |
+| loose | PM10 | seasonal | 24 | 2.4 | 8.4 | 9.8 | 0.5 | 7 |
+| loose | PM10 | Grange & Carslaw | 24 | 2.8 | 7.4 | 10.8 | 1.5 | 6 |
+| loose | PM2.5 | seasonal | 28 | 2.7 | 8.7 | 13.9 | 1.9 | 8 |
+| loose | PM2.5 | Grange & Carslaw | 28 | 3.5 | 8.3 | 9.8 | 0.9 | 10 |
+
+Cities where the families differ by more than 5 pp (either scheme), with the raw change over the same panel for scale:
+
+| panel | city | pollutant | stations | chg_raw | chg_dw_gam | chg_dw_lgbm | diff_pp_seasonal | diff_pp_grange |
+|---|---|---|---|---|---|---|---|---|
+| strict | Amritsar | PM10 | 1 | -28.2 | -33.8 | -26.1 | -7.7 | +1.7 |
+| strict | Ludhiana | PM10 | 1 | -5.3 | +0.5 | -1.9 | +2.5 | +6.2 |
+| strict | Ludhiana | PM2.5 | 1 | +3.7 | +10.8 | +8.9 | +1.9 | +8.5 |
+| strict | Mandi Gobindgarh | PM10 | 1 | +9.5 | +5.6 | +11.4 | -5.8 | -1.5 |
+| strict | Patiala | PM10 | 1 | -1.2 | -1.9 | +6.7 | -8.6 | -5.3 |
+| strict | Nashik | PM2.5 | 1 | -0.9 | +2.5 | +5.2 | -2.6 | -7.7 |
+| strict | Pithampur | PM10 | 1 | -10.3 | +1.4 | -3.6 | +5.1 | +4.8 |
+| strict | Pithampur | PM2.5 | 1 | +18.2 | +20.5 | +12.6 | +7.9 | +6.3 |
+| strict | Mandideep | PM2.5 | 1 | +13.0 | +25.6 | +16.9 | +8.8 | +7.9 |
+| strict | Kanpur | PM2.5 | 1 | -56.3 | -47.5 | -53.8 | +6.3 | +7.0 |
+| strict | Hyderabad | PM2.5 | 1 | +4.5 | +13.5 | +4.5 | +9.1 | +5.9 |
+| strict | Kolkata | PM10 | 1 | -16.0 | -2.9 | -12.7 | +9.8 | +10.8 |
+| strict | Kolkata | PM2.5 | 1 | -18.4 | -1.9 | -14.6 | +12.7 | +9.7 |
+| loose | Amritsar | PM10 | 1 | -28.2 | -33.8 | -26.1 | -7.7 | +1.7 |
+| loose | Ludhiana | PM10 | 1 | -5.3 | +0.5 | -1.9 | +2.5 | +6.2 |
+| loose | Ludhiana | PM2.5 | 1 | +3.7 | +10.8 | +8.9 | +1.9 | +8.5 |
+| loose | Mandi Gobindgarh | PM10 | 1 | +9.5 | +5.6 | +11.4 | -5.8 | -1.5 |
+| loose | Patiala | PM10 | 1 | -1.2 | -1.9 | +6.7 | -8.6 | -5.3 |
+| loose | Nashik | PM2.5 | 1 | -0.9 | +2.5 | +5.2 | -2.6 | -7.7 |
+| loose | Pithampur | PM10 | 1 | -10.3 | +1.4 | -3.6 | +5.1 | +4.8 |
+| loose | Pithampur | PM2.5 | 1 | +18.2 | +20.5 | +12.6 | +7.9 | +6.3 |
+| loose | Mandideep | PM2.5 | 1 | +13.0 | +25.6 | +16.9 | +8.8 | +7.9 |
+| loose | Kanpur | PM2.5 | 1 | -56.3 | -47.5 | -53.8 | +6.3 | +7.0 |
+| loose | Nagpur | PM10 | 1 | -4.7 | -4.9 | +4.0 | -8.9 | -9.7 |
+| loose | Hyderabad | PM10 | 3 | -11.4 | -0.1 | -4.9 | +4.8 | +6.1 |
+| loose | Hyderabad | PM2.5 | 4 | -15.0 | -9.6 | -15.2 | +5.6 | +5.4 |
+| loose | Bengaluru | PM2.5 | 1 | -32.7 | -16.6 | -30.5 | +13.9 | +9.8 |
+| loose | Waidhan | PM10 | 1 | -31.5 | -17.4 | -25.4 | +8.0 | +7.9 |
+| loose | Waidhan | PM2.5 | 1 | -27.5 | -16.5 | -25.2 | +8.7 | +8.2 |
+| loose | Patna | PM2.5 | 1 | -46.0 | -36.9 | -42.6 | +5.8 | +8.0 |
+| loose | Kolkata | PM10 | 1 | -16.0 | -2.9 | -12.7 | +9.8 | +10.8 |
+| loose | Kolkata | PM2.5 | 1 | -18.4 | -1.9 | -14.6 | +12.7 | +9.7 |
+
+Most panels hold a single station (median 1 per city), so a city's change here is often one monitor's. Where the families disagree by several points, how much of a city's measured change H4 attributes to weather depends on the model family; Phase 6 reports H4 under both.
+
+## 9. Named stations (DEC-121)
+
+- **Bandhavgar Colony, Satna - Birla Cement** (site_1433), PM10: valid years, primary rule: 2018, 2019, 2020, 2021, 2022, 2023; registered flags only: 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025. Reliability of its valid station-years 62.2–93.6, so the registered reliability < 50 sensitivity removes 0 of them.
+- **Bandhavgar Colony, Satna - Birla Cement** (site_1433), PM2.5: valid years, primary rule: 2018, 2019, 2020; registered flags only: 2018, 2019, 2020, 2021, 2022, 2023, 2025. Reliability of its valid station-years 55.3–89.5, so the registered reliability < 50 sensitivity removes 0 of them.
+
+## 10. Outputs
 
 `data/processed/deweathered/`: `series_metrics`, `family_choice.json`, `station_day`, `station_year` (2 rules × 4 completeness variants), `station_month`, `city_month` (221 urban centres), `city_year` (206). Columns `dw` (primary family, seasonal) and `dw_annual` (primary family, Grange & Carslaw), plus each family's. City series are all-station means over stations inside the urban-centre polygon (DEC-105); the balanced panel is Phase 6. Figure 3: `reports/figures/fig3_deweathered` (seasonal) and `fig3_deweathered_grange_carslaw`.

@@ -96,6 +96,22 @@ rule extrapolation_guard:
     shell: f"{PY} src.normalise.guard"
 
 
+# DEC-119: the pre-set lockdown smear test (GAM + lockdown indicator on the pilot stations, from the
+# full-run inputs, vs the current GAM). Its result decided that the primary GAM stays as it is.
+rule lockdown_test:
+    input:
+        f"{NRM}/fits/main/_all.done",
+        f"{NRM}/pilot_stations.csv",
+        "src/normalise/gam.R",
+        "src/normalise/lockdown_test.py",
+    output: f"{DW}/lockdown_test.json", f"{DW}/lockdown_test.csv"
+    run:
+        import pandas as pd
+        sids = ",".join(pd.read_csv(input[1]).sid)
+        shell(f"{PY} src.normalise.run fit --run main --family gam_lock --sids {sids}")
+        shell(f"{PY} src.normalise.lockdown_test")
+
+
 rule normalise_aggregate:
     input:
         f"{NRM}/fits/main/_all.done",
@@ -112,6 +128,13 @@ rule normalise_aggregate:
         f"{DW}/city_month.parquet",
         f"{DW}/city_year.parquet",
     shell: f"{PY} src.normalise.aggregate --run main"
+
+
+# DEC-120: GAM vs LightGBM disagreement on the city-level 2018-2025 deweathered change (H4 quantity)
+rule city_disagreement:
+    input: f"{DW}/station_year.parquet", "src/normalise/city_disagreement.py"
+    output: f"{DW}/city_disagreement.csv"
+    shell: f"{PY} src.normalise.city_disagreement"
 
 
 rule fig3:
@@ -132,6 +155,8 @@ rule deweathering_report:
         f"{DW}/series_metrics.parquet",
         f"{DW}/city_year.parquet",
         f"{DW}/extrapolation.parquet",
+        f"{DW}/lockdown_test.json",
+        f"{DW}/city_disagreement.csv",
         "docs/near_constant_check.md",
         "src/normalise/report.py",
     output: "docs/deweathering_report.md"

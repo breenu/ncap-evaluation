@@ -54,8 +54,10 @@ def all_tasks(run: str) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=["run", "pollutant", "sid", "n_fit"])
 
 
-def pending(run: str, family: str) -> pd.DataFrame:
+def pending(run: str, family: str, sids: list[str] | None = None) -> pd.DataFrame:
     t = all_tasks(run)
+    if sids:
+        t = t[t.sid.isin(sids)]
     keep = [not is_done(run, family, p, s) for p, s in zip(t.pollutant, t.sid)]
     # largest first, so the long tasks do not all end up last
     return t[keep].sort_values("n_fit", ascending=False).reset_index(drop=True)
@@ -89,9 +91,9 @@ def fit_lgbm(run: str, workers: int) -> None:
         raise SystemExit(f"lgbm: {len(failed)} tasks failed; re-run to retry them")
 
 
-def fit_gam(run: str, workers: int, family: str = "gam") -> None:
+def fit_gam(run: str, workers: int, family: str = "gam", sids: list[str] | None = None) -> None:
     _, schemes, checkpoints = settings(run)
-    todo = pending(run, family)
+    todo = pending(run, family, sids)
     print(f"{family}: {len(todo)} tasks to run", flush=True)
     if todo.empty:
         return
@@ -110,11 +112,11 @@ def fit_gam(run: str, workers: int, family: str = "gam") -> None:
     t0 = time.time()
     while any(p.poll() is None for p, _ in procs):
         time.sleep(30)
-        left = len(pending(run, family))
+        left = len(pending(run, family, sids))
         print(f"  {family} {len(todo) - left}/{len(todo)} ({time.time() - t0:.0f} s)", flush=True)
     for _, log in procs:
         log.close()
-    left = pending(run, family)
+    left = pending(run, family, sids)
     if len(left):
         raise SystemExit(f"{family}: {len(left)} tasks not done; see {LOGS}/normalise_{run}_{family}_worker*.log")
 
@@ -161,8 +163,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("step", choices=["prepare", "fit", "cvcheck"])
     ap.add_argument("--run", choices=["pilot", "main", "registered"], required=True)
-    ap.add_argument("--family", choices=["lgbm", "gam", "gam_k4", "both"], default="both")
-    ap.add_argument("--sids", help="comma-separated station ids (prepare; default all)")
+    ap.add_argument("--family", choices=["lgbm", "gam", "gam_k4", "gam_lock", "both"], default="both")
+    ap.add_argument("--sids", help="comma-separated station ids (prepare, GAM fit; default all)")
     ap.add_argument("--workers", type=int, default=cfg()["workers"])
     a = ap.parse_args()
     if a.step == "prepare":
@@ -180,8 +182,9 @@ def main() -> None:
         return
     if "lgbm" in families:
         fit_lgbm(a.run, a.workers)
+    sids = a.sids.split(",") if a.sids else None
     for fam in [f for f in families if f != "lgbm"]:
-        fit_gam(a.run, a.workers, fam)
+        fit_gam(a.run, a.workers, fam, sids)
 
 
 if __name__ == "__main__":

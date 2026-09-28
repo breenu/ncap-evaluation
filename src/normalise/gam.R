@@ -15,6 +15,9 @@
 #       episodes; a straight line if that gives < 3 knots (span < 2 years).
 #   k_per_year (DEC-101, family `gam_k4` and the pilot): thin-plate smooth with 4 basis functions per
 #       year of record, within [trend_k_min, trend_k_max].
+#   gam_lock (DEC-119, the pre-set lockdown smear test): annual_knots plus a parametric 0/1 term
+#       `lockdown` for the national lockdown days, when the fitted data hold >= lockdown_min_days of them.
+#       The indicator is a calendar variable: each day keeps its own value in CV and in resampling.
 # The family (output folder) comes from the environment variable NCAP_GAM_FAMILY (default `gam`).
 #
 #   Rscript src/normalise/gam.R <tasks.csv> <schemes, comma-separated> <checkpoints, comma-separated>
@@ -43,10 +46,19 @@ if (cv_only) {
 FEATURES <- c("temp", "rh", "ws", "wd", "blh_mean", "blh_pm", "precip", "ssrd")
 CHUNK <- 50L
 FAMILY <- Sys.getenv("NCAP_GAM_FAMILY", "gam")
-if (!FAMILY %in% c("gam", "gam_k4")) stop("unknown GAM family ", FAMILY)
+if (!FAMILY %in% c("gam", "gam_k4", "gam_lock")) stop("unknown GAM family ", FAMILY)
+USE_LOCK <- FAMILY == "gam_lock"
+
+# Lockdown indicator from the trend (years since 2015-01-01, exact day / 365.25), always computed on a
+# day's own date, before any CV shift or clamping of the trend.
+lock_days <- as.numeric(as.Date(cfg$lockdown) - as.Date("2015-01-01"))
+lock_flag <- function(trend) {
+  day <- round(trend * 365.25)
+  as.integer(day >= lock_days[1] & day <= lock_days[2])
+}
 
 trend_rule_for <- function(run) {
-  if (FAMILY == "gam_k4") return("k_per_year")
+  if (FAMILY == "gam_k4") return("k_per_year")  # gam and gam_lock: annual_knots
   if (run == "pilot") return(cfg$pilot$gam_trend_rule)
   cfg$gam$trend_rule
 }
@@ -79,8 +91,9 @@ trend_term <- function(trend, rule) {
 
 fit_gam <- function(d, rule) {
   tt <- trend_term(d$trend, rule)
+  lock <- if (USE_LOCK && sum(d$lockdown) >= cfg$lockdown_min_days) "+ lockdown" else ""
   f <- as.formula(paste(
-    "y ~", tt$term, "+ s(doy, bs = 'cc', k = 12) + weekday + s(temp) + s(rh) + s(ws)",
+    "y ~", tt$term, lock, "+ s(doy, bs = 'cc', k = 12) + weekday + s(temp) + s(rh) + s(ws)",
     "+ s(wd, bs = 'cc', k = 8) + ti(ws, wd, bs = c('tp', 'cc'), k = c(5, 6))",
     "+ s(blh_mean) + s(blh_pm) + s(precip_l) + s(ssrd)"
   ))
@@ -134,6 +147,7 @@ normalise <- function(m, target, pool, idx, scheme, checkpoints) {
       stop("unknown scheme ", scheme)
     }
     x$trend <- rep(target$trend, each = CHUNK)
+    x$lockdown <- rep(target$lockdown, each = CHUNK)
     p <- matrix(exp(predict_log(m, x)), nrow = nt, byrow = TRUE)
     s1 <- s1 + rowSums(p)
     s2 <- s2 + rowSums(p^2)
@@ -171,6 +185,8 @@ run_task <- function(run, pollutant, sid) {
   target <- as.data.frame(read_parquet(file.path(d, "target.parquet")))
   pool <- as.data.frame(read_parquet(file.path(d, "pool.parquet")))
   folds <- as.integer(read_parquet(file.path(d, "folds.parquet"))$year)
+  fit$lockdown <- lock_flag(fit$trend)
+  target$lockdown <- lock_flag(target$trend)
 
   rule <- trend_rule_for(run)
   t0 <- proc.time()[["elapsed"]]
@@ -219,10 +235,11 @@ run_task <- function(run, pollutant, sid) {
   }
   js <- sprintf(paste0(
     '{"sid": "%s", "pollutant": "%s", "family": "%s", "n_fit": %d, "n_target": %d, ',
-    '"folds": [%s], "draws": %d, "schemes": [%s], "trend_rule": "%s", "trend_k": %d, "edf": %.3f, ',
+    '"folds": [%s], "draws": %d, "schemes": [%s], "trend_rule": "%s", "trend_k": %d, "lockdown_term": %s, "edf": %.3f, ',
     '"secs_cv": %.3f, "secs_fit": %.3f, "secs_normalise": %.3f, "secs_total": %.3f}'),
     sid, pollutant, FAMILY, nrow(fit), nrow(target), paste(folds, collapse = ", "),
     max(checkpoints), paste0('"', schemes, '"', collapse = ", "), rule, trend_k(fit$trend, rule),
+    tolower(as.character("lockdown" %in% all.vars(formula(m)))),
     sum(m$edf), t1 - t0, t2 - t1, t3 - t2, t3 - t0)
   tmp <- paste0(base, ".json.tmp")
   writeLines(js, tmp)
@@ -234,6 +251,7 @@ run_cv_only <- function(run, pollutant, sid) {
   fit <- as.data.frame(read_parquet(file.path(d, "fit.parquet")))
   n <- nrow(read_parquet(file.path(d, "target.parquet"), col_select = "date"))
   folds <- as.integer(read_parquet(file.path(d, "folds.parquet"))$year)
+  fit$lockdown <- lock_flag(fit$trend)
   cv <- cv_predict(fit, folds, convention, trend_rule_for(run))
   out <- data.frame(cv_pred = rep(NA_real_, n), cv_fold = rep(0L, n))
   out$cv_pred[fit$t_row + 1L] <- cv$pred
