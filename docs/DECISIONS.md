@@ -572,3 +572,40 @@ Reenu reviewed Phase 5 and asked for a stiffer GAM trend, set by a timescale rul
   - The refitted GAM's trend moves only slowly, while LightGBM's trend splits can still follow short-lived movements, so their annual series now differ more.
   - Divergence is therefore a property of the trend definitions as much as of the weather models. The LightGBM ("other family") sensitivity in Phases 6–7 is correspondingly more informative, and its results must be reported beside the primary, not summarised away.
 - **2020 wording corrected.** With the one-year-knot trend, the lockdown is partly averaged out of the deweathered series (stated in advance in DEC-116). The report and figure notes now say so instead of "deweathering does not remove the lockdown".
+
+## 2026-09-28: Phase 5 second review (Reenu). Lockdown rule written BEFORE the test fit
+
+**DEC-119: A pre-set test of whether the 2020 lockdown smears into 2019 and 2021 under the one-year-knot trend (Reenu). This section is committed before the test is fitted.**
+- **The concern.** The trend (DEC-116) cannot follow a dip lasting a few months. The spring-2020 lockdown could therefore pull the trend down around 2020, and the deweathered annual means of 2019 and 2021 with it.
+- **Lockdown period.** Indian days **25 March 2020 to 31 May 2020, inclusive**: India's national lockdown, phases 1–4 (25 Mar–14 Apr, 15 Apr–3 May, 4–17 May, 18–31 May). Unlock 1 took effect on 1 June 2020 (MHA guidelines of 30 May 2020; PIB PRID 1627965; checked 2026-09-28).
+  - One national definition for every station. State-level restrictions before 25 March or after 31 May, and containment zones, are not modelled.
+  - `config/params.yaml: deweathering.lockdown = ["2020-03-25", "2020-05-31"]`.
+- **Model tested (`gam_lock`).** The DEC-116 GAM plus a parametric 0/1 term `lockdown` (1 on lockdown days).
+  - The term is included only when the data a model is fitted on hold ≥ 10 lockdown days; otherwise it is omitted, because it cannot be estimated. The same holds for each CV training set.
+  - In resampling the indicator is a calendar variable, like the trend and day of year: each day keeps its own value, and only weather is resampled.
+  - Everything else is identical: the same inputs, fit days, near-constant exclusions, weather draws and N.
+- **Test set.** The 20 pilot stations × 2 pollutants (40 series), fitted from the full-run (`main`) inputs as family `gam_lock` and compared with the full-run `gam` fits of the same series.
+- **Metric, fixed now.** Over pilot station-years in **2019 and 2021** that are valid under the primary rule (primary completeness variant, near-constant station-years excluded), primary seasonal scheme: the absolute difference |dw_gam_lock / dw_gam − 1| in %. Take the median over those station-years, both pollutants and both years pooled.
+- **Decision rule, fixed now (Reenu).**
+  - **If the median exceeds 1%:** add the indicator to the primary GAM for all stations (a dated deviation from the registered plan); refit `main` and `registered` and their CV checks; re-run the registered selection rule between the new GAM and LightGBM.
+  - **Otherwise:** record the result and leave the model as it is.
+- **Also reported, not used for the decision:** the medians for 2019 and 2021 separately, and for 2020.
+
+**DEC-120: City-level family disagreement on the H4 quantity (Reenu).**
+- **Why at city level.** DEC-111's D measures disagreement in station-level movement. H4 is a city-level change, so disagreement is also reported at the level H4 analyses.
+- **Quantity, per urban centre, pollutant and resampling scheme** (primary validity rule, primary completeness variant):
+  - take the **balanced panel**: stations inside the unit polygon (DEC-105) that are valid in 2018 and in every year to 2025 (DEC-088's baseline definition);
+  - city deweathered mean = the mean over those stations, for each family;
+  - change = 100 × (mean₂₀₂₅ / mean₂₀₁₈ − 1), in %;
+  - disagreement = GAM change − LightGBM change, in percentage points.
+- **Reported:** the distribution over cities, and every city where |disagreement| > 5 pp, named.
+- **Looser panel.** A version on the looser panel (valid in both 2018 and 2025, not necessarily every year between) is shown too, because the strict panel may hold few cities.
+- **No NCAP comparison.** The Phase 6 H4 restricts to NCAP cities; this diagnostic covers every city with a panel.
+
+**DEC-121: Satna, Bandhavgar Colony (site_1433): no station-level override (Reenu). It is named wherever it appears in Phase 6 results.**
+- **Status.** It stays under the registered rules; its near-constant station-years are excluded in the primary analysis like any other (DEC-110).
+- **The reliability sensitivity does not reach it.** Reenu asked that the reliability-score sensitivity cover this station. The registered check (plan §5: drop station-years with reliability < 50, DEC-073) removes **none of its valid station-years**.
+  - Its valid station-years score 55.3–93.6. The one below 50 (PM2.5 2024, 36.6) is already invalid under the completeness rule.
+  - The suspect PM2.5 2018 station-year scores 61.5. Its PM2.5 fails the satellite check in 2018–2022 (station far below the satellite value), which supports an instrument problem.
+- **Not done unilaterally.** Making the check cover it would need a different threshold (a registered value) or an extra named-station sensitivity. That choice is Reenu's; it is raised at the end of Phase 5.
+- **Naming in Phase 6.** `config/params.yaml: watch_stations: [site_1433]` lists it, so Phase 6 outputs name it wherever it contributes.

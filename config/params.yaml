@@ -62,6 +62,9 @@ flags:                                # proposal stage 3; values set in Phase 3 
     normal_min_neighbour_corr: 0.8    # "clearly working": the station-year tracks its neighbours this well
     min_flag_days_per_year: 30        # a station-year is flagged with >= 30 flagged days (a stuck month)
 
+# Stations to name wherever they contribute to a result (DEC-121): no override, only visibility.
+watch_stations: [site_1433]           # Satna, Bandhavgar Colony: PM2.5 far below the satellite 2018-22
+
 reliability:                          # src/clean/reliability.py (DEC-073)
   check_penalty: 0.8                  # score multiplied by this for each failed check
 
@@ -130,6 +133,11 @@ deweathering:                         # proposal stage 5; plan section 4, Phase 
   # Extrapolation guard (DEC-117): station-years whose deweathered mean is outside these multiples of
   # the raw mean over the same days are flagged (never dropped).
   guard_ratio: [0.67, 1.5]
+  # National Covid lockdown (phases 1-4; Unlock 1 from 1 June 2020, MHA/PIB PRID 1627965), Indian days,
+  # inclusive. Used by the pre-set smear test (DEC-119): GAM + lockdown indicator on the pilot stations.
+  lockdown: ["2020-03-25", "2020-05-31"]
+  lockdown_min_days: 10               # the indicator enters a model only with >= 10 lockdown days in its data
+  lockdown_test_threshold_pct: 1      # DEC-119: median |change| in 2019/2021 deweathered means above this -> adopt
 
 robustness:                           # proposal validation table
   placebo_year: 2016
