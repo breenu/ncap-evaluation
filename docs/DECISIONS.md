@@ -625,3 +625,17 @@ Reenu reviewed Phase 5 and asked for a stiffer GAM trend, set by a timescale rul
   - *Consequence:* where the families differ this much, the share of a city's measured change that H4 attributes to weather depends on the model family. Phase 6 reports H4 under both families, never one alone.
   - Table: `deweathering_report.md` §8; `data/processed/deweathered/city_disagreement.csv`.
 - **Satna (DEC-121).** Under the primary rule it is in no 2018–2025 panel: its near-constant years (PM10 2024–25; PM2.5 2021–23 and 2025) are excluded. Under the registered-flags rule it would be. The reliability < 50 sensitivity removes 0 of its valid station-years (report §9); the question is open for Reenu.
+
+## 2026-09-28: Phase 5 approved (Reenu)
+
+**DEC-123: Lockdown: the pre-set rule stands, so there is no lockdown indicator. Phase 7 adds a Layer B sensitivity analysis that excludes 2019 (an added check, not a rule change).**
+- **The model.** The primary GAM stays as it is (DEC-119/122: median 0.55% < 1%).
+- **Why the added check.** The small smear the test found falls mostly on 2019 (0.95% on its own), and 2019 is the first NCAP year for most cities. So Phase 7 reruns the ground-layer (Layer B) estimates **without 2019**, as an additional sensitivity analysis.
+- **How it is labelled.** It is logged and reported as a check added on 2026-09-28 after the smear test. It changes no registered rule or primary result, and it does not affect Layer A: the satellite panel is not deweathered.
+
+**DEC-124: Satna, Bandhavgar Colony (site_1433): the registered reliability threshold stays at 50. One post-hoc sensitivity analysis drops the station from the registered-rules-only version (Reenu).**
+- **Where it applies.** Wherever results are computed under `rule = registered_flags` and site_1433 contributes (Phases 6–7), they are also computed without it.
+- **How it is labelled.** It is marked everywhere as **"added after inspecting the data"**, because it was chosen after seeing this station's values. Config: `posthoc_drop_registered: [site_1433]`.
+- **Why the primary rule needs no such check.** Under the primary rule the station's near-constant years are already excluded (DEC-110), and it is in no 2018–2025 panel.
+- **What the report says.** `deweathering_report.md` §9 states that the reliability score does not catch this station (its valid station-years score 55–94, above the < 50 threshold), while the stuck-instrument rule does (it flags most of its later years). The numbers are generated.
+- **Unchanged:** no station-level override (DEC-121). The station stays named via `watch_stations`.

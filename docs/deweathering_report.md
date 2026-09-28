@@ -231,8 +231,10 @@ Most panels hold a single station (median 1 per city), so a city's change here i
 
 ## 9. Named stations (DEC-121)
 
-- **Bandhavgar Colony, Satna - Birla Cement** (site_1433), PM10: valid years, primary rule: 2018, 2019, 2020, 2021, 2022, 2023; registered flags only: 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025. Reliability of its valid station-years 62.2–93.6, so the registered reliability < 50 sensitivity removes 0 of them.
-- **Bandhavgar Colony, Satna - Birla Cement** (site_1433), PM2.5: valid years, primary rule: 2018, 2019, 2020; registered flags only: 2018, 2019, 2020, 2021, 2022, 2023, 2025. Reliability of its valid station-years 55.3–89.5, so the registered reliability < 50 sensitivity removes 0 of them.
+- **Bandhavgar Colony, Satna - Birla Cement** (site_1433), PM10: valid years, primary rule: 2018, 2019, 2020, 2021, 2022, 2023; registered flags only: 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025. Reliability of its valid station-years 62.2–93.6, so the registered reliability < 50 sensitivity removes 0 of them. The stuck-instrument rule (DEC-110) flags it in: 2024, 2025, 2026.
+- **Bandhavgar Colony, Satna - Birla Cement** (site_1433), PM2.5: valid years, primary rule: 2018, 2019, 2020; registered flags only: 2018, 2019, 2020, 2021, 2022, 2023, 2025. Reliability of its valid station-years 55.3–89.5, so the registered reliability < 50 sensitivity removes 0 of them. The stuck-instrument rule (DEC-110) flags it in: 2021, 2022, 2023, 2025, 2026.
+
+**The reliability score does not catch Bandhavgar Colony, Satna - Birla Cement; the stuck-instrument rule does** (DEC-124). Its valid station-years score above the registered < 50 threshold, which stays at 50, while the near-constant rule flags the years listed above, and the primary analysis excludes them. A post-hoc sensitivity analysis, **added after inspecting the data**, drops this station wherever results use the registered rules only (`rule = registered_flags`) in Phases 6–7.
 
 ## 10. Outputs
 

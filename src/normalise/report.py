@@ -98,17 +98,27 @@ def watch_lines(sy: pd.DataFrame) -> str:
     from src.common.paths import PROCESSED, params
 
     q = pd.read_parquet(PROCESSED / "station_year_quality.parquet")
+    nc = pd.read_parquet(PROCESSED / "station_year_near_constant.parquet")
     names = pd.read_csv(PROCESSED / "stations.csv").set_index("sid").sname
+    posthoc = set(params().get("posthoc_drop_registered", []))
     out = []
     for sid in params().get("watch_stations", []):
         y = sy[(sy.sid == sid) & (sy.variant == "q1_t75")]
         for pol, g in y.groupby("pollutant"):
             yrs = {r: ", ".join(map(str, sorted(g[(g.rule == r) & g.valid].year))) or "none" for r in ("primary", "registered_flags")}
             rel = q[(q.sid == sid) & (q.pollutant == pol) & q.valid_q1_t75].reliability
+            ncy = ", ".join(map(str, sorted(nc[(nc.sid == sid) & (nc.pollutant == pol) & nc.near_constant].year))) or "none"
             out.append(f"- **{names.get(sid, sid)}** ({sid}), {POL[pol]}: valid years, primary rule: {yrs['primary']}; "
                        f"registered flags only: {yrs['registered_flags']}. Reliability of its valid station-years "
                        f"{rel.min():.1f}–{rel.max():.1f}, so the registered reliability < 50 sensitivity removes "
-                       f"{int((rel < 50).sum())} of them.")  # fmt: skip
+                       f"{int((rel < 50).sum())} of them. The stuck-instrument rule (DEC-110) flags it in: {ncy}.")  # fmt: skip
+        out.append(
+            f"\n**The reliability score does not catch {names.get(sid, sid)}; the stuck-instrument rule does** (DEC-124). "
+            "Its valid station-years score above the registered < 50 threshold, which stays at 50, while the near-constant "
+            "rule flags the years listed above, and the primary analysis excludes them."
+            + (" A post-hoc sensitivity analysis, **added after inspecting the data**, drops this station wherever results "
+               "use the registered rules only (`rule = registered_flags`) in Phases 6–7." if sid in posthoc else "")
+        )  # fmt: skip
     return "\n".join(out)
 
 

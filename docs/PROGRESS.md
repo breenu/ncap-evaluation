@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-09-28. **Phase 5 (deweathering) complete, including the GAM refit (DEC-116 to DEC-118) and the two pre-approval checks Reenu asked for (lockdown smear test, city-level family disagreement; DEC-119 to DEC-122); stopped for Reenu's approval.** Next: Phase 6 (composition); see "Next: Phase 6" below.*
+*Last updated: 2026-09-28. **Phase 5 (deweathering) approved by Reenu on 2026-09-28** (DEC-100 to DEC-124). **Next: Phase 6 (composition); START at "Next: Phase 6" below.***
 
 ## Status
 
@@ -14,7 +14,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 2 Acquisition | ✅ approved 2026-09-26; pushed. FIRMS pending (Reenu will run it from another network with a new key) |
 | 3 Storage, cleaning, audit, EDA | ✅ approved 2026-09-26; pushed (DEC-080 to DEC-082) |
 | 4 Analysis-plan gate | ✅ 2026-09-27: plan `6e24eca` registered at https://osf.io/jksne/; gate opened in `0d9aa42` (DEC-084 to DEC-099) |
-| 5 Deweathering | complete 2026-09-28 incl. GAM refit and pre-approval checks; awaiting approval (DEC-100 to DEC-122) |
+| 5 Deweathering | ✅ approved 2026-09-28; pushed (DEC-100 to DEC-124) |
 | 6–10 | not started |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). No post-2019 effect estimates exist yet; they belong to Phase 7.
@@ -71,7 +71,7 @@ snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (
 
 ## Next: Phase 6 (network-composition correction, RQ1). START HERE in a new chat
 
-**Phase 5 is complete and stopped for Reenu's approval** (2026-09-28; the GAM refit was done at Reenu's request, DEC-116 to DEC-118). If it is approved, start Phase 6. Per CLAUDE.md: write a short plan first, then build; at the end run the tests, commit, update this file and DECISIONS, write `docs/phase-notes/06-composition.md`, and stop.
+**Phase 5 was approved by Reenu on 2026-09-28** (DEC-123/124). Start Phase 6. Per CLAUDE.md: write a short plan first, then build; at the end run the tests, commit, update this file and DECISIONS, write `docs/phase-notes/06-composition.md`, and stop.
 
 **Spec:** proposal stage 6; PLAN.md §4 Phase 6; analysis plan §4–5.
 - Three city trends:
@@ -119,14 +119,15 @@ City series use only stations inside the unit polygon (DEC-105). No-deweathering
   - Kolkata PM2.5: GAM −1.9% vs LightGBM −14.6%, against a raw −18.4%.
   - **Report H4 under both families, never one.** Most panel cities hold a single station.
 
-**Satna, Bandhavgar Colony (site_1433), DEC-121/122:**
+**Satna, Bandhavgar Colony (site_1433), DEC-121/122/124:**
 - No override (Reenu). It stays under the registered rules, and its near-constant years are excluded in the primary analysis. Under the primary rule it is therefore in no 2018–2025 panel; under the registered-flags rule it is.
 - **Name it wherever it contributes to a Phase 6 result:** `config/params.yaml: watch_stations`, and see `report.py: watch_lines` for a pattern.
-- The registered reliability < 50 sensitivity removes none of its valid station-years (they score 55–94).
+- The registered reliability < 50 sensitivity removes none of its valid station-years (they score 55–94). The threshold stays at 50 (Reenu, DEC-124); the report notes that the reliability score does not catch this station while the stuck-instrument rule does.
+- **Post-hoc sensitivity, added after inspecting the data (DEC-124):** wherever a Phase 6 or 7 result uses `rule = registered_flags` and site_1433 contributes, also compute it without the station (`config/params.yaml: posthoc_drop_registered`). Label it everywhere as "added after inspecting the data".
 
-**Waiting for Reenu:**
-1. Approval of Phase 5.
-2. Whether the reliability sensitivity should be made to reach Satna: another threshold (a registered value) or an extra named-station sensitivity. Reenu asked that it cover the station, and as registered it does not.
+**Carried into Phase 7 (added checks, not rule changes):**
+- **Layer B without 2019 (DEC-123):** rerun the ground-layer estimates excluding 2019, because the small lockdown smear under the one-year-knot trend falls mostly on 2019 (smear test: 2019 alone 0.95%). It is an added sensitivity analysis, reported and labelled as added on 2026-09-28; no registered rule changes.
+- **Satna post-hoc drop** in the registered-flags version (above; DEC-124).
 
 ## Phase 5 (deweathering, RQ2): how it was built and run
 
