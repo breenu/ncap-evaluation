@@ -527,3 +527,29 @@ Numbers from `docs/deweathering_report.md` (generated). The full run completed o
   - (b) refit the GAM with a less flexible trend (e.g. 1–2 basis functions per year instead of 4; about 1.5 h). This also bears on the trend-absorption question (PROGRESS);
   - (c) both.
 - **Not changed unilaterally:** it is a model-specification choice made after seeing results.
+
+## 2026-09-28: Phase 5 review (Reenu). Rules written BEFORE the GAM refit
+
+Reenu reviewed Phase 5 and asked for a stiffer GAM trend, set by a timescale rule decided before looking at any refit result. This section is committed and pushed before the refit is run, so the rule's timestamp precedes its results.
+
+**DEC-116 (DEVIATION from the registered plan and from DEC-101, 2026-09-28): the GAM's trend has knots exactly one year apart, so it cannot follow seasons or weather episodes. The previous GAM (4 basis functions per year) is kept as a sensitivity family, `gam_k4`.**
+- **Why (Reenu).** The trend should represent slow emission change, not seasons or individual weather episodes. A trend that absorbs part of the seasonal cycle can also absorb year-specific weather, which would understate the weather effect. Report §5 showed the old trend kept 22–23% of the raw within-year variation under Grange & Carslaw resampling, and DEC-115 showed where that leads.
+- **The rule** (`config/params.yaml: deweathering.gam.trend_rule = annual_knots`), applied identically to every station and to every model fitted, including each CV training set:
+  - Let span = the years between the first and last day the model is fitted on.
+  - The trend is a penalised cubic regression spline (mgcv `bs = "cr"`) with k = ⌊span⌋ + 1 knots **evenly spaced over the span**, so neighbouring knots are at least one year apart. Knots are placed by date, not at data quantiles, so gaps in a record cannot bunch them.
+  - If k < 3 (span under 2 years), the trend is a straight line (a parametric term), because `cr` needs 3 knots.
+  - REML (fREML) still chooses how smooth the spline is within that limit, as before.
+- **Why "one year apart".** A cubic spline can bend only at its knots. Following a cycle needs at least two knots per cycle, so with knots a year apart the trend cannot represent any periodic change of one year or shorter: not the seasonal cycle, not a stagnant month, not a monsoon. It can follow changes that build up over about two years or more, which is the timescale of emission policy.
+- **Consequence stated in advance.** Short emission shocks, such as the 2020 lockdown (a few months), can no longer be followed by the trend. They move into the residuals and are partly smoothed out of the deweathered series; the raw series keeps them. So "deweathering does not remove the lockdown" becomes "the lockdown is partly averaged into the neighbouring months". 2020 keeps its own handling in every later analysis (plan §5), and the flag stays. The same holds for a sudden instrument level shift.
+- **Pilot runs** keep the old trend (`deweathering.pilot.gam_trend_rule = k_per_year`), so `docs/deweathering_pilot.md` rebuilds as the historical record it is.
+- **Unchanged:** everything else (other smooths, inputs, the same resample draws, CV folds, schemes, N). LightGBM is not refitted.
+
+**DEC-117: selection and reporting after the refit (Reenu, fixed before the refit).**
+- **Selection.** The registered rule (DEC-088; median out-of-sample R², forward-chaining CV, `last_year` convention, DEC-107) is re-applied between the refitted GAM and LightGBM. **Whichever wins is primary, even if that is LightGBM.** The refitted GAM's `clamp`-convention and within-period R² are reported too.
+- **Grange & Carslaw sensitivity:** from both families, after the refit. The old `gam_k4` results are reported beside them as the sensitivity to trend flexibility.
+- **Extrapolation guard**, reported for every family and scheme; nothing is dropped:
+  - (a) the number and share of resampled prediction rows with any weather input outside the range that station's model was trained on;
+  - (b) the share of rows pairing a day with a day of year more than the seasonal window (±15 days) away, i.e. out-of-season pairings;
+  - (c) station-years whose deweathered annual mean is more than 1.5× or less than 0.67× the raw annual mean over the same days (`deweathering.guard_ratio`), flagged in `station_year.parquet`.
+  - (a) and (b) depend only on the training data and the draws, so they are the same for every family. How each family behaves there differs: a GAM extrapolates, trees do not. (c) shows the result.
+- **Figure 3** gets an annual view (raw vs deweathered annual means, both schemes).
