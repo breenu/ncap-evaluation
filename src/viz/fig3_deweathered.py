@@ -125,7 +125,10 @@ def main() -> None:
                   f"ERA5; {n} resampled weather days per day). "
                   "Shaded year: 2020, whose lockdown is an emissions change that deweathering does not remove. "
                   "Cities chosen by a coverage rule, one per region first (DEC-106); near-constant station-years "
-                  "excluded (DEC-110).")  # fmt: skip
+                  "excluded (DEC-110)."
+                  + (" Under this scheme the GAM gives implausible values at some stations (pairing a day's trend with "
+                     "another season's weather; docs/deweathering_report.md §5): spikes far above the raw series are "
+                     "that artefact, not weather." if scheme == "annual" else ""))  # fmt: skip
     if run == "main":
         S.save(fig, "fig3_deweathered" if scheme == "seasonal" else "fig3_deweathered_grange_carslaw")
     else:  # a preview on the pilot's single-station cities; not a report figure

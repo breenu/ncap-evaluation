@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-09-27. Phase 5 (deweathering): pilot approved with changes (DEC-109 to DEC-113); the **full run is in progress** (see "Phase 5" below).*
+*Last updated: 2026-09-28. **Phase 5 (deweathering) complete; stopped for Reenu's review** (see "Phase 5" below; DEC-100 to DEC-115). Next: Phase 6 (composition), after approval.*
 
 ## Status
 
@@ -14,7 +14,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 2 Acquisition | ✅ approved 2026-09-26; pushed. FIRMS pending (Reenu will run it from another network with a new key) |
 | 3 Storage, cleaning, audit, EDA | ✅ approved 2026-09-26; pushed (DEC-080 to DEC-082) |
 | 4 Analysis-plan gate | ✅ 2026-09-27: plan `6e24eca` registered at https://osf.io/jksne/; gate opened in `0d9aa42` (DEC-084 to DEC-099) |
-| 5 Deweathering | pilot approved 2026-09-27 with changes (DEC-100 to DEC-113); full run in progress |
+| 5 Deweathering | complete 2026-09-28, awaiting review (DEC-100 to DEC-115) |
 | 6–10 | not started |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). No post-2019 effect estimates exist yet; they belong to Phase 7.
@@ -69,17 +69,46 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Phase 5 (deweathering, RQ2): IN PROGRESS. START HERE in a new chat
+## Phase 5 (deweathering, RQ2): COMPLETE, awaiting Reenu's review. START HERE in a new chat
 
-**State (2026-09-27, 22:45): the full run is RUNNING.** Reenu approved the pilot with changes (DEC-109 to DEC-113). The run writes to `data/interim/logs/normalise_main.log`: GAM main, then LightGBM main (the long part, about 7 h), then the registered-flags refits (66 series), then `cvcheck` for main and registered. **If the laptop slept or the run stopped, re-run the same commands. Done series are skipped:**
+**State (2026-09-28): Phase 5 is done and stopped for review.** Read `docs/phase-notes/05-deweathering.md`, `docs/deweathering_report.md` (generated) and DEC-100 to DEC-115. The full run finished at 08:20 on 2026-09-28 with no failed task:
+- 1,054 series × 2 families (main);
+- 66 × 2 registered-flags refits;
+- CV-only predictions for every series under both trend conventions.
+
+`snakemake -n pregate` has nothing to do.
+
+**Results in brief (generated numbers in the report):**
+- **Primary family:** GAM (median out-of-sample R² 0.460 vs 0.432, registered rule, `last_year` convention). Under the `clamp` convention LightGBM would win (0.450 vs 0.390); this is stated in the report (DEC-114).
+- **Within-period CV** (diagnostic): about 0.63–0.64 for both families.
+- **Weather part of city-level year-on-year change** in annual PM2.5: median 3.0% (90th percentile 8.1%), against a median raw change of 10.3%.
+- **Near-constant rule:** 77 valid station-years flagged; 67 of them in deweathered series to 2025, excluded in the primary analysis.
+- **The families diverge** (D > 5%) in 72 of 822 series.
+- **Grange & Carslaw sensitivity:** the GAM gives implausible values in some series (52 station-years more than 2× raw); LightGBM does not (DEC-115). The primary seasonal scheme is clean for both.
+
+**Waiting for Reenu:**
+1. Approval of Phase 5.
+2. Where to take the Grange & Carslaw sensitivity from: LightGBM, a stiffer-trend GAM refit (about 1.5 h), or both (DEC-115).
+3. Whether to stiffen the GAM trend (the trend-absorption question; report §5).
+4. Whether figure 3 gets an annual view (could be done in Phase 9).
+
+**Next, Phase 6** (composition, RQ1): the balanced panel (baseline 2018 primary, 2019 sensitivity) from `data/processed/deweathered/station_year.parquet`. **H4 goes there, under both resampling schemes and both validity rules** (`rule` column), as Reenu asked.
+
+**How to rebuild Phase 5:** `snakemake --cores 1 normalise`. Or step by step:
 ```bash
+python -m src.clean.nearconstant
+python -m src.normalise.run prepare --run main
+python -m src.normalise.run prepare --run registered
 python -m src.normalise.run fit --run main --family both
 python -m src.normalise.run fit --run registered --family both
 python -m src.normalise.run cvcheck --run main
 python -m src.normalise.run cvcheck --run registered
-touch data/interim/normalise/fits/main/_all.done
+python -m src.normalise.aggregate
+python -m src.normalise.report
+python -m src.viz.fig3_deweathered --scheme seasonal
+python -m src.viz.fig3_deweathered --scheme annual
 ```
-Then: `python -m src.normalise.aggregate`, `python -m src.normalise.report`, `python -m src.viz.fig3_deweathered --scheme seasonal` and `--scheme annual`. Look at both figures, run the tests, commit, update this file, write `docs/phase-notes/05-deweathering.md`, then stop for Reenu.
+The fits are resumable per series: re-run the same command after a crash or sleep. Measured run time on this laptop (8 workers): GAM about 1.5 h, LightGBM about 7 h, refits and checks about 1 h.
 
 **Reenu's pilot rulings (2026-09-27), all in DECISIONS:**
 - N = 500 for both schemes (DEC-113).
@@ -120,7 +149,7 @@ Then: `python -m src.normalise.aggregate`, `python -m src.normalise.report`, `py
 
 **Open observations from the pilot:**
 - ~~Bagalkot near-constant series~~: now caught by the near-constant rule (DEC-110).
-- **Question for Reenu (found after the go-ahead, not acted on):** the trend term absorbs within-year movement. Under Grange & Carslaw resampling the deweathered series should have almost no within-year variation, but pilot series keep 12% (LightGBM) and 25% (GAM) of the raw within-year SD of log monthly means. So the trend may also absorb year-specific weather, and deweathering would under-remove it. A less flexible GAM trend (e.g. 1–2 basis functions per year instead of 4) would need a GAM re-run (about 1 h). This is a model-specification change, so it waits for Reenu. `docs/deweathering_report.md` §5 measures it on the full run.
+- **Question for Reenu (found after the go-ahead, not acted on; confirmed on the full run, report §5 and DEC-115):** the trend term absorbs within-year movement. Under Grange & Carslaw resampling the deweathered series should have almost no within-year variation, but pilot series keep 12% (LightGBM) and 25% (GAM) of the raw within-year SD of log monthly means. So the trend may also absorb year-specific weather, and deweathering would under-remove it. A less flexible GAM trend (e.g. 1–2 basis functions per year instead of 4) would need a GAM re-run (about 1 h). This is a model-specification change, so it waits for Reenu. `docs/deweathering_report.md` §5 measures it on the full run.
 - LightGBM's in-sample R² (0.99) is far above its out-of-sample R² (0.3). It memorises individual days through the trend feature, a known property of this method; watch whether it under-removes weather.
 
 **Housekeeping:**

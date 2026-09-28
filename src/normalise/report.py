@@ -59,6 +59,24 @@ def trend_absorption(sm: pd.DataFrame) -> pd.DataFrame:
     return out.rename(columns={c: f"{c} / raw" for c in cols[1:]})
 
 
+def implausible(sm: pd.DataFrame, sy: pd.DataFrame) -> pd.DataFrame:
+    """Deweathered values far from what was measured (ratio to the raw mean over the same days), per
+    family and scheme: valid station-months and station-years (primary rule, primary variant).
+    Weather normalisation should move a month or year by tens of %, not multiples."""
+    m = sm[(sm.rule == "primary") & sm.valid]
+    y = sy[(sy.rule == "primary") & (sy.variant == "q1_t75") & sy.valid]
+    rows = []
+    for fam in ("gam", "lgbm"):
+        for sfx, scheme in (("", "seasonal"), ("_annual", "Grange & Carslaw")):
+            rm, ry = m[f"dw_{fam}{sfx}"] / m.raw, y[f"dw_{fam}{sfx}"] / y.raw
+            rows.append({"family": fam, "scheme": scheme,
+                         "months_ratio_over_3": int((rm > 3).sum()), "months_ratio_over_5": int((rm > 5).sum()),
+                         "months": len(rm), "years_ratio_over_2": int((ry > 2).sum()),
+                         "years_ratio_over_3": int((ry > 3).sum()), "years": len(ry),
+                         "max_year_ratio": float(ry.max())})  # fmt: skip
+    return pd.DataFrame(rows)
+
+
 def main() -> None:
     c = cfg()
     choice = json.loads((OUT / "family_choice.json").read_text(encoding="utf-8"))
@@ -101,7 +119,13 @@ def main() -> None:
     wy = pd.concat(wy, axis=1).reset_index()
     cws = pd.concat([lab(city_weather_share(cy, col)).assign(scheme=name) for col, name in SCHEMES.items()])
     ta = trend_absorption(sm)
-    nc = sy[(sy.variant == "q1_t75") & (sy.rule == "primary") & sy.near_constant]
+    imp = implausible(sm, sy)
+    mm = sm[(sm.rule == "primary") & sm.valid].assign(r=lambda d: d.dw_gam_annual / d.raw)
+    worst = mm.loc[mm.r.idxmax()]
+    top = mm[mm.r > 5]
+    monsoon = top.month.dt.month.isin([6, 7, 8, 9]).mean()
+    reg_y = sy[(sy.variant == "q1_t75") & (sy.rule == "registered_flags")]
+    nc = reg_y[reg_y.valid & reg_y.near_constant]  # valid under the registered rules, removed by DEC-110
     cy_n = cy.groupby(["rule", "pollutant"]).size().unstack("rule").reset_index()
     other = choice["sensitivity"]
     clamp_note = (
@@ -138,7 +162,7 @@ Median R² by family and pollutant: the registered metric (`r2_oos`), the same u
 
 Distribution of `r2_oos`:
 
-{md_table(lab(q), {k: f3 for k in q.columns if k.startswith("p")})}
+{md_table(lab(q), {k: f3 for k in q.columns if k[1:].isdigit()})}
 
 Residual autocorrelation (median, out-of-sample, lags 1–7):
 
@@ -174,9 +198,15 @@ Under Grange & Carslaw resampling a deweathered series should keep almost none o
 
 Under the seasonal scheme most within-year movement is kept by design (the seasonal cycle).
 
+**Implausible deweathered values.** The ratio of a deweathered mean to the raw mean over the same days, for valid station-months and station-years (primary rule). Weather normalisation should move these by tens of %, not multiples:
+
+{md_table(lab(imp), {"max_year_ratio": "{:.1f}"})}
+
+Under Grange & Carslaw resampling the GAM produces extreme values at some stations ({100 * monsoon:.0f}% of its station-months above 5× raw fall in June–September; the worst, {worst.sid} in {worst.month:%B %Y}, is {worst.dw_gam_annual:,.0f} µg/m³ against a measured {worst.raw:.0f}). The likely mechanism: the flexible trend absorbs part of the seasonal cycle (the table above), and whole-year resampling then pairs a day's trend value with a day of year and weather from another season, combinations outside the data the model was fitted on. The GAM's smooths extrapolate linearly on the log scale, and a deweathered value is a mean of exponentials, so a few extreme draws dominate it. LightGBM's trees cannot extrapolate beyond the training range and are far less affected. **The Grange & Carslaw results of the GAM are therefore not reliable where this happens**; this is the failure mode the seasonal scheme was chosen to avoid (DEC-109).
+
 ## 6. Near-constant station-years (DEC-110)
 
-{len(nc)} station-pollutant-years are excluded in the primary analysis. City-years per rule:
+{len(nc)} station-years that the registered rules keep (to {c['fit_end'][:4]}; {(nc.pollutant == 'pm25').sum()} PM2.5, {(nc.pollutant == 'pm10').sum()} PM10, at {nc.sid.nunique()} stations) are excluded in the primary analysis. City-years per rule:
 
 {md_table(lab(cy_n))}
 

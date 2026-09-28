@@ -507,3 +507,23 @@ Reenu reviewed `docs/deweathering_pilot.md` and ruled on each open item. **DEC-1
 - **Why.** The pre-stated convergence rule gave N = 300, but only narrowly (LightGBM PM2.5: 0.9502 of station-months within 0.5% against the 0.95 threshold). N = 500 is inside the proposal's 500–1,000 range, and every cell of the seasonal scheme is then above 0.994.
 - **Station-year check (pilot, 1,000-draw reference).** At N = 500, every valid station-year is within 0.5% under both schemes (95th-percentile deviation 0.08% seasonal, 0.16% Grange & Carslaw).
 - **The Grange & Carslaw scheme's monthly values** converge more slowly (worst cell 0.911 of station-months within 0.5% at N = 500). This is noted for its figure 3; its annual numbers, which H4 uses, are converged.
+
+## 2026-09-28: Phase 5 full run (results that bear on decisions)
+
+Numbers from `docs/deweathering_report.md` (generated). The full run completed on 2026-09-28 with no failed task: 1,054 series × 2 families (main), 66 × 2 (registered-flags refits), and CV-only predictions for every series under both trend conventions. As in the pilot, the CV-only `last_year` predictions are identical to the main fits' (checked on 60 sampled series, maximum difference 0).
+
+**DEC-114: The primary family is the GAM, by the registered rule (DEC-088) under the approved `last_year` convention (DEC-107). The choice is sensitive to that convention, and I report it that way.**
+- **Registered rule.** Median out-of-sample R² over 946 series with a CV fold: GAM 0.460, LightGBM 0.432; the GAM is better in 713 series. So the GAM is primary and LightGBM is the sensitivity analysis.
+- **Under the `clamp` convention the choice flips:** LightGBM 0.450, GAM 0.390. The pilot had the GAM ahead under both; the full set does not. The GAM loses most under `clamp` because its trend term follows more within-year movement (report §5), so a trend frozen at late December carries more season into the test year.
+- **Consequence.** The primary-family choice rests on DEC-107, a convention I changed after seeing pilot output and Reenu approved. It stays as registered (Reenu, 2026-09-27). The final report states that the other convention would have picked LightGBM, and every downstream result is shown under both families anyway (the "other family" sensitivity).
+- **Within-period CV** (DEC-112, diagnostic only): medians GAM 0.63–0.64, LightGBM 0.64. Both families capture the weather response about equally well once trend extrapolation is removed from the test. In-sample R² is 0.78 (GAM) and 0.99 (LightGBM).
+
+**DEC-115 (finding, no change made): under Grange & Carslaw resampling the GAM gives implausible deweathered values at some stations. The primary (seasonal) results are unaffected.**
+- **Evidence** (report §5; valid station-months and station-years, primary rule): deweathered-to-raw ratio above 5 in 330 station-months for the GAM under Grange & Carslaw (0 seasonal), and above 2 in 52 GAM station-years (maximum 370×). LightGBM under Grange & Carslaw: 18 months above 5, 0 station-years above 2 (maximum 1.3). The seasonal scheme's largest station-year ratio is 1.2 for the GAM and 1.1 for LightGBM.
+- **Mechanism (likely).** The flexible trend absorbs part of the seasonal cycle. Under Grange & Carslaw the deweathered GAM series keeps 22–23% of the raw within-year variation, against LightGBM's 9–10%. Whole-year resampling then pairs a day's trend with another season's day of year and weather, outside the fitted data. Splines extrapolate linearly on the log scale, and the mean of exponentials is dominated by the extreme draws.
+- **Consequence.** The Grange & Carslaw sensitivity (DEC-109), and H4 under it, would be contaminated if taken from the GAM.
+- **Options for Reenu:**
+  - (a) take the Grange & Carslaw sensitivity from LightGBM, which is clean at station-year level;
+  - (b) refit the GAM with a less flexible trend (e.g. 1–2 basis functions per year instead of 4; about 1.5 h). This also bears on the trend-absorption question (PROGRESS);
+  - (c) both.
+- **Not changed unilaterally:** it is a model-specification choice made after seeing results.
