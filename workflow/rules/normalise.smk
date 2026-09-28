@@ -7,7 +7,7 @@
 
 NRM = "data/interim/normalise"
 DW = "data/processed/deweathered"
-FIG3 = ["fig3_deweathered", "fig3_deweathered_grange_carslaw"]  # seasonal (primary); annual (DEC-109)
+FIG3 = ["fig3_deweathered", "fig3_deweathered_grange_carslaw", "fig3_deweathered_annual"]  # DEC-109, DEC-117
 NRM_CODE = ["src/normalise/features.py", "src/normalise/resample.py", "src/normalise/lgbm.py",
             "src/normalise/gam.R", "src/normalise/run.py"]
 
@@ -79,10 +79,21 @@ rule normalise_prepare:
 rule normalise_fit:
     input: f"{NRM}/inputs/main/series.csv", f"{NRM}/inputs/registered/series.csv", NRM_CODE
     output: touch(f"{NRM}/fits/main/_all.done")
-    shell:
+    shell:  # lgbm + gam (one-year-knot trend, DEC-116), and gam_k4 (previous trend, sensitivity)
         f"{PY} src.normalise.run fit --run main --family both && "
+        f"{PY} src.normalise.run fit --run main --family gam_k4 && "
         f"{PY} src.normalise.run fit --run registered --family both && "
-        f"{PY} src.normalise.run cvcheck --run main"
+        f"{PY} src.normalise.run fit --run registered --family gam_k4 && "
+        f"{PY} src.normalise.run cvcheck --run main --family both && "
+        f"{PY} src.normalise.run cvcheck --run main --family gam_k4 && "
+        f"{PY} src.normalise.run cvcheck --run registered --family both && "
+        f"{PY} src.normalise.run cvcheck --run registered --family gam_k4"
+
+
+rule extrapolation_guard:
+    input: f"{NRM}/fits/main/_all.done", "src/normalise/guard.py"
+    output: f"{DW}/extrapolation.parquet"
+    shell: f"{PY} src.normalise.guard"
 
 
 rule normalise_aggregate:
@@ -112,13 +123,15 @@ rule fig3:
     output: expand("reports/figures/{f}.{ext}", f=FIG3, ext=["png", "svg"])
     shell:
         f"{PY} src.viz.fig3_deweathered --scheme seasonal && "
-        f"{PY} src.viz.fig3_deweathered --scheme annual"
+        f"{PY} src.viz.fig3_deweathered --scheme annual && "
+        f"{PY} src.viz.fig3_deweathered --view annual"
 
 
 rule deweathering_report:
     input:
         f"{DW}/series_metrics.parquet",
         f"{DW}/city_year.parquet",
+        f"{DW}/extrapolation.parquet",
         "docs/near_constant_check.md",
         "src/normalise/report.py",
     output: "docs/deweathering_report.md"

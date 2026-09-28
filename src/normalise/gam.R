@@ -7,9 +7,15 @@
 # are computed later in Python (src/normalise/collect.py) by the same code for both families.
 #
 # Model (log PM, Gaussian, fREML, discretised covariates for speed):
-#   y ~ s(trend, k) + s(doy, cyclic) + weekday + s(temp) + s(rh) + s(ws) + s(wd, cyclic)
+#   y ~ trend term + s(doy, cyclic) + weekday + s(temp) + s(rh) + s(ws) + s(wd, cyclic)
 #       + ti(ws, wd) + s(blh_mean) + s(blh_pm) + s(log1p(precip)) + s(ssrd)
-#   k of the trend = trend_k_per_year x years of record, within [trend_k_min, trend_k_max].
+# Trend term, by rule (computed on the data each model is fitted on, CV training sets included):
+#   annual_knots (DEC-116, family `gam`): cubic regression spline with floor(span) + 1 knots evenly
+#       spaced over the span in years, i.e. >= 1 year apart, so it cannot follow seasons or
+#       episodes; a straight line if that gives < 3 knots (span < 2 years).
+#   k_per_year (DEC-101, family `gam_k4` and the pilot): thin-plate smooth with 4 basis functions per
+#       year of record, within [trend_k_min, trend_k_max].
+# The family (output folder) comes from the environment variable NCAP_GAM_FAMILY (default `gam`).
 #
 #   Rscript src/normalise/gam.R <tasks.csv> <schemes, comma-separated> <checkpoints, comma-separated>
 #   Rscript src/normalise/gam.R <tasks.csv> cvonly <convention>     (CV predictions only; pilot)
@@ -36,7 +42,14 @@ if (cv_only) {
 
 FEATURES <- c("temp", "rh", "ws", "wd", "blh_mean", "blh_pm", "precip", "ssrd")
 CHUNK <- 50L
-FAMILY <- "gam"
+FAMILY <- Sys.getenv("NCAP_GAM_FAMILY", "gam")
+if (!FAMILY %in% c("gam", "gam_k4")) stop("unknown GAM family ", FAMILY)
+
+trend_rule_for <- function(run) {
+  if (FAMILY == "gam_k4") return("k_per_year")
+  if (run == "pilot") return(cfg$pilot$gam_trend_rule)
+  cfg$gam$trend_rule
+}
 INPUTS <- "data/interim/normalise/inputs"
 FITS <- "data/interim/normalise/fits"
 MODELS <- "data/processed/models"
@@ -47,20 +60,33 @@ prep <- function(x) {
   x
 }
 
-trend_k <- function(trend) {
+trend_k <- function(trend, rule) {
+  if (rule == "annual_knots") return(as.integer(floor(diff(range(trend))) + 1))
+  if (rule != "k_per_year") stop("unknown trend rule ", rule)
   k <- round(cfg$gam$trend_k_per_year * diff(range(trend)))
   k <- min(cfg$gam$trend_k_max, max(cfg$gam$trend_k_min, k))
   as.integer(min(k, length(unique(trend)) - 1))
 }
 
-fit_gam <- function(d) {
-  f <- as.formula(sprintf(paste(
-    "y ~ s(trend, k = %d) + s(doy, bs = 'cc', k = 12) + weekday + s(temp) + s(rh) + s(ws)",
+# The trend term of the formula, and its knots (NULL for thin-plate or linear).
+trend_term <- function(trend, rule) {
+  k <- trend_k(trend, rule)
+  if (rule == "k_per_year") return(list(term = sprintf("s(trend, k = %d)", k), knots = NULL))
+  if (k < 3) return(list(term = "trend", knots = NULL))
+  list(term = sprintf("s(trend, bs = 'cr', k = %d)", k),
+       knots = seq(min(trend), max(trend), length.out = k))
+}
+
+fit_gam <- function(d, rule) {
+  tt <- trend_term(d$trend, rule)
+  f <- as.formula(paste(
+    "y ~", tt$term, "+ s(doy, bs = 'cc', k = 12) + weekday + s(temp) + s(rh) + s(ws)",
     "+ s(wd, bs = 'cc', k = 8) + ti(ws, wd, bs = c('tp', 'cc'), k = c(5, 6))",
     "+ s(blh_mean) + s(blh_pm) + s(precip_l) + s(ssrd)"
-  ), trend_k(d$trend)))
-  bam(f, data = prep(d), method = "fREML", discrete = TRUE, nthreads = 1,
-      knots = list(doy = c(0.5, 366.5), wd = c(0, 360)))
+  ))
+  knots <- list(doy = c(0.5, 366.5), wd = c(0, 360))
+  if (!is.null(tt$knots)) knots$trend <- tt$knots
+  bam(f, data = prep(d), method = "fREML", discrete = TRUE, nthreads = 1, knots = knots)
 }
 
 predict_log <- function(m, x) as.numeric(predict(m, prep(x), block.size = 50000L))
@@ -73,13 +99,13 @@ test_trend <- function(trend, train_trend, convention) {
   stop("unknown cv_trend ", convention)
 }
 
-cv_predict <- function(fit, folds, convention) {
+cv_predict <- function(fit, folds, convention, rule) {
   cv_pred <- rep(NA_real_, nrow(fit))
   cv_fold <- integer(nrow(fit))
   for (y in folds) {
     tr <- fit$year < y
     te <- fit$year == y
-    m <- fit_gam(fit[tr, ])
+    m <- fit_gam(fit[tr, ], rule)
     x <- fit[te, ]
     x$trend <- test_trend(x$trend, fit$trend[tr], convention)
     cv_pred[te] <- predict_log(m, x)
@@ -127,13 +153,13 @@ write_atomic <- function(df, path) {
 
 # Within-period blocked CV (DEC-112, a diagnostic): fold f trains on rows with w<f> TRUE and predicts
 # rows with wfold == f, each with its own trend (inside the training range).
-cv_within <- function(fit, w) {
+cv_within <- function(fit, w, rule) {
   pred <- rep(NA_real_, nrow(fit))
   for (f in sort(unique(w$wfold))) {
     tr <- w[[paste0("w", f)]]
     te <- w$wfold == f
     if (sum(tr) < 30 || sum(te) == 0) next
-    m <- fit_gam(fit[tr, ])
+    m <- fit_gam(fit[tr, ], rule)
     pred[te] <- predict_log(m, fit[te, ])
   }
   list(pred = pred, fold = as.integer(w$wfold))
@@ -146,13 +172,18 @@ run_task <- function(run, pollutant, sid) {
   pool <- as.data.frame(read_parquet(file.path(d, "pool.parquet")))
   folds <- as.integer(read_parquet(file.path(d, "folds.parquet"))$year)
 
+  rule <- trend_rule_for(run)
   t0 <- proc.time()[["elapsed"]]
-  cv <- cv_predict(fit, folds, convention)
+  cv <- cv_predict(fit, folds, convention, rule)
   cv_pred <- cv$pred
   cv_fold <- cv$fold
-  cvw <- cv_within(fit, as.data.frame(read_parquet(file.path(d, "wfolds.parquet"))))
+  cvw <- if (file.exists(file.path(d, "wfolds.parquet"))) {
+    cv_within(fit, as.data.frame(read_parquet(file.path(d, "wfolds.parquet"))), rule)
+  } else {
+    list(pred = rep(NA_real_, nrow(fit)), fold = integer(nrow(fit)))
+  }
   t1 <- proc.time()[["elapsed"]]
-  m <- fit_gam(fit)
+  m <- fit_gam(fit, rule)
   fitted <- predict_log(m, fit)
   t2 <- proc.time()[["elapsed"]]
   tgt <- target
@@ -188,10 +219,10 @@ run_task <- function(run, pollutant, sid) {
   }
   js <- sprintf(paste0(
     '{"sid": "%s", "pollutant": "%s", "family": "%s", "n_fit": %d, "n_target": %d, ',
-    '"folds": [%s], "draws": %d, "schemes": [%s], "trend_k": %d, "edf": %.3f, ',
+    '"folds": [%s], "draws": %d, "schemes": [%s], "trend_rule": "%s", "trend_k": %d, "edf": %.3f, ',
     '"secs_cv": %.3f, "secs_fit": %.3f, "secs_normalise": %.3f, "secs_total": %.3f}'),
     sid, pollutant, FAMILY, nrow(fit), nrow(target), paste(folds, collapse = ", "),
-    max(checkpoints), paste0('"', schemes, '"', collapse = ", "), trend_k(fit$trend),
+    max(checkpoints), paste0('"', schemes, '"', collapse = ", "), rule, trend_k(fit$trend, rule),
     sum(m$edf), t1 - t0, t2 - t1, t3 - t2, t3 - t0)
   tmp <- paste0(base, ".json.tmp")
   writeLines(js, tmp)
@@ -203,7 +234,7 @@ run_cv_only <- function(run, pollutant, sid) {
   fit <- as.data.frame(read_parquet(file.path(d, "fit.parquet")))
   n <- nrow(read_parquet(file.path(d, "target.parquet"), col_select = "date"))
   folds <- as.integer(read_parquet(file.path(d, "folds.parquet"))$year)
-  cv <- cv_predict(fit, folds, convention)
+  cv <- cv_predict(fit, folds, convention, trend_rule_for(run))
   out <- data.frame(cv_pred = rep(NA_real_, n), cv_fold = rep(0L, n))
   out$cv_pred[fit$t_row + 1L] <- cv$pred
   out$cv_fold[fit$t_row + 1L] <- cv$fold

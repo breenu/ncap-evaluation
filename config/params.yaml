@@ -115,13 +115,21 @@ deweathering:                         # proposal stage 5; plan section 4, Phase 
     subsample_freq: 1
     colsample_bytree: 0.9
   gam:                                # mgcv bam, fREML, discrete (DEC-101)
-    trend_k_per_year: 4               # basis size of the trend smooth per year of record
+    # Trend rule (DEC-116): annual_knots = cubic regression spline, knots evenly spaced >= 1 year apart
+    # (floor(span) + 1 of them; a straight line below 3). k_per_year = the DEC-101 trend, kept as the
+    # sensitivity family gam_k4 and for the pilot.
+    trend_rule: annual_knots
+    trend_k_per_year: 4               # k_per_year: basis size of the trend smooth per year of record
     trend_k_min: 5
     trend_k_max: 45
   pilot:                              # DEC-104
     n_stations: 20
     per_region: 5                     # a region's shortfall goes to the regions with most eligible stations
     min_valid_days: 1095              # both PM2.5 and PM10, so each pilot station tests both
+    gam_trend_rule: k_per_year        # the pilot ran with the DEC-101 trend; kept so it rebuilds as run
+  # Extrapolation guard (DEC-117): station-years whose deweathered mean is outside these multiples of
+  # the raw mean over the same days are flagged (never dropped).
+  guard_ratio: [0.67, 1.5]
 
 robustness:                           # proposal validation table
   placebo_year: 2016

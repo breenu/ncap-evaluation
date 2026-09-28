@@ -553,3 +553,22 @@ Reenu reviewed Phase 5 and asked for a stiffer GAM trend, set by a timescale rul
   - (c) station-years whose deweathered annual mean is more than 1.5× or less than 0.67× the raw annual mean over the same days (`deweathering.guard_ratio`), flagged in `station_year.parquet`.
   - (a) and (b) depend only on the training data and the draws, so they are the same for every family. How each family behaves there differs: a GAM extrapolates, trees do not. (c) shows the result.
 - **Figure 3** gets an annual view (raw vs deweathered annual means, both schemes).
+
+## 2026-09-28: Phase 5 GAM refit results (after DEC-116/117, committed in `72f2fc3` before the refit)
+
+**DEC-118: The refitted GAM is primary under the registered rule, and now under both CV conventions. The refit fixed the Grange & Carslaw failure, and it shows the old trend was absorbing weather.**
+- **Refit.** The refit (`python -m src.normalise.run fit --family gam`, main and registered, then `cvcheck --family gam`) completed on 2026-09-28 with no failed task. The previous GAM's outputs were moved, unchanged, to the family `gam_k4` (a rename, not a recomputation). The CV-only `last_year` predictions of the refitted GAM match its main fits exactly (60 sampled series).
+- **Selection (DEC-117, registered rule).** Median out-of-sample R², 946 series: refitted GAM 0.476, LightGBM 0.433 (the GAM better in 756). Under `clamp`: GAM 0.469, LightGBM 0.450. **The GAM is primary under both conventions**, so DEC-114's sensitivity to the convention is gone. The previous GAM scored 0.460 (`clamp` 0.390): the stiffer trend predicts unseen years better.
+- **Within-period CV** (diagnostic): the refitted GAM scores 0.59–0.61, against 0.63–0.64 for the previous GAM and LightGBM. That is expected: a trend that cannot follow within-year movement fits held-out months slightly less closely.
+- **Trend absorption** (report §5, Grange & Carslaw): the refitted GAM keeps 7–8% of the raw within-year variation, against the previous GAM's 22–23% and LightGBM's 9–10%.
+- **Extrapolation guard** (report §5; DEC-117):
+  - (a) Under both schemes, 0.9% of the 887 million resampled rows take any weather input outside the station's training range.
+  - (b) 91.5% of Grange & Carslaw rows pair a day with another season; none do under the seasonal scheme.
+  - (c) Station-years outside 0.67–1.5× raw: in the refitted GAM, 0 above 1.5× under either scheme (maximum 1.33× seasonal, 1.36× Grange & Carslaw). The previous GAM under Grange & Carslaw has 68 above 1.5× (maximum 370×). LightGBM has 0 above 1.5×.
+  - In every family, exactly one station-year is below 0.67×: Satna, Bandhavgar Colony (site_1433, an industry-run station), PM2.5 in 2018 (raw 18.2 µg/m³). The near-constant rule flags most of that station's other years, and it stays flagged, not dropped.
+- **The weather effect is larger than the previous GAM said.** City-level year-on-year changes in annual PM2.5 have a median of 10.3%. Their weather part has a median of **5.1%** (90th percentile 12.6%), against 3.0% (8.1%) with the previous trend. The two schemes now agree (5.1% vs 5.2%, where before they gave 3.0% vs 4.3%).
+  - This supports Reenu's reason for DEC-116: the flexible trend was absorbing year-specific weather and understating its effect.
+- **Family divergence** (DEC-111, D > 5%): 355 of 822 series (median D 4.0% PM10, 4.8% PM2.5), against 72 before the refit.
+  - The refitted GAM's trend moves only slowly, while LightGBM's trend splits can still follow short-lived movements, so their annual series now differ more.
+  - Divergence is therefore a property of the trend definitions as much as of the weather models. The LightGBM ("other family") sensitivity in Phases 6–7 is correspondingly more informative, and its results must be reported beside the primary, not summarised away.
+- **2020 wording corrected.** With the one-year-knot trend, the lockdown is partly averaged out of the deweathered series (stated in advance in DEC-116). The report and figure notes now say so instead of "deweathering does not remove the lockdown".

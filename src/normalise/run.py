@@ -1,8 +1,11 @@
 """Run deweathering tasks, resumably (Phase 5).
 
     python -m src.normalise.run prepare --run main [--sids a,b,...]
-    python -m src.normalise.run fit --run main --family lgbm|gam|both [--workers 8]
-    python -m src.normalise.run cvcheck --run pilot     (CV only, both trend conventions; DEC-107)
+    python -m src.normalise.run fit --run main --family lgbm|gam|gam_k4|both [--workers 8]
+    python -m src.normalise.run cvcheck --run main [--family ...]   (CV only, both trend conventions)
+
+`gam` is the GAM with the one-year-knot trend (DEC-116); `gam_k4` the previous GAM (DEC-101), kept
+as a sensitivity family; `both` = lgbm and gam.
 
 A task is one station x pollutant x family. `fit` lists the input folders of the run, skips tasks
 whose .json already exists (src.normalise.store), and runs the rest: LightGBM in a process pool,
@@ -86,34 +89,34 @@ def fit_lgbm(run: str, workers: int) -> None:
         raise SystemExit(f"lgbm: {len(failed)} tasks failed; re-run to retry them")
 
 
-def fit_gam(run: str, workers: int) -> None:
+def fit_gam(run: str, workers: int, family: str = "gam") -> None:
     _, schemes, checkpoints = settings(run)
-    todo = pending(run, "gam")
-    print(f"gam: {len(todo)} tasks to run", flush=True)
+    todo = pending(run, family)
+    print(f"{family}: {len(todo)} tasks to run", flush=True)
     if todo.empty:
         return
     LOGS.mkdir(parents=True, exist_ok=True)
     tmp = FITS / run / "_gam_tasks"
     tmp.mkdir(parents=True, exist_ok=True)
-    env = {**os.environ, **ONE_THREAD}
+    env = {**os.environ, **ONE_THREAD, "NCAP_GAM_FAMILY": family}
     procs = []
     for w in range(min(workers, len(todo))):
         part = todo.iloc[w::workers][["run", "pollutant", "sid"]]
-        f = tmp / f"worker{w}.csv"
+        f = tmp / f"{family}_worker{w}.csv"
         part.to_csv(f, index=False)
-        log = open(LOGS / f"normalise_{run}_gam_worker{w}.log", "a", encoding="utf-8")  # noqa: SIM115
+        log = open(LOGS / f"normalise_{run}_{family}_worker{w}.log", "a", encoding="utf-8")  # noqa: SIM115
         cmd = ["Rscript", "src/normalise/gam.R", str(f), ",".join(schemes), ",".join(map(str, checkpoints))]
         procs.append((subprocess.Popen(cmd, cwd=ROOT, env=env, stdout=log, stderr=log), log))
     t0 = time.time()
     while any(p.poll() is None for p, _ in procs):
         time.sleep(30)
-        left = len(pending(run, "gam"))
-        print(f"  gam {len(todo) - left}/{len(todo)} ({time.time() - t0:.0f} s)", flush=True)
+        left = len(pending(run, family))
+        print(f"  {family} {len(todo) - left}/{len(todo)} ({time.time() - t0:.0f} s)", flush=True)
     for _, log in procs:
         log.close()
-    left = pending(run, "gam")
+    left = pending(run, family)
     if len(left):
-        raise SystemExit(f"gam: {len(left)} tasks not done; see {LOGS}/normalise_{run}_gam_worker*.log")
+        raise SystemExit(f"{family}: {len(left)} tasks not done; see {LOGS}/normalise_{run}_{family}_worker*.log")
 
 
 CONVENTIONS = ("clamp", "last_year")
@@ -124,35 +127,41 @@ def _cv_lgbm(run, pollutant, sid, convention):
     lgbm.cv_only(run, pollutant, sid, convention)
 
 
-def cvcheck(run: str, workers: int) -> None:
-    """CV predictions only, both families, both test-year trend conventions (DEC-107). Cheap: no
-    resampling. Always recomputed in full."""
+def cvcheck(run: str, workers: int, families: list[str]) -> None:
+    """CV predictions only, for the given families, both test-year trend conventions (DEC-107).
+    Cheap: no resampling. Always recomputed in full."""
     t = all_tasks(run)
-    with ProcessPoolExecutor(workers) as pool:
-        futs = [pool.submit(_cv_lgbm, run, p, s, c) for c in CONVENTIONS for p, s in zip(t.pollutant, t.sid)]
-        for f in as_completed(futs):
-            f.result()
+    if "lgbm" in families:
+        with ProcessPoolExecutor(workers) as pool:
+            futs = [pool.submit(_cv_lgbm, run, p, s, c) for c in CONVENTIONS for p, s in zip(t.pollutant, t.sid)]
+            for f in as_completed(futs):
+                f.result()
+    for fam in [f for f in families if f != "lgbm"]:
+        _cv_gam(run, workers, t, fam)
+    print(f"cvcheck: {len(t)} series x {families} x {len(CONVENTIONS)} conventions", flush=True)
+
+
+def _cv_gam(run: str, workers: int, t: pd.DataFrame, family: str) -> None:
     tmp = FITS / run / "_gam_tasks"
     tmp.mkdir(parents=True, exist_ok=True)
-    env = {**os.environ, **ONE_THREAD}
+    env = {**os.environ, **ONE_THREAD, "NCAP_GAM_FAMILY": family}
     procs = []
     for c in CONVENTIONS:
         for w in range(workers // 2):
-            f = tmp / f"cvcheck_{c}_{w}.csv"
+            f = tmp / f"cvcheck_{family}_{c}_{w}.csv"
             t.iloc[w :: workers // 2][["run", "pollutant", "sid"]].to_csv(f, index=False)
             cmd = ["Rscript", "src/normalise/gam.R", str(f), "cvonly", c]
             procs.append(subprocess.Popen(cmd, cwd=ROOT, env=env))
     codes = [p.wait() for p in procs]
     if any(codes):
-        raise SystemExit(f"cvcheck: GAM workers exited with {codes}")
-    print(f"cvcheck: {len(t)} series x 2 families x {len(CONVENTIONS)} conventions", flush=True)
+        raise SystemExit(f"cvcheck: {family} workers exited with {codes}")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("step", choices=["prepare", "fit", "cvcheck"])
     ap.add_argument("--run", choices=["pilot", "main", "registered"], required=True)
-    ap.add_argument("--family", choices=["lgbm", "gam", "both"], default="both")
+    ap.add_argument("--family", choices=["lgbm", "gam", "gam_k4", "both"], default="both")
     ap.add_argument("--sids", help="comma-separated station ids (prepare; default all)")
     ap.add_argument("--workers", type=int, default=cfg()["workers"])
     a = ap.parse_args()
@@ -165,13 +174,14 @@ def main() -> None:
         print(f"prepared {s.skipped.isna().sum() if 'skipped' in s else len(s)} series; "
               f"skipped: {s.skipped.value_counts().to_dict() if 'skipped' in s else {}}")  # fmt: skip
         return
+    families = ["lgbm", "gam"] if a.family == "both" else [a.family]
     if a.step == "cvcheck":
-        cvcheck(a.run, a.workers)
+        cvcheck(a.run, a.workers, families)
         return
-    if a.family in ("lgbm", "both"):
+    if "lgbm" in families:
         fit_lgbm(a.run, a.workers)
-    if a.family in ("gam", "both"):
-        fit_gam(a.run, a.workers)
+    for fam in [f for f in families if f != "lgbm"]:
+        fit_gam(a.run, a.workers, fam)
 
 
 if __name__ == "__main__":

@@ -289,3 +289,35 @@ def test_allocate_gives_a_regions_shortfall_to_the_largest_regions():
     take = allocate(eligible, 20, 5)
     assert take.sum() == 20
     assert take["north-east"] == 2 and take["igp"] == 8 and take["coastal"] == 5
+
+
+def test_guard_counts_out_of_range_and_out_of_season_draws(tmp_path, monkeypatch):
+    from src.normalise import guard
+
+    monkeypatch.setattr(features, "INPUTS", tmp_path)
+    monkeypatch.setattr(features, "cfg", lambda: {
+        "fit_end": "2021-12-31", "weather_pool_years": [2020, 2021], "min_fit_days": 100,
+        "resample_window_days": 15, "cv_min_train_days": 100, "cv_min_test_days": 30,
+        "cv_within_folds": 4, "cv_within_buffer_days": 7})  # fmt: skip
+    dates = pd.date_range("2020-01-01", "2021-12-31")
+    # the station only has data in 2020, when temperature was 10; the 2021 pool is at 30 (outside)
+    day = pd.DataFrame({"sid": "s", "date": dates, "pm25": 10.0, "pm25_h1": np.where(dates.year == 2020, 24, 0)})
+    w = pd.DataFrame({"date": dates, **{f: 1.0 for f in era5_daily.FEATURES}})
+    w["temp"] = np.where(dates.year == 2020, 10.0, 30.0)
+    features.build_series("main", day, w, "pm25", 200, ["seasonal", "annual"])
+    g = guard.series_guard("main", "pm25", "s", ["seasonal", "annual"], 15).set_index("scheme")
+    # both schemes draw from 2020 and 2021 alike, so about half of the draws are out of range
+    assert 0.4 < g.loc["seasonal", "oor_rows"] / g.loc["seasonal", "rows"] < 0.6
+    assert g.loc["seasonal", "oos_rows"] == 0  # seasonal draws never leave the +-15-day window
+    assert g.loc["annual", "oos_rows"] / g.loc["annual", "rows"] > 0.85  # all-year draws mostly do
+
+
+def test_guard_flags_ratios_outside_the_band_and_keeps_every_row(monkeypatch):
+    from src.normalise import aggregate
+
+    monkeypatch.setattr(aggregate, "cfg", lambda: {"guard_ratio": [0.67, 1.5]})
+    t = pd.DataFrame({"raw": [10.0, 10.0, 10.0], "dw": [10.0, 16.0, 6.0], "dw_annual": 10.0,
+                      "dw_gam": [10.0, 16.0, 6.0]})  # fmt: skip
+    out = aggregate.guard_flags(t)
+    assert out.guard_dw.tolist() == [False, True, True] and len(out) == 3
+    assert not out.guard_dw_annual.any()
