@@ -728,3 +728,43 @@ The gate is open (plan `6e24eca`, OSF https://osf.io/jksne/). Phase 6 uses NCAP 
 **DEC-131: H4 is tested for PM2.5 and PM10 separately; neither is designated primary, and they are never pooled (written before computing, after DEC-125 to DEC-130 were committed in `29874cf`).**
 - The plan registers H4 without naming a pollutant, and reports Layer B "for PM2.5 and PM10 separately". Each pollutant is one test of a secondary hypothesis at 0.05 (plan §5). If they disagree, both are reported as they are.
 - **"All stations as reported" is limited to deweathered series.** 11 valid station-years to 2025 inside a polygon (PM2.5: 1 in 2024 and 5 in 2025; PM10: 5 in 2025; registered completeness rule) belong to series too short to deweather (fewer than 365 valid days). Keeping one station set for every quantity makes the decomposition add up exactly. The report shows how much adding them back would change each NCAP city's reported change.
+
+## 2026-09-30: Phase 6 results and one method change (numbers from `docs/composition_report.md`, generated)
+
+**DEC-132: H4 results. Supported for PM2.5 and PM10 in the primary version, beside LightGBM and as registered.**
+- **Primary (GAM, seasonal, primary rule, 2018 panel):**
+  - PM2.5: +9.5 pp (95% CI +4.8 to +14.5; 18 NCAP cities, 16 with a panel of one station);
+  - PM10: +6.0 pp (+1.8 to +10.0; 13 cities).
+- **LightGBM, same settings:** PM2.5 +8.6 (+4.7 to +12.6); PM10 +5.3 (+3.1 to +7.7).
+- **As registered, no deviations:** PM2.5 +10.3 (+5.3 to +14.8); PM10 +6.5 (+3.9 to +9.5).
+- **Robustness:** supported in 31 of 31 versions for PM2.5 and 29 of 31 for PM10. Not supported:
+  - LightGBM with the 2019 baseline, PM10: +1.7 (−0.1 to +3.5; 2.8 × SE = 2.6);
+  - no deweathering, PM10: +0.1 (−2.1 to +2.4). This version measures composition alone.
+- **What drives it:**
+  - PM2.5: mostly composition (+5.8 pp of the +9.5);
+  - PM10: mostly weather (+4.9 of +6.0).
+  - The weather part compares two single years (2018, 2025), because that is how H4 is registered.
+- **Not computable:**
+  - completeness 90%: no NCAP city has a 2018 panel;
+  - the FY2025-26 sensitivity (DEC-128).
+- **Satna (post-hoc, DEC-124):** it cannot enter H4 (not an NCAP unit). Under the registered-flags rule it is a one-station PM10 panel in its own city with composition bias 0, so dropping it changes no H4 result. In the all-city summaries it removes one PM10 city with a bias of 0: the mean PM10 composition bias moves from +0.80 to +0.84 pp. PM2.5 is unchanged, because the station has no strict PM2.5 panel.
+- **The as-registered version's weather/composition split is distorted** by 3 all-station station-years outside the extrapolation guard (the DEC-115 blow-ups). Its panels hold none, so its H4 is unaffected.
+
+**DEC-133: The family-disagreement split of DEC-130 failed its own pre-set check; it is replaced by a split on the annual-mean scale (changed after seeing the check fail; the diagnostic chooses nothing).**
+- **What failed.** DEC-130 split each family's weather effect into variable groups on the log scale (GAM terms, LightGBM TreeSHAP) and required the parts to add up to the implied weather change, 100 × change in log(raw/deweathered). They do not. For Kolkata's GAM (PM2.5) the parts sum to −3.5 against an implied −18.4; the generated report gives the full gap distribution.
+- **Why.** Two reasons, both checked on the saved fits:
+  - *Scale.* H4 and the deweathered change are changes in arithmetic annual means. There, weather acting on the most polluted days counts for more than on the log scale: Kolkata's mean log PM2.5 fell 6.8 points while its arithmetic mean fell 18.4%.
+  - *Misfit.* A model's fitted values need not reproduce a station's arithmetic annual mean. Kolkata's GAM fitted mean is 8.1% below the observed mean in 2018 and 3.3% above it in 2025. So 11.4 points of the fall are reproduced by neither its trend nor its weather terms. Deweathering drops that part, so raw − deweathered counts it as "weather". LightGBM's fitted means match the observed to within 1.5%.
+- **Replacement** (`family_diag.attribution`). Everything is on the annual-mean scale, and the parts add up to the implied change exactly, up to Monte-Carlo error:
+  - each variable group switched alone to its actual values, with the others at typical weather;
+  - the groups' joint part;
+  - the model's misfit.
+- **Added for H4** (`misfit_h4`): the misfit change for every panel station of the H4 cities, per family. It shows how much of H4's "weather" part is misfit rather than weather.
+- **Kept for the record.** The log-scale table (`family_diag_contrib.csv`) and its failed check (`family_diag_check.csv`) stay in the outputs and in the report.
+- **Why changing the method after the check is acceptable here.** The diagnostic is not a hypothesis test and selects nothing; the registered rule chose the family (DEC-118). The check was written in advance precisely to catch a split that does not explain the quantity, and it did.
+
+**DEC-134 (workflow note): outputs marked current with `snakemake --touch` after adding the `composition:` config block; the Phase 6 rules then run through Snakemake.**
+- **What changed.** The only change to `config/params.yaml` is the new `composition:` block (checked with `git diff 7ecd0a1 -- config/params.yaml`). It is read only by `src/normalise/composition*.py`, `family_diag.py` and `src/viz/fig1_decomposition.py` (checked with `grep`). So, as in DEC-108, every Phase 2–5 output and the pre-gate branch (`pregate_mde`, `pregate_report`) were marked current rather than rebuilt.
+- **What ran through Snakemake.** `composition_tables`, `fig1` and `composition_report` were then run with Snakemake's own commands. The regenerated report is byte-identical to the one built by hand.
+- **`family_diag` was run by hand** (twice: before and after DEC-133), with the same command as its rule. It was then marked current after `composition_tables` rewrote its input with identical content: the tables are seeded, so the content is the same.
+- **Result.** `snakemake -n pregate` reports nothing to do. Logs: `data/interim/logs/snakemake_phase6_*.log`.

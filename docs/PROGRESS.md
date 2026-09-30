@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-09-28. **Phase 5 (deweathering) approved by Reenu on 2026-09-28** (DEC-100 to DEC-124). **Next: Phase 6 (composition); START at "Next: Phase 6" below.***
+*Last updated: 2026-09-30. **Phase 6 (network composition, H4) built and committed; awaiting Reenu's approval** (DEC-125 to DEC-134). **Next: Reenu's review, then Phase 7; START at "Next" below.***
 
 ## Status
 
@@ -15,7 +15,8 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 3 Storage, cleaning, audit, EDA | ✅ approved 2026-09-26; pushed (DEC-080 to DEC-082) |
 | 4 Analysis-plan gate | ✅ 2026-09-27: plan `6e24eca` registered at https://osf.io/jksne/; gate opened in `0d9aa42` (DEC-084 to DEC-099) |
 | 5 Deweathering | ✅ approved 2026-09-28; pushed (DEC-100 to DEC-124) |
-| 6–10 | not started |
+| 6 Network composition, H4 | built 2026-09-30; awaiting approval (DEC-125 to DEC-134) |
+| 7–10 | not started |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). No post-2019 effect estimates exist yet; they belong to Phase 7.
 
@@ -69,75 +70,65 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Phase 6 plan (2026-09-30, written before building; rules in DEC-125 to DEC-130)
+## Next: Reenu reviews Phase 6; after approval, Phase 7 (causal analysis, RQ3). START HERE in a new chat
 
-Files (all in the proposal's layout; `src/normalise/` as PLAN.md §4 says):
-- `src/normalise/composition.py`: `station_years(spec)` selects station-years for one version (family, scheme, rule, baseline, completeness, exclusions); `panel()`, `city_series()` (all-station and panel means per year), `changes()` (per-city changes and decomposition, DEC-126), `station_bootstrap()` (per city, stratified), `cluster_boot()` (across cities), `h4()` over the version grid (DEC-128), `ground_vs_sat()`, `entrants()` (Phase 3 comparison on deweathered data). Writes `data/processed/composition/`.
-- `src/normalise/family_diag.py` + `src/normalise/family_terms.R`: GAM term and LightGBM SHAP contributions by variable group, ERA5 2018 vs 2025 and 2015–2025 trends (DEC-130).
-- `src/normalise/composition_report.py` → `docs/composition_report.md` (generated).
-- `src/viz/fig1_decomposition.py` → figure 1 v1 (mean waterfall with CIs; per-city decomposition; policy bar a marked placeholder).
-- `workflow/rules/composition.smk`: real rules replacing the stub.
-- `tests/test_composition.py`: synthetic tests of panel selection, decomposition identity, H4 sign, bootstraps, entrants, SHAP/term grouping.
+**Phase 6 is built and committed (2026-09-30) and waits for Reenu's approval.** Do not start Phase 7 until it is approved. Review material:
+- `docs/phase-notes/06-composition.md` (plain language);
+- `docs/composition_report.md` (generated; every number);
+- figure 1 v1: `reports/figures/fig1_decomposition*.png`;
+- DEC-125 to DEC-133.
 
-## Next: Phase 6 (network-composition correction, RQ1). START HERE in a new chat
-
-**Phase 5 was approved by Reenu on 2026-09-28** (DEC-123/124). Start Phase 6. Per CLAUDE.md: write a short plan first, then build; at the end run the tests, commit, update this file and DECISIONS, write `docs/phase-notes/06-composition.md`, and stop.
-
-**Spec:** proposal stage 6; PLAN.md §4 Phase 6; analysis plan §4–5.
-- Three city trends:
-  1. all stations as reported;
-  2. a balanced panel of stations valid in the baseline year and every later year (baseline **2018 primary, 2019 sensitivity**, DEC-088);
-  3. satellite over the GHSL urban-centre polygon.
-- Composition bias = (1) − (2); the ground check = (2) vs (3).
-- Figure 1 v1 is the decomposition waterfall; the policy bar stays a placeholder until Phase 7.
-- **H4 is computed here** (analysis plan §5): per NCAP city with ground data, the raw all-station change 2018–2025 minus the deweathered balanced-panel change, mean across cities with a 95% cluster-bootstrap CI. It is descriptive, not causal.
-- H4 is the one place Phase 6 uses NCAP city status. That is permitted: the gate is open, and H4 is a registered secondary hypothesis, not a treatment-effect estimate.
-
-**Inputs from Phase 5** (`data/processed/deweathered/`, built by `snakemake --cores 1 normalise`):
-- `station_year.parquet`:
-  - rows: rule × completeness variant (q1_t75 primary; q1_t60, q1_t90, q3_t75);
-  - values: raw and deweathered means over the same valid days, and `valid`;
-  - station attributes: `unit_id`, `inside_unit`, `region`, `near_constant`, `reenu_decided`, `reliability`;
-  - guard flags: `guard_<column>`;
-  - `covid_2020`.
-- Deweathered columns:
-  - `dw` = the primary family (the GAM with one-year knots) with seasonal resampling;
-  - `dw_annual` = the same family with Grange & Carslaw resampling;
-  - each family's own: `dw_gam`, `dw_lgbm`, `dw_gam_k4`, each with an `_annual` twin.
-- Also: `station_month`, `city_month`, `city_year` (all-station), `series_metrics`, `family_choice.json`, `extrapolation.parquet`.
-- The satellite unit values are in `data/processed/unit_year_sat.parquet` (Phase 3).
-
-**Every Phase 6 result, H4 included, is reported under** (Reenu, 2026-09-27/28):
-- both resampling schemes (`dw` and `dw_annual`; DEC-109);
-- both validity rules (`rule = primary | registered_flags`; DEC-110);
-- both competing families (GAM primary, LightGBM sensitivity; the families diverge by > 5% in 355 of 822 series, so show LightGBM beside the primary, DEC-118);
-- plus `gam_k4` as the trend-flexibility sensitivity;
-- both balanced-panel baselines (2018, 2019);
-- the completeness variants;
-- the drop-the-5-Reenu-decided-stations sensitivity (DEC-080).
-
-City series use only stations inside the unit polygon (DEC-105). No-deweathering baseline: `raw`.
-
-**Phase 5 results in brief** (numbers in `docs/deweathering_report.md`, generated):
-- **Primary family:** the refitted GAM, whose trend has knots one year apart. Median out-of-sample R² 0.476 vs LightGBM 0.433; it also wins under the `clamp` convention (0.469 vs 0.450).
-- **Weather part of city-level year-on-year change** in annual PM2.5: median 5.1% (90th percentile 12.6%), against a median raw change of 10.3%. The previous flexible trend understated it (3.0%).
-- **Extrapolation guard:** 0.9% of resampled rows are outside the training range. 91.5% of Grange & Carslaw rows are out of season. In the refitted GAM, no station-year is above 1.5× raw.
-- **Near-constant rule:** 67 station-years in deweathered series excluded in the primary analysis.
-- **Lockdown smear test (DEC-119/122):** a lockdown indicator changes 2019/2021 deweathered annual means by a median 0.55%, under the pre-set 1% threshold, so the model is unchanged. 2019 alone is 0.95%, and the smear falls backward on 2019. Phase 7 should weigh this, because 2019 is the first NCAP year.
-- **City-level family disagreement on the H4 quantity (DEC-120/122):**
-  - GAM minus LightGBM, 2018–2025 deweathered change: median |difference| 2.4–3.2 pp; more than 5 pp in about a quarter of cities.
-  - Kolkata PM2.5: GAM −1.9% vs LightGBM −14.6%, against a raw −18.4%.
-  - **Report H4 under both families, never one.** Most panel cities hold a single station.
-
-**Satna, Bandhavgar Colony (site_1433), DEC-121/122/124:**
-- No override (Reenu). It stays under the registered rules, and its near-constant years are excluded in the primary analysis. Under the primary rule it is therefore in no 2018–2025 panel; under the registered-flags rule it is.
-- **Name it wherever it contributes to a Phase 6 result:** `config/params.yaml: watch_stations`, and see `report.py: watch_lines` for a pattern.
-- The registered reliability < 50 sensitivity removes none of its valid station-years (they score 55–94). The threshold stays at 50 (Reenu, DEC-124); the report notes that the reliability score does not catch this station while the stuck-instrument rule does.
-- **Post-hoc sensitivity, added after inspecting the data (DEC-124):** wherever a Phase 6 or 7 result uses `rule = registered_flags` and site_1433 contributes, also compute it without the station (`config/params.yaml: posthoc_drop_registered`). Label it everywhere as "added after inspecting the data".
+**Open items for Reenu from Phase 6:**
+1. **H4's sign reading (DEC-127).** It clarifies ambiguous registered text. It was committed before computing (`29874cf`); Reenu may want to note it on OSF.
+2. **The DEC-130 → DEC-133 method change** in the family diagnostic. The pre-set log-scale split failed its own check, and an annual-mean-scale split replaced it. Its main finding: the GAM's misfit (the change its trend and weather terms do not reproduce) is counted as "weather" by raw − deweathered. It averages about −1 pp across the H4 cities, but reaches ±11 in single cities (Kolkata, Kanpur).
+3. **Completeness 90% and FY2025-26:** neither H4 sensitivity is computable. Stated, not hidden.
+4. **Single-station panels dominate** (16 of 18 PM2.5, 11 of 13 PM10 H4 cities). Phase 7's Layer B inherits this.
 
 **Carried into Phase 7 (added checks, not rule changes):**
 - **Layer B without 2019 (DEC-123):** rerun the ground-layer estimates excluding 2019, because the small lockdown smear under the one-year-knot trend falls mostly on 2019 (smear test: 2019 alone 0.95%). It is an added sensitivity analysis, reported and labelled as added on 2026-09-28; no registered rule changes.
-- **Satna post-hoc drop** in the registered-flags version (above; DEC-124).
+- **Satna post-hoc drop** in every registered-flags version where site_1433 contributes (DEC-124; `config/params.yaml: posthoc_drop_registered`). Label it "added after inspecting the data". In Phase 6 it could not enter H4, because its unit is a control.
+- **Triangulation input:** the plan's investigation step 1 (network composition) is Phase 6's `city_changes.parquet`. Step 2 (ground–satellite) is `ground_sat.csv`: per-city gaps are large (single monitors in Agra, Lucknow, Kanpur and Jodhpur fell 45–63% where the satellite fell 22–27%), while the mean gap is small.
+- **Model misfit:** Layer B's deweathered ITS also drops each station's misfit (DEC-133). Show the LightGBM version beside the GAM, as in Phase 6.
+
+## Phase 6 (network composition, RQ1 and H4): what was built (2026-09-30)
+
+**Rules first:** DEC-125 to DEC-130 were committed in `29874cf` and DEC-131 in `2254a70`, before any Phase 6 number was computed. Results: DEC-132. Method change after a failed pre-set check: DEC-133.
+
+**How to rebuild:** `snakemake --cores 1 composition`. Or, inside the `ncap` env:
+```bash
+python -m src.normalise.composition          # ~1 min; all tables in data/processed/composition/
+python -m src.normalise.family_diag          # ~25-30 min (LightGBM TreeSHAP for the pre-set log-scale split)
+python -m src.viz.fig1_decomposition
+python -m src.normalise.composition_report   # -> docs/composition_report.md
+```
+
+**Code:**
+- `src/normalise/composition.py`: `Spec` (one version), `specs()` (the 31 versions of DEC-128), `select`, `panel_members`, `mark_panel`, `decompose`, `city_changes`, `station_bootstrap`, `cluster_boot`, `h4_table`, `trends`, `composition_by_year`, `ground_vs_sat`, `entrants`, `coverage`.
+- `src/normalise/family_diag.py` + `family_terms.R`: GAM terms, LightGBM SHAP, the annual-mean attribution (DEC-133), ERA5 facts, `misfit_h4`.
+- `src/normalise/composition_report.py`, `src/viz/fig1_decomposition.py`.
+- `workflow/rules/composition.smk` (real rules; the stub is gone).
+- Tests: `tests/test_composition.py` (13, synthetic); full suite 172 passed.
+
+**Outputs:** `data/processed/composition/`:
+- `city_changes.parquet`, `summary.csv`, `h4.csv`, `city_boot.csv`;
+- `trends.parquet`, `composition_by_year.csv`;
+- `ground_sat*.csv`, `entrants*.csv`, `coverage.csv`;
+- `family_diag_*.csv`.
+
+**Results in brief** (numbers in `docs/composition_report.md`):
+- **H4 supported** in the primary version:
+  - PM2.5 +9.5 pp (95% CI +4.8 to +14.5; 18 NCAP cities);
+  - PM10 +6.0 (+1.8 to +10.0; 13 cities);
+  - LightGBM beside it: +8.6 / +5.3;
+  - as registered, no deviations: +10.3 / +6.5.
+  - It fails in 2 of 31 PM10 versions: LightGBM with the 2019 baseline, and no deweathering.
+  - PM2.5's gap is mostly composition; PM10's is mostly weather (2025 was a favourable year).
+- **Composition bias (all 23 PM2.5 panel cities):** −3.7 pp (−7.2 to −0.4), appearing from 2022–23. PM10: +0.9 (−1.1 to +3.3).
+- **Ground vs satellite (PM2.5, 2018 → 2024):** mean gap +3.0 pp (−5.0 to +10.6); correlation of changes 0.68. Per-city gaps are large.
+- **New stations read cleaner** (PM2.5 −6.3% raw, −6.8% deweathered; paired −0.6 pp, CI spans 0): location, not weather.
+- **Family disagreement:** see the report, §5. The biggest single driver in Kolkata and Kanpur is the GAM's misfit, not a weather variable.
+
+**Workflow note:** see DEC-134 (the `snakemake --touch` step after adding the `composition:` config block).
 
 ## Phase 5 (deweathering, RQ2): how it was built and run
 
