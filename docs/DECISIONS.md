@@ -724,3 +724,7 @@ The gate is open (plan `6e24eca`, OSF https://osf.io/jksne/). Phase 6 uses NCAP 
     - the correlation of each variable's annual mean with the year. A trending variable can be credited to the trend by one family and to weather by the other.
     - Physically expected signs are stated only where they are unambiguous: a higher boundary layer, faster wind or more rain → lower PM.
   - Reported as a finding. **It does not choose a family**; the registered rule did that (DEC-118).
+
+**DEC-131: H4 is tested for PM2.5 and PM10 separately; neither is designated primary, and they are never pooled (written before computing, after DEC-125 to DEC-130 were committed in `29874cf`).**
+- The plan registers H4 without naming a pollutant, and reports Layer B "for PM2.5 and PM10 separately". Each pollutant is one test of a secondary hypothesis at 0.05 (plan §5). If they disagree, both are reported as they are.
+- **"All stations as reported" is limited to deweathered series.** 11 valid station-years to 2025 inside a polygon (PM2.5: 1 in 2024 and 5 in 2025; PM10: 5 in 2025; registered completeness rule) belong to series too short to deweather (fewer than 365 valid days). Keeping one station set for every quantity makes the decomposition add up exactly. The report shows how much adding them back would change each NCAP city's reported change.
