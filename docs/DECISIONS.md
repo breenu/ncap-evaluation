@@ -639,3 +639,88 @@ Reenu reviewed Phase 5 and asked for a stiffer GAM trend, set by a timescale rul
 - **Why the primary rule needs no such check.** Under the primary rule the station's near-constant years are already excluded (DEC-110), and it is in no 2018–2025 panel.
 - **What the report says.** `deweathering_report.md` §9 states that the reliability score does not catch this station (its valid station-years score 55–94, above the < 50 threshold), while the stuck-instrument rule does (it flags most of its later years). The numbers are generated.
 - **Unchanged:** no station-level override (DEC-121). The station stays named via `watch_stations`.
+
+## 2026-09-30: Phase 6 (network-composition correction, RQ1 and H4). Rules written BEFORE any Phase 6 result
+
+The gate is open (plan `6e24eca`, OSF https://osf.io/jksne/). Phase 6 uses NCAP status in one place only, H4, which the plan registers as a secondary, descriptive hypothesis over NCAP cities (plan §5). Nothing here contrasts NCAP with non-NCAP units; that is Phase 7's job. Everything below was written and committed before any Phase 6 quantity was computed.
+
+**DEC-125: The three city trends, and what a "city" is.**
+- **City = urban-centre unit** (DEC-105; the same polygon as the satellite value). NCAP cities sharing a polygon are one unit (e.g. Delhi, Faridabad, Ghaziabad and Noida). The registered text says "per NCAP city"; splitting a shared polygon by the station's city label would give ground series with no matching satellite unit, so the unit is used throughout.
+- **NCAP units** = the units in `data/interim/pregate/units.csv` that hold an NCAP city. This includes a buffered town (DEC-063) if a station lies inside its buffer: H4 describes NCAP cities only, so Layer A's reason for excluding buffered towns (treated and control units must be defined alike) does not apply.
+- **Trend 1, all stations as reported:** each year, the mean of the annual means of every station inside the polygon that is valid that year (flagged values removed, completeness rule applied). This is the network "as reported" after the audit's cleaning, not the portal's unvalidated number.
+- **Trend 2, balanced panel:** stations inside the polygon that are valid in the baseline year **and every year to 2025** (strict). Baseline 2018 is primary and 2019 the sensitivity (DEC-088). Each year's value is the mean over the panel stations, raw and deweathered. Years before the baseline are not part of the panel.
+- **Trend 3, satellite:** ACAG V5.GL.06, population-weighted over the unit (DEC-070), 2015–2024 (the product ends in 2024). V6.GL.03 is the product sensitivity.
+- A city mean is the unweighted mean of station annual means, as in `city_year` (DEC-105).
+
+**DEC-126: Changes, composition bias, ground vs satellite, and the decomposition.**
+- **Change** from the baseline to 2025 = 100 × (mean₂₀₂₅ / mean_baseline − 1), in % (DEC-120's definition). Differences of changes are in percentage points (pp).
+- **Composition bias** = change(all stations) − change(balanced panel).
+  - Primary on raw values (what a tracker reports); also computed on deweathered values.
+  - Also given per year, as the gap between the two trends indexed to the baseline.
+- **Ground vs satellite** (PM2.5 only) = change(balanced panel, raw) − change(satellite), 2018 → **2024**, because the satellite ends in 2024.
+  - Raw, because the satellite is not deweathered.
+  - The all-station and deweathered versions are shown beside it.
+- **Decomposition for figure 1, in the proposal's order** (reported → weather → composition → policy):
+  - reported = change(all stations, raw);
+  - weather = change(all, raw) − change(all, deweathered);
+  - composition = change(all, deweathered) − change(panel, deweathered);
+  - corrected = change(panel, deweathered) = reported − weather − composition (exact);
+  - policy: a placeholder until Phase 7.
+- **The other order** (composition on raw values first, then weather on the panel) is reported as a check. The two orders differ only by an interaction term.
+
+**DEC-127: H4's sign, read from the hypothesis. This clarifies an ambiguous registered rule and will be listed with the deviations in the final report.**
+- **The ambiguity.**
+  - H4 (plan §1): "Reported (raw, all-station) *improvements* in NCAP cities exceed deweathered, composition-corrected *improvements*."
+  - The decision rule (plan §5): "raw all-station change minus deweathered balanced-panel change … Supported if the mean across cities is positive."
+  - If "change" means the change in concentration (a fall is negative), a reported fall larger than the corrected fall makes that difference **negative**. The rule, computed literally, would then call the opposite of the hypothesis "supported".
+- **Reading adopted:** "change" in the rule means improvement, i.e. the fall in %.
+  - Per city, **H4 = (reported fall) − (corrected fall) = change(panel, deweathered) − change(all, raw)**, in pp. This is weather + composition from DEC-126, with the sign flipped.
+  - **H4 is supported if the mean across NCAP cities is positive and its 95% cluster-bootstrap CI excludes 0.**
+- **Why this is the test that was registered.** Both readings test the same statement: the reported fall is larger than the corrected fall. Only the sign label differs, and the hypothesis text fixes which sign counts as support. Decided before computing any Phase 6 value.
+
+**DEC-128: H4's primary version, and every version reported beside it.**
+- **Primary:** GAM with one-year knots (the primary family, DEC-118), seasonal resampling (DEC-109), the primary validity rule (DEC-110), baseline 2018, completeness q1_t75, strict panel, and every NCAP unit with a panel. **LightGBM with the same settings is shown beside it in every table**, never summarised away (DEC-118/120).
+- **As registered, with no deviations:** GAM with the previous trend (`gam_k4`, the family the registered rule chose before DEC-116; DEC-114), Grange & Carslaw resampling, and the registered flags only. Reported and labelled as such.
+- **Grid:** {GAM, LightGBM, GAM k4} × {seasonal, Grange & Carslaw} × {primary, registered flags}.
+- **One change at a time from the primary, for both competing families:**
+  - baseline 2019;
+  - completeness 60%, 90%, and 3 of 4 quarter-hours;
+  - drop the 5 Reenu-decided stations (DEC-080);
+  - drop station-years with reliability < 50 (DEC-073);
+  - loose panel: valid in the baseline year and 2025 only (not registered; DEC-120);
+  - no deweathering: the raw balanced panel, so H4 = composition only.
+- **Post-hoc sensitivity, "added after inspecting the data" (DEC-124):** every registered-flags row is recomputed without site_1433.
+  - Satna's unit (u0908) is not an NCAP unit, so this cannot change H4. It is computed anyway.
+  - It is also applied to the all-city composition summaries, where the station can contribute.
+- **The FY2025-26 sensitivity (plan §5, "+ Jan–Mar 2026") cannot be computed here.** The deweathered series end on 2025-12-31 (`deweathering.fit_end`, DEC-079), so no deweathered January–March 2026 exists. The report states this.
+
+**DEC-129: Uncertainty.**
+- **Across cities** (H4 and every summary):
+  - cluster bootstrap over cities, 1,000 resamples (`composition.bootstrap_draws`), percentile 95% CI, config seed;
+  - SE = SD of the bootstrap means;
+  - the mean is unweighted across cities, as registered;
+  - where a CI includes 0, 2.8 × SE is reported beside it as the smallest mean the design could reliably detect (hard rule 8; the descriptive analogue of an MDE).
+- **Per city:** a stratified station bootstrap inside the city, 1,000 resamples.
+  - Panel stations are resampled among the panel stations and the other stations among the others, so every draw keeps a panel.
+  - A city with one station in a stratum gets no between-station uncertainty from that stratum. The report says so and shows the family range (GAM vs LightGBM) separately.
+- **Coverage:** composition summaries cover every city with a panel, NCAP or not; **H4** covers NCAP units only.
+
+**DEC-130: Two diagnostics, method fixed now.**
+- **"Do new stations read cleaner?", on deweathered data.**
+  - Definition as in Phase 3 (`src/viz/eda.py: entrants`): per unit-year, log(mean of entrants' annual means) − log(mean of incumbents'). An entrant is in its first valid year; an incumbent was valid before.
+  - Here: stations inside the polygon (DEC-105), primary rule, q1_t75, over the same station-years for raw and deweathered (both families, both schemes), plus the paired difference deweathered − raw.
+  - Per-year t-intervals as in Phase 3; the pooled estimate uses a cluster bootstrap over units.
+- **Family disagreement.** Covers Kolkata and every city whose GAM and LightGBM 2018–2025 deweathered changes differ by more than 5 pp in the primary H4 setting (strict panel, primary rule, either scheme).
+  - *Which variables drive it:*
+    - Each model's log prediction is split into additive parts: the GAM's terms (`predict(type = "terms")`) and LightGBM's TreeSHAP contributions (`pred_contrib`).
+    - Parts are grouped as temperature; humidity; wind (speed, direction, their interaction); boundary-layer height (daily mean, afternoon maximum); precipitation; solar radiation; and trend/calendar.
+    - A group's weather effect in year Y = the mean over the station's fit days in Y of [its part under the actual weather − its mean part over the first 100 of the station's 500 shared weather draws].
+    - The change from 2018 to 2025 is that group's contribution, per family, in log units × 100 (≈ %).
+    - Their sum is checked against each family's implied weather change, log(raw/deweathered).
+  - *Is the actual weather consistent with it:* ERA5 at the station's cell, all days:
+    - annual and cold-month (January, February, October–December) means for 2015–2025;
+    - 2025 − 2018, in units and in SDs of the annual means;
+    - OLS trend per decade with a 95% CI;
+    - the correlation of each variable's annual mean with the year. A trending variable can be credited to the trend by one family and to weather by the other.
+    - Physically expected signs are stated only where they are unambiguous: a higher boundary layer, faster wind or more rain → lower PM.
+  - Reported as a finding. **It does not choose a family**; the registered rule did that (DEC-118).

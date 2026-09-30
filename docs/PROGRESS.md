@@ -69,6 +69,16 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
+## Phase 6 plan (2026-09-30, written before building; rules in DEC-125 to DEC-130)
+
+Files (all in the proposal's layout; `src/normalise/` as PLAN.md §4 says):
+- `src/normalise/composition.py`: `station_years(spec)` selects station-years for one version (family, scheme, rule, baseline, completeness, exclusions); `panel()`, `city_series()` (all-station and panel means per year), `changes()` (per-city changes and decomposition, DEC-126), `station_bootstrap()` (per city, stratified), `cluster_boot()` (across cities), `h4()` over the version grid (DEC-128), `ground_vs_sat()`, `entrants()` (Phase 3 comparison on deweathered data). Writes `data/processed/composition/`.
+- `src/normalise/family_diag.py` + `src/normalise/family_terms.R`: GAM term and LightGBM SHAP contributions by variable group, ERA5 2018 vs 2025 and 2015–2025 trends (DEC-130).
+- `src/normalise/composition_report.py` → `docs/composition_report.md` (generated).
+- `src/viz/fig1_decomposition.py` → figure 1 v1 (mean waterfall with CIs; per-city decomposition; policy bar a marked placeholder).
+- `workflow/rules/composition.smk`: real rules replacing the stub.
+- `tests/test_composition.py`: synthetic tests of panel selection, decomposition identity, H4 sign, bootstraps, entrants, SHAP/term grouping.
+
 ## Next: Phase 6 (network-composition correction, RQ1). START HERE in a new chat
 
 **Phase 5 was approved by Reenu on 2026-09-28** (DEC-123/124). Start Phase 6. Per CLAUDE.md: write a short plan first, then build; at the end run the tests, commit, update this file and DECISIONS, write `docs/phase-notes/06-composition.md`, and stop.

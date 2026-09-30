@@ -142,6 +142,15 @@ deweathering:                         # proposal stage 5; plan section 4, Phase 
   lockdown_min_days: 10               # the indicator enters a model only with >= 10 lockdown days in its data
   lockdown_test_threshold_pct: 1      # DEC-119: median |change| in 2019/2021 deweathered means above this -> adopt
 
+composition:                          # Phase 6, RQ1 and H4 (DEC-125 to DEC-130)
+  baseline_years: [2018, 2019]        # balanced-panel baseline: first = primary, second = sensitivity (DEC-088)
+  end_year: 2025                      # last primary ground year (DEC-079)
+  satellite_end_year: 2024            # ACAG V5.GL.06 ends in 2024: ground vs satellite runs to here
+  bootstrap_draws: 1000               # cluster bootstrap over cities; station bootstrap within a city (DEC-129)
+  family_flag_pp: 5                   # family-disagreement diagnostic: |GAM - LightGBM| change > 5 pp (DEC-130)
+  diag_draws: 100                     # weather draws per day used to split a model's weather effect by variable
+  cold_months: [1, 2, 10, 11, 12]     # "cold months" of a calendar year for the ERA5 summary (DEC-130)
+
 robustness:                           # proposal validation table
   placebo_year: 2016
   placebo_space_permutations: 500
