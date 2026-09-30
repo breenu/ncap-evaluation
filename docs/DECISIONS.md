@@ -804,3 +804,22 @@ Reenu accepted DEC-127 (H4 read as improvements). She asked for every registered
 
   Why this order: "uninformative" is the more precise statement whenever it applies. Putting it first can only increase the number of pairs that trigger the registered investigation, because every category except "consistent" triggers it, including category 5.
 - **City-level claims.** Benjamini–Hochberg at 5% on two-sided p-values.
+
+**DEC-136: Phase 6 review rulings (Reenu, 2026-10-01). The "weather" part of H4 and figure 1 is split into modelled weather and unmodelled change (added description; the registered H4 test is unchanged). Written and committed before the split is computed.**
+- **Accepted:**
+  - DEC-127 (H4 read as improvements), with the audit in DEC-135 and an OSF clarification draft (`docs/osf/clarification_2026-10-01.md`, for Reenu to post);
+  - DEC-133, with the failed log-scale version kept in the outputs.
+- **The split.** Raw − deweathered contains change the model does not reproduce (DEC-133), so "weather" must mean only modelled weather.
+  - Per station-year, a **fitted annual mean** = the mean over the same valid days of exp(fitted log value) × the series' smearing factor: the model's own prediction under the actual weather, on the scale of the deweathered value (DEC-101).
+  - At city level, over the same station sets as before:
+    - **unmodelled** = change(all, raw) − change(all, fitted): what neither the trend nor the weather terms reproduce;
+    - **weather** = change(all, fitted) − change(all, deweathered): *modelled weather only*;
+    - composition and corrected are unchanged.
+  - reported = unmodelled + weather + composition + corrected (exact).
+  - In H4 terms: H4 = h4_unmodelled + h4_weather + h4_composition. **H4's value and its test do not change**; only its description does.
+- **Where the split is not available: completeness 60%.** Days with 15–17 valid hours are not fit days, so they have no fitted value. A city-year whose station-years lack a fitted mean keeps the combined raw − deweathered part, labelled as combined. Every other version has fitted values on all its valid days: q1_t90 and the 3-of-4 rule select subsets of the fit days. No-deweathering: fitted = raw, so both parts are 0.
+- **Scope, stated wherever H4 appears (Reenu).** H4 covers the NCAP cities with a station valid in every year 2018–2025: 18 for PM2.5 and 13 for PM10 under the primary settings, mostly single stations. It is not a statement about NCAP cities in general. The counts in the text are generated.
+- **No claims about individual weather variables anywhere (Reenu).**
+  - The per-variable outputs of the family diagnostic stay in `data/processed/composition/family_diag_*.csv` for the record.
+  - The report and figures make no statement about which variable drove anything.
+  - The family diagnostic is reported only as modelled weather (all variables together) and misfit.
