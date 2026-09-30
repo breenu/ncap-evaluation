@@ -768,3 +768,39 @@ The gate is open (plan `6e24eca`, OSF https://osf.io/jksne/). Phase 6 uses NCAP 
 - **What ran through Snakemake.** `composition_tables`, `fig1` and `composition_report` were then run with Snakemake's own commands. The regenerated report is byte-identical to the one built by hand.
 - **`family_diag` was run by hand** (twice: before and after DEC-133), with the same command as its rule. It was then marked current after `composition_tables` rewrote its input with identical content: the tables are seeded, so the content is the same.
 - **Result.** `snakemake -n pregate` reports nothing to do. Logs: `data/interim/logs/snakemake_phase6_*.log`.
+
+## 2026-09-30: Phase 6 review (Reenu). Sign audit of every registered decision rule, BEFORE Phase 7 computes anything
+
+**DEC-135: How every registered decision rule is read (clarifications of the registered plan, `6e24eca`; listed with the deviations in the final report). Committed and pushed before any Phase 7 estimate exists.**
+
+Reenu accepted DEC-127 (H4 read as improvements). She asked for every registered rule in plan §5 to be audited for the same kind of ambiguity. The convention below applies to all of them. Where a rule was already unambiguous, it says so. None of the readings uses a result: no Phase 7 quantity has been computed.
+
+- **Convention for every effect.** An effect is treated minus counterfactual, on log concentration. **Negative = a reduction.** A "larger reduction" or "larger effect" means a more negative log effect. Percentages are 100 × (e^β − 1), so a reduction prints as a negative %.
+- **H1.**
+  - *(a) Unambiguous:* the primary SDID ATT < 0, with its 95% CI entirely below 0.
+  - *(b) and (c):* no sign involved.
+  - *(d) "keeps its sign":* the point estimate is also < 0 in Callaway & Sant'Anna, in the area-weighted outcome and in V6.GL.03. Significance is not required there.
+- **Equivalence test.** Registered exactly as written: the 90% CI lies strictly between ln 0.95 = −0.0513 and ln 1.05 = +0.0488. The bounds are slightly asymmetric in log units, and they are kept as registered, not symmetrised.
+- **"Which effect sizes the 95% CI excludes" against NCAP's targets.** A 20%, 30% or 40% reduction is ln 0.80, ln 0.70, ln 0.60. The CI "excludes a 20% reduction" if its lower bound is above ln 0.80. PM2.5 results are never read as PM10 attainment.
+- **H2.** "In the direction of a larger winter reduction" = the winter-minus-non-winter difference in log ATTs is **negative**, with its 95% CI entirely below 0. The plan's MDE table already labels this difference "winter minus non-winter".
+- **H3: the same ambiguity as H4.** Read literally, "the PM10 effect exceeds the PM2.5 effect", with both effects reductions (negative), would mean a *smaller* PM10 reduction, the opposite of the hypothesis ("PM10 fell more than PM2.5"). Read as:
+  - (i) the effect on log(PM2.5/PM10) is **positive** with its 95% CI entirely above 0. This is the ratio rising; the rule is unambiguous here.
+  - (ii) in ≥ 2 of the 3 specifications (raw, deweathered, balanced panel), β_PM10 < β_PM2.5 (a larger PM10 reduction) **and** β_PM10 < 0. The hypothesis says PM10 *fell*, so a PM10 increase that is merely smaller than PM2.5's does not count. This is the stricter of the two possible readings. Point estimates only, as registered.
+  - (iii) "Layer A is not in the opposite direction" = the registered layer comparison for PM2.5 (Layer A restricted to units with Layer B stations, against Layer B's PM2.5 effect) is not classified **conflict** (below).
+  - Otherwise "inconclusive"; never "confirmed".
+- **H4.** DEC-127: H4 = reported fall − corrected fall = change(panel, deweathered) − change(all stations, raw). Supported if the mean is > 0 with its 95% CI entirely above 0.
+- **H5.** Unambiguous given the coding, now fixed:
+  - the IGP indicator is 1 for IGP units;
+  - its coefficient = the effect in IGP units minus the effect elsewhere, on log ATTs;
+  - "above 0 (a less negative effect)" = the 95% credible interval entirely above 0, i.e. smaller reductions in the IGP.
+- **Robustness "agrees".** The check's point estimate has the same sign as the primary point estimate and lies inside the primary 95% CI, on the same scale: log-scale checks against the log-scale primary, the µg/m³ outcome against the µg/m³ fit. Every check is reported either way.
+- **Calibration-leakage warning.** Unambiguous: difference = gained − not gained; "negative" = a larger reduction in the units that gained a monitor.
+- **Layer-disagreement categories: they overlap and leave a gap, so they need an order.** "Sign" = sign of the point estimates. Applied in this order, first match wins:
+  1. **uninformative:** the Layer B 95% CI contains both 0 and the Layer A point estimate;
+  2. **conflict:** opposite signs, and at least one 95% CI excludes 0;
+  3. **consistent:** same sign, and the 95% CIs overlap;
+  4. **different magnitude:** same sign, and the CIs do not overlap;
+  5. **unclassified (not in the plan):** opposite signs, neither CI excludes 0, and the Layer B CI does not contain the Layer A estimate. Reported under that name.
+
+  Why this order: "uninformative" is the more precise statement whenever it applies. Putting it first can only increase the number of pairs that trigger the registered investigation, because every category except "consistent" triggers it, including category 5.
+- **City-level claims.** Benjamini–Hochberg at 5% on two-sided p-values.
