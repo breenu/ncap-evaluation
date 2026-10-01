@@ -1055,3 +1055,10 @@ FIRMS: Reenu will try to download it during Part B. If it is not in `data/raw/fi
 - **Checks:**
   - the lock diff for linux-64 must be empty, and for win-64 only these four packages removed;
   - the new environment is built under a new name, tested (full `pytest`, every compiled R package loads), and only then replaces `ncap`; the old environment is kept as `ncap_prev` until the end-of-phase rebuild passes.
+
+**DEC-157 (gap found while running; written before any Layer B number was seen): Layer B at the 2019 baseline.** Under DEC-148, a city's pre-years are baseline ≤ t < its cohort year. With the 2019 balanced-panel baseline (registered sensitivity, DEC-088/149), the 2019 cohort has **no pre-year**. The first run stopped with an error on that version before writing any output, so no Layer B estimate had been seen.
+- **Rule (the literal reading):** a city or station with no pre-year contributes no contrast and is dropped. A treated cohort with no contrast is dropped from the DiD aggregate.
+- **Consequence:** the 2019-baseline versions cover only the cities listed in 2020–2021. With these data that is 1 + 1 PM2.5 cities and 1 PM10 city.
+- **How it is reported:** each 2019-baseline row states its coverage. It is not a check on the 2019 cohort, and an "agrees" flag on it means little; the report says so.
+- **The DEC-137 follow-up is unaffected:** the per-year misfit table needs no pre-period.
+- **Code:** `layer_b.py` skips empty cohorts and marks a version "not computable" when no treated contrast remains. A synthetic test covers it.
