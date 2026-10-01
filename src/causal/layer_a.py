@@ -277,6 +277,21 @@ def build_specs() -> list[SdidSpec]:
         SdidSpec("restricted_pm25_v6gl0204", "Layer A restricted, V6.GL.02.04 (investigation step 2)", "B",
                  "registered", _treated(u, rmask), ctl, outcomes=["log:popw_V6GL0204"], years=(2010, 2023)),
     ]
+    # EXPLORATORY, added after seeing H1 (Reenu, DEC-155): overlapping ranges of log10 2015 population
+    lp = np.log10(u.pop_2015)
+    is_c = u.role_a == "control"
+    lo, hi = max(lp[tr].min(), lp[is_c].min()), min(lp[tr].max(), lp[is_c].max())
+    lo2 = max(lp[tr].quantile(0.05), lp[is_c].quantile(0.05))
+    hi2 = min(lp[tr].quantile(0.95), lp[is_c].quantile(0.95))
+    expl = "exploratory, added after seeing H1"
+    for sid, label, (a, b) in (("explore_support_minmax", "Exploratory: min-max common support of 2015 population", (lo, hi)),
+                               ("explore_support_q5_95", "Exploratory: overlap of the 5-95% ranges of 2015 population", (lo2, hi2))):  # fmt: skip
+        keep = lp.between(a, b)
+        S.append(SdidSpec(sid, label, "B", expl, _treated(u, tr & keep), sorted(u.unit_id[is_c & keep]),
+                          note=f"log10 2015 population in [{a:.4f}, {b:.4f}] ({10 ** a:,.0f} to {10 ** b:,.0f})"))  # fmt: skip
+    sizes = {s.spec_id: (len(s.treated), len(s.controls)) for s in S if s.spec_id.startswith("explore_")}
+    if sizes != {"explore_support_minmax": (98, 923), "explore_support_q5_95": (42, 704)}:
+        raise ValueError(f"exploratory sample sizes differ from DEC-155: {sizes}")
     for s in S:
         s.reps = reps
     return S

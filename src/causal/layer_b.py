@@ -162,8 +162,16 @@ def did_parts(frame: pd.DataFrame, key: str, base: int, drop=(2020,), exclude_po
     for g in sorted(frame[frame.group == "treated"].cohort.unique()):
         t = frame[(frame.group == "treated") & (frame.cohort == g)]
         c = frame[frame.group == "control"]
-        out[int(g)] = (contrasts(t, key, g, base, drop, exclude_post), contrasts(c, key, g, base, drop, exclude_post))
+        tc = contrasts(t, key, g, base, drop, exclude_post)
+        if len(tc):  # a cohort with no pre-year in the panel contributes nothing (DEC-157)
+            out[int(g)] = (tc, contrasts(c, key, g, base, drop, exclude_post))
     return out
+
+
+def entity_city(frame: pd.DataFrame, key: str) -> pd.Series:
+    """Entity (station or city) -> its city (unit_id). For city-level frames the map is the identity."""
+    d = frame.drop_duplicates(key)
+    return pd.Series(d.unit_id.to_numpy(), index=d[key].to_numpy())
 
 
 def balanced(frame: pd.DataFrame, key: str, drop=(2020,)) -> bool:
@@ -246,15 +254,20 @@ def run_version(sy: pd.DataFrame, bv: BVersion, draws: int) -> tuple[list[dict],
                   "exclude_post": ";".join(map(str, bv.exclude_post)), "series": bv.series, "computable": True, **sc}  # fmt: skip
         # ITS
         d = its_city(cs, base, exclude_post=bv.exclude_post)
-        b = boot_its(d, draws, _rng(f"its|{bv.key}|{pol}"))
-        lo, hi, se = ci(b)
-        rows.append({**common, "estimator": "ITS", "est": float(d.d.mean()), "lo95": lo, "hi95": hi, "se": se})
-        city_rows.append(d.assign(version=bv.key, pollutant=pol))
-        # 2020 own coefficient (ITS)
-        y20 = year_contrast(cs[cs.group == "treated"], "unit_id", None, base, 2020, (2020,))
-        b20 = boot_its(y20.rename("d").reset_index(), draws, _rng(f"its2020|{bv.key}|{pol}"))
-        lo, hi, se = ci(b20)
-        rows.append({**common, "estimator": "ITS, 2020 own coefficient", "est": float(y20.mean()), "lo95": lo, "hi95": hi, "se": se})
+        if not len(d):  # DEC-157: no treated city has a pre-year at this baseline
+            rows.append({**common, "estimator": "ITS", "computable": False, "cities_used": 0})
+        else:
+            b = boot_its(d, draws, _rng(f"its|{bv.key}|{pol}"))
+            lo, hi, se = ci(b)
+            rows.append({**common, "estimator": "ITS", "est": float(d.d.mean()), "lo95": lo, "hi95": hi, "se": se,
+                         "cities_used": len(d)})  # fmt: skip
+            city_rows.append(d.assign(version=bv.key, pollutant=pol))
+            # 2020 own coefficient (ITS)
+            y20 = year_contrast(cs[cs.group == "treated"], "unit_id", None, base, 2020, (2020,))
+            b20 = boot_its(y20.rename("d").reset_index(), draws, _rng(f"its2020|{bv.key}|{pol}"))
+            lo, hi, se = ci(b20)
+            rows.append({**common, "estimator": "ITS, 2020 own coefficient", "est": float(y20.mean()), "lo95": lo, "hi95": hi,
+                         "se": se, "cities_used": len(y20)})  # fmt: skip
         # DiD (stations, as registered) and on city means (added before computing)
         if not len(st[st.group == "control"]):
             rows.append({**common, "estimator": "DiD", "computable": False})
@@ -265,13 +278,17 @@ def run_version(sy: pd.DataFrame, bv: BVersion, draws: int) -> tuple[list[dict],
             if not balanced(frame, key):
                 raise ValueError(f"{bv.key}/{pol}/{est_name}: panel not balanced; the closed-form DiD needs it")
             parts = did_parts(frame, key, base, exclude_post=bv.exclude_post)
-            emap = frame.drop_duplicates(key).set_index(key).unit_id
+            if not parts:  # DEC-157
+                rows.append({**common, "estimator": est_name, "computable": False, "cities_used": 0})
+                continue
+            emap = entity_city(frame, key)
             units_t = {g: emap.reindex(t.index) for g, (t, _) in parts.items()}
             units_c = emap.reindex(next(iter(parts.values()))[1].index)
             est, bg = did_estimate(parts, {"t": units_t})
             bb = boot_did(parts, units_t, units_c, draws, _rng(f"did|{est_name}|{bv.key}|{pol}"))
             lo, hi, se = ci(bb)
             rows.append({**common, "estimator": est_name, "est": float(est), "lo95": lo, "hi95": hi, "se": se,
+                         "cities_used": int(sum(units_t[g].nunique() for g in parts)),
                          "by_cohort": "; ".join(f"{g}: {v:+.4f} ({units_t[g].nunique()} cities)" for g, v in bg.items())})  # fmt: skip
         if bv.series != "panel":
             continue
@@ -279,8 +296,10 @@ def run_version(sy: pd.DataFrame, bv: BVersion, draws: int) -> tuple[list[dict],
         t20 = {g: year_contrast(st[(st.group == "treated") & (st.cohort == g)], "sid", g, base, 2020, (2020,))
                for g in sorted(st[st.group == "treated"].cohort.unique())}  # fmt: skip
         c20 = {g: year_contrast(st[st.group == "control"], "sid", g, base, 2020, (2020,)) for g in t20}
-        parts20 = {g: (t20[g], c20[g]) for g in t20}
-        emap = st.drop_duplicates("sid").set_index("sid").unit_id
+        parts20 = {g: (t20[g], c20[g]) for g in t20 if len(t20[g])}
+        if not parts20:
+            continue
+        emap = entity_city(st, "sid")
         units_t = {g: emap.reindex(t.index) for g, (t, _) in parts20.items()}
         est, _ = did_estimate(parts20, {"t": units_t})
         bb = boot_did(parts20, units_t, emap.reindex(next(iter(parts20.values()))[1].index), draws, _rng(f"did2020|{bv.key}|{pol}"))

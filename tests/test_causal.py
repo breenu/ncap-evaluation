@@ -397,3 +397,43 @@ def test_ground_bootstrap_is_stratified_and_counts_city_multiplicity():
     # treated side is station-weighted, like the estimate
     t = parts[2019][0]
     assert t.groupby(units_t[2019]).size()["t0"] == 6
+
+
+def test_city_level_did_uses_the_city_as_its_own_entity():
+    from src.causal import layer_b as B
+
+    st = synthetic_ground()
+    cs = B.city_series(st)
+    for frame, key in ((st, "sid"), (cs, "unit_id")):
+        emap = B.entity_city(frame, key)
+        assert (emap.reindex(frame[key]).to_numpy() == frame.unit_id.to_numpy()).all()
+    parts = B.did_parts(cs, "unit_id", 2018)
+    emap = B.entity_city(cs, "unit_id")
+    units_t = {g: emap.reindex(t.index) for g, (t, _) in parts.items()}
+    est, _ = B.did_estimate(parts, {"t": units_t})
+    b = B.boot_did(parts, units_t, emap.reindex(parts[2019][1].index), 200, np.random.default_rng(1))
+    assert est == pytest.approx(-0.10, abs=0.02) and np.isfinite(b).all()
+
+
+def test_a_cohort_without_a_pre_year_is_dropped_dec157():
+    from src.causal import layer_b as B
+
+    st = synthetic_ground()
+    st = st[st.year >= 2019]  # a 2019 baseline: cohort 2019 has no pre-year, cohort 2021 has 2019
+    parts = B.did_parts(st, "sid", 2019)
+    assert set(parts) == {2021}
+    d = B.its_city(B.city_series(st), 2019)
+    assert set(d.unit_id) == {"t21"}
+
+
+def test_descriptive_levels_are_unweighted_means_with_t_intervals():
+    from src.causal import descriptive as Dd
+
+    pan = pd.DataFrame({"unit_id": ["a", "b", "c", "a", "b", "c"], "year": [2018] * 3 + [2019] * 3,
+                        "value": [10.0, 20.0, 60.0, 12.0, 18.0, 30.0]})  # fmt: skip
+    units = pd.DataFrame({"unit_id": ["a", "b", "c"], "role_a": ["treated", "treated", "control"]})
+    d = Dd.levels(pan, units).set_index(["year", "group"])
+    assert d.loc[(2018, "NCAP units"), "mean"] == pytest.approx(15.0)
+    assert d.loc[(2018, "NCAP units"), "n"] == 2 and d.loc[(2019, "control pool"), "mean"] == pytest.approx(30.0)
+    r = d.loc[(2018, "NCAP units")]
+    assert r.lo95 < 15 < r.hi95 and r["median"] == pytest.approx(15.0)

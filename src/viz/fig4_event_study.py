@@ -59,15 +59,15 @@ def figure(D: dict) -> plt.Figure:
     ax.set_xticks(range(-9, 6))
     ax.set_xlim(-9.6, 5.6)
     ax.set_xlabel("Years relative to NCAP listing (calendar 2020 dropped)")
-    ax.set_ylabel("Effect on annual population-weighted PM2.5\n(% change, listed minus counterfactual)")
+    ax.set_ylabel("Listed minus counterfactual, annual\npopulation-weighted PM2.5 (% difference)")
     m = D["meta"]
     w, avg, h = m["wald_pre"], m["avg_post"], D["honest"]
     p = D["sdid"].set_index(["spec_id", "estimand"]).loc[("primary", "att")]
     bd = f"{h.breakdown_note} (original CI {str(h.direction).split(' (')[0]})"
     ax.set_title("Did PM2.5 in NCAP-listed urban centres diverge from comparable centres, before or after listing?",
                  fontsize=9.5, pad=34)  # fmt: skip
-    ax.text(0.0, 1.015, (f"Pre-trend test (l = −9 … −2): Wald p = {w['p']:.4f}, so registered rule (b) fails.   "
-                         f"Average effect l = 0 … +5: {pct(avg['coef']):+.1f}% (95% CI {pct(avg['lo95']):+.1f} to {pct(avg['hi95']):+.1f}).\n"
+    ax.text(0.0, 1.015, (f"H1: not identified by this design. Pre-trend test (l = −9 … −2): Wald p = {w['p']:.4f}, so registered rule (b) fails.\n"
+                         f"Average l = 0 … +5: {pct(avg['coef']):+.1f}% (95% CI {pct(avg['lo95']):+.1f} to {pct(avg['hi95']):+.1f}).   "
                          f"HonestDiD breakdown M̄: {bd}.   Primary SDID: {pct(p.att):+.1f}% "
                          f"(95% CI {pct(p.lo95):+.1f} to {pct(p.hi95):+.1f})."),
             transform=ax.transAxes, ha="left", va="bottom", fontsize=7.2, color=S.INK_2, linespacing=1.4)  # fmt: skip
@@ -95,7 +95,7 @@ def figure(D: dict) -> plt.Figure:
                         "cohort 2021's reference is 2019 (its l = −1 is 2020). Callaway & Sant'Anna: did 2.5.1, doubly "
                         "robust without covariates, base period varying: its pre-listing points are year-on-year differences, "
                         "not differences from l = −1 like Sun & Abraham's, so the two are like-for-like only after listing. "
-                        "Effects are % changes, 100(e^β − 1). Satellite PM2.5 says nothing directly about PM10, NCAP's "
+                        "Values are % differences, 100(e^β − 1), not effects of NCAP (H1 is not identified). Satellite PM2.5 says nothing directly about PM10, NCAP's "
                         "target pollutant. Numbers: docs/causal_report.md."))  # fmt: skip
     fig.subplots_adjust(left=0.09, right=0.985, top=0.76, bottom=0.11, wspace=0.08)  # explicit: header rows above the axes
     return fig

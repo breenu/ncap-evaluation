@@ -39,6 +39,35 @@ STEPS = [("reported", "Reported\nchange"), ("unmodelled", "Unmodelled\nchange"),
          ("corrected", "Weather- and\ncomposition-\ncorrected"), ("policy", "Policy\n(Phase 7)")]  # fmt: skip
 C_WEATHER, C_COMP, C_UNMOD, C_TOTAL = S.CATEGORICAL[0], S.CATEGORICAL[1], S.CATEGORICAL[2], S.INK_2
 STEP_COLOUR = {"unmodelled": C_UNMOD, "weather": C_WEATHER, "composition": C_COMP}
+C_POLICY = S.CATEGORICAL[3]
+
+
+def policy_steps() -> dict:
+    """Phase 7's step for the pooled view (DEC-150), with the wording rule of DEC-154: PM2.5 = Layer A restricted
+    to these cities (listed vs comparable units; H1 is not identified, so not an effect of NCAP); PM10 = the
+    ground DiD (Layer B, secondary, one pre-year). Empty if Phase 7 has not run (the v1 placeholder is drawn)."""
+    from src.causal import layer_a as A
+
+    out = {}
+    try:
+        sd = pd.read_csv(A.OUT / "sdid_summary.csv").set_index(["spec_id", "estimand"])
+        e = pd.read_csv(A.OUT / "layer_b" / "estimates.csv")
+    except FileNotFoundError:
+        return out
+    pct = lambda v: 100 * np.expm1(v)  # noqa: E731
+    if ("restricted_pm25", "att") in sd.index:
+        r = sd.loc[("restricted_pm25", "att")]
+        out["pm25"] = {"est": pct(r.att), "lo": pct(r.lo95), "hi": pct(r.hi95),
+                       "tick": "Listed vs\ncomparable\n(Layer A;\nnot identified)"}  # fmt: skip
+    d = e[(e.version == "primary") & (e.pollutant == "pm10") & (e.estimator == "DiD")]
+    if len(d) and pd.notna(d.iloc[0].est):
+        r = d.iloc[0]
+        out["pm10"] = {"est": pct(r.est), "lo": pct(r.lo95), "hi": pct(r.hi95),
+                       "tick": "Listed vs\ncontrols\n(ground DiD;\nsecondary)"}  # fmt: skip
+    return out
+
+
+POLICY: dict = {}
 
 
 def load() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -61,9 +90,20 @@ def mean_panel(ax: plt.Axes, s: pd.DataFrame, h4: pd.DataFrame, pol: str) -> Non
     lg = C.Spec("lgbm").label
     get = lambda spec, m: s[(s.spec == spec) & (s.pollutant == pol) & (s.group == "NCAP") & (s.metric == m)].iloc[0]  # noqa: E731
     level, x = 0.0, np.arange(len(STEPS))
-    n = int(get(C.PRIMARY.label, "reported").n)
     ticks = []
     for i, (m, lab) in enumerate(STEPS):
+        if m == "policy" and pol in POLICY:  # Phase 7 (DEC-150): a step from the corrected level, then what remains
+            p = POLICY[pol]
+            lo_bar, hi_bar = level, level - p["est"]
+            ax.bar(i, hi_bar - lo_bar, bottom=lo_bar, width=0.6, color=C_POLICY, linewidth=0, zorder=2)
+            ax.errorbar(i, hi_bar, yerr=[[hi_bar - (level - p["hi"])], [(level - p["lo"]) - hi_bar]], fmt="none",
+                        ecolor=S.INK, elinewidth=1, capsize=3, zorder=3)  # fmt: skip
+            ticks.append(f"{p['tick']}\n{p['est']:+.1f} pp")
+            ax.plot([i - 0.7, i - 0.3], [level, level], color=S.NEUTRAL, linewidth=0.8, zorder=1)
+            ax.bar(i + 1, hi_bar, width=0.6, color=C_TOTAL, alpha=0.55, linewidth=0, zorder=2)
+            ticks.append(f"Remaining\nchange\n{hi_bar:+.1f}%")
+            ax.plot([i + 0.3, i + 0.7], [hi_bar, hi_bar], color=S.NEUTRAL, linewidth=0.8, zorder=1)
+            continue
         if m == "policy":  # an empty outline over the corrected change: Phase 7 splits it
             corr = get(C.PRIMARY.label, "corrected")["mean"]
             ax.bar(i, corr, width=0.6, facecolor="none", edgecolor=S.NEUTRAL, hatch="///", linewidth=0.8, zorder=1)
@@ -95,7 +135,8 @@ def mean_panel(ax: plt.Axes, s: pd.DataFrame, h4: pd.DataFrame, pol: str) -> Non
         if i < 4:
             ax.plot([i + 0.3, i + 0.7], [end, end], color=S.NEUTRAL, linewidth=0.8, zorder=1)
     ax.axhline(0, color=S.INK_2, linewidth=0.8)
-    ax.set_xticks(x, ticks, fontsize=7.5)
+    x = np.arange(len(ticks))
+    ax.set_xticks(x, ticks, fontsize=7)
     ax.set_ylabel("Change in annual mean, 2018 → 2025\n(% of the 2018 value)")
     h = get(C.PRIMARY.label, "h4")
     ax.set_title(f"{POL[pol]}: mean over {scope_line(h4, pol, chr(10))}", fontsize=8.5, pad=16)
@@ -115,10 +156,12 @@ def fig_mean(s: pd.DataFrame, h4: pd.DataFrame) -> plt.Figure:
                Line2D([], [], color=S.INK, marker="|", linestyle="none", markersize=8, label="95% CI across cities"),
                Line2D([], [], marker="s", markerfacecolor=S.SURFACE, markeredgecolor=S.INK, linestyle="none",
                       label="LightGBM (other family), running level with 95% CI"),
-               Patch(facecolor="none", edgecolor=S.NEUTRAL, hatch="///", label="Policy: placeholder until Phase 7")]  # fmt: skip
+               (Patch(color=C_POLICY, label="Listed vs comparable (Phase 7; 95% CI): not an effect of NCAP")
+                if POLICY else Patch(facecolor="none", edgecolor=S.NEUTRAL, hatch="///", label="Policy: placeholder until Phase 7"))]  # fmt: skip
     fig.tight_layout(rect=(0, 0, 1, 0.80))
     fig.legend(handles=handles, loc="lower left", bbox_to_anchor=(0.0, 0.81), ncol=3, fontsize=7.5)
-    fig.suptitle("Figure 1 (v1). How much of NCAP cities' reported change is weather and network composition?",
+    fig.suptitle("Figure 1. How much of NCAP cities' reported change is weather, network composition and listing?" if POLICY else
+                 "Figure 1 (v1). How much of NCAP cities' reported change is weather and network composition?",
                  x=0.0, y=0.99, ha="left", va="top", fontsize=10, fontweight="bold")  # fmt: skip
     S.source_note(fig, "SCOPE: only NCAP cities with a station valid in every year 2018-2025, mostly one station each; "
                   "not NCAP cities in general. "
@@ -129,8 +172,13 @@ def fig_mean(s: pd.DataFrame, h4: pd.DataFrame) -> plt.Figure:
                   "Composition = all stations minus the balanced panel "
                   "(stations valid every year 2018-2025), both deweathered. Unweighted means over cities; shared "
                   "polygons (e.g. Delhi NCR) are one city. Most panels hold one station. The corrected change is not "
-                  "a policy effect: it still contains trends shared with non-NCAP cities, which Phase 7 estimates. "
-                  "Numbers: docs/composition_report.md.")  # fmt: skip
+                  "a policy effect: it still contains trends shared with non-NCAP cities. "
+                  + ("PHASE 7 STEP (DEC-150): PM2.5 = satellite SDID, these cities' units against 923 never-treated "
+                     "centres, averaged over 2019 and 2021-2024 (a different time base from the ground endpoints 2018 and "
+                     "2025, so 'remaining' is approximate); H1 is not identified by this design (the pre-trend test fails), "
+                     "so this is not an effect of NCAP. PM10 = ground DiD against a handful of control cities (Layer B, "
+                     "secondary, one pre-year). " if POLICY else "")
+                  + "Numbers: docs/composition_report.md, docs/causal_report.md.")  # fmt: skip
     return fig
 
 
@@ -181,7 +229,7 @@ def fig_cities(ch: pd.DataFrame, b: pd.DataFrame, h4: pd.DataFrame) -> plt.Figur
     fig.tight_layout(rect=(0, 0, 1, 0.955))
     fig.legend(handles=handles, loc="lower left", bbox_to_anchor=(0.0, 0.955), ncol=2, fontsize=7)
     fig.suptitle("Figure 1 (v1), per city: reported → minus unmodelled → minus modelled weather → minus composition "
-                 "→ corrected (policy: Phase 7)", x=0.0, y=0.995, ha="left", va="bottom", fontsize=9.5, fontweight="bold")  # fmt: skip
+                 "→ corrected (city-level estimates: Phase 8, shrunken)", x=0.0, y=0.995, ha="left", va="bottom", fontsize=9.5, fontweight="bold")  # fmt: skip
     S.source_note(fig, "SCOPE: only NCAP cities (GHSL urban centres) with at least one station valid every year "
                   "2018-2025, mostly one station each; not NCAP cities in general. "
                   "'a→b st.' = stations valid in 2018 and in 2025; 'panel' = stations valid in every year. Each row "
@@ -193,13 +241,28 @@ def fig_cities(ch: pd.DataFrame, b: pd.DataFrame, h4: pd.DataFrame) -> plt.Figur
     return fig
 
 
-def main() -> None:
+def main(argv: list[str]) -> None:
+    """v1 (Phase 6, ungated): `python -m src.viz.fig1_decomposition`.
+    With the Phase 7 step (gated; DEC-150): `python -m src.viz.fig1_decomposition --policy` writes
+    fig1_decomposition_policy, so the Phase 6 rule never depends on gated outputs."""
     S.apply()
     ch, s, b, h4 = load()
+    if argv[:1] == ["--policy"]:
+        from src.common.gate import require_gate
+
+        require_gate("figure 1 with the Phase 7 step")
+        POLICY.update(policy_steps())
+        if set(POLICY) != {"pm25", "pm10"}:
+            raise SystemExit("Phase 7 outputs missing: run Layer A (restricted_pm25) and Layer B first")
+        S.save(fig_mean(s, h4), "fig1_decomposition_policy")
+        print("figure 1 with the Phase 7 step written")
+        return
     S.save(fig_mean(s, h4), "fig1_decomposition")
     S.save(fig_cities(ch, b, h4), "fig1_decomposition_cities")
     print("figure 1 v1 written")
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+
+    main(sys.argv[1:])

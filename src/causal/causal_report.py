@@ -15,6 +15,7 @@ import pandas as pd
 
 from src.causal import decisions as D
 from src.causal import layer_a as A
+from src.causal import report_part_b as RB
 from src.common.gate import require_gate
 from src.common.paths import DOCS, INTERIM, params
 
@@ -121,8 +122,8 @@ def cohort_table(X: dict, spec: str, outcome: str, level: bool = False) -> pd.Da
     e = e[(e.outcome == outcome) & e.fitset.str.startswith("all|")]
     t = pd.DataFrame({"cohort": e.cohort, "treated units": e.n_treated, "pre-years (T0)": e.T0})
     if level:
-        return t.assign(**{"ATT (µg/m³)": e.att.map(lambda v: f"{v:+.2f}")})
-    return t.assign(**{"ATT (log)": e.att.map(lg), "ATT (%)": e.att.map(pc)})
+        return t.assign(**{"estimate (µg/m³)": e.att.map(lambda v: f"{v:+.2f}")})
+    return t.assign(**{"estimate (log)": e.att.map(lg), "estimate (%)": e.att.map(pc)})
 
 
 def row(X: dict, spec: str, est: str = "att", name: str | None = None, scale: str = "log") -> dict:
@@ -134,12 +135,26 @@ def row(X: dict, spec: str, est: str = "att", name: str | None = None, scale: st
             "95% CI (%)": ci_pct(r.lo95, r.hi95), "SE (log)": f"{r.se:.4f}", "permutation p": pp(r.p_perm, r.reps)}  # fmt: skip
 
 
+def wording(X: dict) -> str:
+    """The fixed wording for the positive Layer A estimates (Reenu, DEC-154 item 1), with the range taken
+    from the estimates themselves (primary SDID, CS, area-weighted, V6.GL.03, event-study average)."""
+    s = X["s"]
+    vals = [s.loc[("primary", "att")].att, X["cs"]["nevertreated"].att, s.loc[("area", "att")].att,
+            s.loc[("v6gl03", "att")].att, X["es_meta"]["avg_post"]["coef"]]  # fmt: skip
+    pcts = [D.pct(v) for v in vals]
+    lo, hi = math.floor(min(pcts)), math.ceil(max(pcts))
+    if min(pcts) <= 0:
+        raise ValueError("the fixed wording describes a relative rise; an estimate is not positive")
+    return (f"NCAP units' satellite PM2.5 did not fall relative to comparable units; the estimates point to a relative "
+            f"rise of about {lo}–{hi}%. H1 is not identified by this design, so this is not an effect of NCAP.")
+
+
 def section_h1(X: dict, R: dict) -> str:
     p, h = R["primary"], R["h1"]
     sp = X["specs"].loc["primary"]
     lines = ["## 1. H1 (confirmatory, primary): the registered decision", ""]
     lines += ["> **H1** (registered): NCAP enrolment reduced annual population-weighted PM2.5 in enrolled urban centres, relative to comparable non-enrolled centres, 2019–2024 (2020 excluded).",
-              ">", f"> **Verdict: {h['verdict']}.**", ""]  # fmt: skip
+              ">", f"> **Verdict: {h['verdict']}.**", ">", f"> {wording(X)}", ""]  # fmt: skip
     pl = R["placebo2016"]
     w = R["wald_pre"]
     rules = pd.DataFrame([
@@ -168,7 +183,7 @@ def section_h1(X: dict, R: dict) -> str:
         "",
     ]  # fmt: skip
     lines += ["### 1a. The primary estimate", "",
-              f"SDID per listing cohort against the {int(sp.n_controls)} never-treated centres; 2010–2024 without 2020; cohort ATTs combined by treated units; SE from {int(p['reps'])} joint-placebo replications (DEC-139). Effect = listed minus synthetic counterfactual on log PM2.5 (negative = a reduction).", ""]  # fmt: skip
+              f"SDID per listing cohort against the {int(sp.n_controls)} never-treated centres; 2010–2024 without 2020; cohort estimates combined by treated units; SE from {int(p['reps'])} joint-placebo replications (DEC-139). Estimate = listed minus synthetic counterfactual on log PM2.5 (negative = a reduction). It is not an effect of NCAP: H1 is not identified by this design.", ""]  # fmt: skip
     lines += [md(pd.DataFrame([row(X, "primary", "att", "Primary, log annual PM2.5 (headline)")])), "",
               md(pd.DataFrame([row(X, "primary", "att:level:popw_V5GL06", "Same design, µg/m³ (secondary)", scale="level")])), ""]  # fmt: skip
     lines += ["By cohort (log annual):", "", md(cohort_table(X, "primary", A.LOG)), ""]
@@ -205,6 +220,7 @@ def section_leakage(X: dict, R: dict) -> str:
     g, n = L["gained"], L["notgained"]
     if g["att"] > 0 and n["att"] > 0:
         lines += [f"*Read with the signs:* both groups' estimates are increases ({pc(g['att'])} and {pc(n['att'])}); the group that gained monitors rose less. The rule was written with reductions in mind and fires here on its second clause. The direction is the one calibration leakage would produce (ACAG calibrated to new monitors that, per Phase 6, read cleaner than existing ones would pull the satellite values of those units down), but the comparison cannot separate that from real differences between the two groups.", ""]  # fmt: skip
+        lines += [RB.leakage_mechanism(), ""]
     return "\n".join(lines)
 
 
@@ -218,12 +234,12 @@ def section_event(X: dict, R: dict) -> str:
     lines += [md(t), ""]
     w, a = m["wald_pre"], m["avg_post"]
     lines += [f"- **Rule (b):** Wald χ² = {w['stat']:.2f} on {w['df']} df, p = {w['p']:.4f} (registered threshold p > 0.10).",
-              f"- **Average post-period effect** (l = 0 … +5): {lg(a['coef'])} ({pc(a['coef'])}; 95% CI {ci_pct(a['lo95'], a['hi95'])}).",
+              f"- **Average post-period estimate** (l = 0 … +5): {lg(a['coef'])} ({pc(a['coef'])}; 95% CI {ci_pct(a['lo95'], a['hi95'])}).",
               ""]  # fmt: skip
     o, om = X["es_own"].iloc[0], X["es_own_meta"]
     lines += [f"**2020, own coefficient** (fit with 2020 included, its treated observations on cohort-specific 2020 indicators): {lg(o.coef)} ({pc(o.coef)}; 95% CI {ci_pct(o.lo95, o.hi95)}), cohorts {o.cohorts}. In that fit, the pre-trend Wald p = {om['wald_pre']['p']:.4f} and the average post effect is {pc(om['avg_post']['coef'])} ({ci_pct(om['avg_post']['lo95'], om['avg_post']['hi95'])}).", ""]  # fmt: skip
     h, rm, sm = X["hon"], X["hon_rm"], X["hon_sm"]
-    lines += ["**HonestDiD (Rambachan & Roth; reported, not a decision rule; DEC-143).** Target: the average post-period effect.", "",
+    lines += ["**HonestDiD (Rambachan & Roth; reported, not a decision rule; DEC-143).** Target: the average post-period estimate.", "",
               f"- Original 95% CI: {lg(h.orig_lb)} to {lg(h.orig_ub)} ({ci_pct(h.orig_lb, h.orig_ub)}): {h.direction}.",
               f"- **Breakdown M̄** (largest relative magnitude at which the robust CI still excludes 0, on the side of the original CI): {X['hon_note']}.",
               "- Package warnings are kept with each row. \"CI is open\" means the robust interval reached the edge of HonestDiD's search grid, so the true interval is at least that wide; \"solution may be inaccurate\" is the convex solver's own caution.", ""]  # fmt: skip
@@ -258,14 +274,21 @@ def section_placebo(X: dict) -> str:
 
 def build(X: dict, R: dict) -> str:
     head = ["# Causal analysis (Phase 7, RQ3)", "",
-            "*Generated by `python -m src.causal.causal_report` from `data/processed/causal/`. Do not edit by hand. Rules: the registered plan (`docs/analysis_plan.md` at `6e24eca`, https://osf.io/jksne/) §5, read as in DEC-135; every gap filled before any estimate in DEC-138 to DEC-150 (commit `eebaecc`, pushed before computing). Effects: listed minus counterfactual on log concentration; negative = a reduction; % = 100 × (e^β − 1).*", "",
-            "**Part A (Layer A, satellite PM2.5) is complete. Part B (Layer B, triangulation, the robustness battery, figure 1's policy step) runs after Reenu's go-ahead.**", ""]  # fmt: skip
-    body = [section_h1(X, R), section_h2(X, R), section_leakage(X, R), section_event(X, R), section_cs(X), section_placebo(X)]
+            "*Generated by `python -m src.causal.causal_report` from `data/processed/causal/`. Do not edit by hand. Rules: the registered plan (`docs/analysis_plan.md` at `6e24eca`, https://osf.io/jksne/) §5, read as in DEC-135; every gap filled before any estimate in DEC-138 to DEC-150 (commit `eebaecc`, pushed before computing). Estimates: listed minus counterfactual on log concentration; negative = a reduction; % = 100 × (e^β − 1).*", "",
+            ("**Parts A and B are complete:** Layer A (satellite PM2.5, H1/H2), Layer B (ground), triangulation, every sensitivity check, and one exploratory check added after seeing H1 (§11)."
+             if RB.have_part_b() else "**Part A (Layer A, satellite PM2.5) is complete. Part B runs after Reenu's go-ahead.**"), ""]  # fmt: skip
+    body = [section_h1(X, R)]
+    if (A.OUT / "levels.csv").exists():
+        body.append(RB.section_descriptive())
+    body += [section_h2(X, R), section_leakage(X, R), section_event(X, R), section_cs(X), section_placebo(X)]
+    if RB.have_part_b():
+        body += [RB.section_layer_b(), RB.section_triangulation(), RB.section_robustness(), RB.section_dec137(),
+                 RB.section_exploratory(X["s"], X["specs"])]
     tail = ["## Caveats that travel with every Layer A number", "",
             "- The MDE is a best-case lower bound (plan §3); the confidence intervals use the real design's joint-placebo SE.",
             "- ACAG is calibrated to ground monitors (§3 is the pre-specified check; the V6.GL.02.04 vintage comparison is in Part B).",
             "- Satellite PM2.5 says nothing directly about PM10, NCAP's target pollutant.",
-            "- The design estimates the effect of being listed, relative to comparable centres; it cannot say which city action worked.",
+            "- Had it been identified, the design would estimate the effect of being listed, relative to comparable centres; it could not say which city action worked.",
             "- Figure 4: `reports/figures/fig4_event_study.{png,svg}`.", ""]  # fmt: skip
     return "\n".join(head + body + tail)
 

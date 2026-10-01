@@ -58,18 +58,20 @@ dependencies:
   - r-yaml
   - r-remotes
   - r-mvtnorm        # synthdid
-  - r-bmisc          # did, DRDID
+  # Windows gets CRAN's binaries of BMisc, Matrix, RcppEigen (and RcppArmadillo) from install_r_extra.R:
+  # conda-forge's Windows builds can fail to load (MinGW pseudo relocation, DEC-138/156).
+  - r-bmisc          # did, DRDID  [linux]
   - r-data.table     # did
   - r-tidyr          # did
   - r-pbapply        # did
   - r-generics       # did
   - r-dreamerr       # did
   - r-ggplot2        # did
-  - r-matrix         # did, fastglm
+  - r-matrix         # did, fastglm  [linux]
   - r-trust          # DRDID
   - r-rcpp           # DRDID, fastglm
   - r-bigmemory      # fastglm
-  - r-rcppeigen      # fastglm (compile-time headers; needed for Linux source builds)
+  - r-rcppeigen      # fastglm (compile-time headers for Linux source builds)  [linux]
   - r-bh             # fastglm (compile-time headers; needed for Linux source builds)
   - r-formula        # fastglm
   - pip:

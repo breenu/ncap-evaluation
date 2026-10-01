@@ -13,7 +13,7 @@
 version: 1
 metadata:
   content_hash:
-    win-64: 88a6b147d50c40220152343dd3c1452c8150cc32997c066ee9bfbde5e7b1b686
+    win-64: 73ac9939079cea3a0163100ad601c3550bda5034c2341a59d31bcd3d527f9417
     linux-64: ec6efe631b77d065ad5670c69e761555023e622c8c0383b675840d83683678f7
   channels:
   - url: conda-forge
@@ -11087,27 +11087,6 @@ package:
     sha256: 7b1efc390d369fa8b4cebd57b2c931f4569380b047afaf8c36edc6663838bd06
   category: main
   optional: false
-- name: r-bmisc
-  version: 1.4.10
-  manager: conda
-  platform: win-64
-  dependencies:
-    libblas: '>=3.9.0,<4.0a0'
-    libgcc: '>=15'
-    liblapack: '>=3.9.0,<4.0a0'
-    libstdcxx: '>=15'
-    libwinpthread: '>=12.0.0.r4.gg4f2fc60ca'
-    r-base: '>=4.5,<4.6.0a0'
-    r-data.table: ''
-    r-rcpp: ''
-    r-rcpparmadillo: ''
-    ucrt: '>=10.0.20348.0'
-  url: https://conda.anaconda.org/conda-forge/win-64/r-bmisc-1.4.10-r45hf249a42_0.conda
-  hash:
-    md5: bcf1f7a33d2c3df0c7f64b89c7707e61
-    sha256: 435e1d4177bf45f040bef1000ca8f125703c746d7d4031cb2f69dbfe79475a56
-  category: main
-  optional: false
 - name: r-cli
   version: 3.6.6
   manager: conda
@@ -11739,24 +11718,6 @@ package:
     sha256: f9a011394c44b1e5f1a710b45cbf793fcac0753ab3bb4137c5ebb0d70152fd46
   category: main
   optional: false
-- name: r-matrix
-  version: '1.7_6'
-  manager: conda
-  platform: win-64
-  dependencies:
-    libblas: '>=3.9.0,<4.0a0'
-    libgcc: '>=14'
-    liblapack: '>=3.9.0,<4.0a0'
-    libwinpthread: '>=12.0.0.r4.gg4f2fc60ca'
-    r-base: '>=4.5,<4.6.0a0'
-    r-lattice: ''
-    ucrt: '>=10.0.20348.0'
-  url: https://conda.anaconda.org/conda-forge/win-64/r-matrix-1.7_6-r45h5ea86f4_0.conda
-  hash:
-    md5: 5c26b52763f394938012e2843a273674
-    sha256: 6eb416c8d2931fbefbc6f80445fe14d4e9ccb5669702a1f104f7f60461a2db34
-  category: main
-  optional: false
 - name: r-munsell
   version: 0.5.1
   manager: conda
@@ -12080,27 +12041,6 @@ package:
     sha256: bbb3dc7fafc052c618b3672ce6297db29a86b8248f4459af5997f0246b55d312
   category: main
   optional: false
-- name: r-rcpparmadillo
-  version: 15.6.0_1
-  manager: conda
-  platform: win-64
-  dependencies:
-    _openmp_mutex: '>=4.5'
-    libblas: '>=3.9.0,<4.0a0'
-    libgcc: '>=15'
-    libgomp: '>=16.2.0'
-    liblapack: '>=3.9.0,<4.0a0'
-    libstdcxx: '>=15'
-    libwinpthread: '>=12.0.0.r4.gg4f2fc60ca'
-    r-base: '>=4.5,<4.6.0a0'
-    r-rcpp: '>=0.11.0'
-    ucrt: '>=10.0.20348.0'
-  url: https://conda.anaconda.org/conda-forge/win-64/r-rcpparmadillo-15.6.0_1-r45hf249a42_0.conda
-  hash:
-    md5: 0b43571618b687bcc5c920f41c5af9d6
-    sha256: e73800204e0d07ee7554e431d7878d7a2c94347a7d1aeb84b73d747ca7e24747
-  category: main
-  optional: false
 - name: r-rcppeigen
   version: 0.3.4.0.2
   manager: conda
@@ -12118,26 +12058,6 @@ package:
   hash:
     md5: 743927aa75562d9a53b8fda4777bdf93
     sha256: fd1cc8ec804fede96bbd07867c58fd15c9fdb3fbae800ba0eb7b2779910734dc
-  category: main
-  optional: false
-- name: r-rcppeigen
-  version: 0.3.4.0.2
-  manager: conda
-  platform: win-64
-  dependencies:
-    libblas: '>=3.9.0,<4.0a0'
-    libgcc: '>=14'
-    liblapack: '>=3.9.0,<4.0a0'
-    libstdcxx: '>=14'
-    libwinpthread: '>=12.0.0.r4.gg4f2fc60ca'
-    r-base: '>=4.5,<4.6.0a0'
-    r-matrix: '>=1.1_0'
-    r-rcpp: '>=0.11.0'
-    ucrt: '>=10.0.20348.0'
-  url: https://conda.anaconda.org/conda-forge/win-64/r-rcppeigen-0.3.4.0.2-r45hac2c72c_1.conda
-  hash:
-    md5: 9c4d389b27c5beca1ed6256ea106c2ea
-    sha256: 848224f58bd8ba6049f7e09003136f622a33efd3ecdc570da529a8b00e2bec66
   category: main
   optional: false
 - name: r-remotes

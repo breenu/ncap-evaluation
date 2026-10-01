@@ -80,6 +80,9 @@ rule pre_period_checks:
 CSL = "data/processed/causal"
 ES = f"{CSL}/event_study"
 SDID_A = ["primary", "v6gl03", "area", "placebo2016", "placebo2016_rm"]  # Part A specifications
+SDID_B = ["v6gl0204", "towns", "towns_nopatancheruvu", "asansol_alone", "treated100k", "spill25", "funded",
+          "anticip2018", "incl2020", "noigp", "restricted_pm25", "restricted_pm25_v6gl0204",
+          "explore_support_minmax", "explore_support_q5_95"]  # Part B; the last two exploratory (DEC-155)
 ONE_THREAD = "OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1"
 
 
@@ -131,7 +134,8 @@ rule causal_sdid_part_a:
 
 
 rule causal_summary:
-    input: rules.causal_sdid_part_a.output
+    input:
+        expand(f"{CSL}/sdid/{{s}}/done.txt", s=SDID_A + SDID_B),
     output: f"{CSL}/sdid_summary.csv"
     shell: f"{PY} src.causal.layer_a summarise"
 
@@ -185,7 +189,15 @@ rule causal_report:
         rules.causal_event_study.output,
         rules.causal_honest.output,
         rules.causal_cs.output,
+        f"{CSL}/levels.csv",
+        f"{CSL}/layer_b/estimates.csv",
+        f"{CSL}/triangulation.csv",
+        f"{CSL}/robustness.csv",
+        "data/processed/composition/entrants_summary.csv",
+        f"{INT}/eda/entrants.csv",
+        f"{INT}/audit/missingness_bias.csv",
         "src/causal/causal_report.py",
+        "src/causal/report_part_b.py",
         "src/causal/decisions.py",
     output:
         "docs/causal_report.md",
@@ -194,9 +206,7 @@ rule causal_report:
 
 
 # ---------------------------------------------------------------------------------------------------
-# Part B (after Reenu's go-ahead): the Layer A robustness battery, Layer B, triangulation (DEC-147 to DEC-150)
-SDID_B = ["v6gl0204", "towns", "towns_nopatancheruvu", "asansol_alone", "treated100k", "spill25", "funded",
-          "anticip2018", "incl2020", "noigp", "restricted_pm25", "restricted_pm25_v6gl0204"]
+# Part B: the Layer A robustness battery, Layer B, triangulation, and the review additions (DEC-147 to DEC-157)
 
 
 # ~2 h on 8 workers; resumable
@@ -227,12 +237,70 @@ rule causal_layer_b:
     shell: f"{PY} src.causal.layer_b"
 
 
+rule causal_descriptive:
+    input:
+        f"{CSL}/panel_annual.parquet",
+        f"{CSL}/design_units.csv",
+        "src/causal/descriptive.py",
+    output: f"{CSL}/levels.csv"
+    shell: f"{PY} src.causal.descriptive"
+
+
+rule figS1:
+    input:
+        f"{CSL}/levels.csv",
+        "src/viz/figS1_levels.py",
+        "src/viz/style.py",
+    output: expand("reports/figures/figS1_levels.{ext}", ext=["png", "svg"])
+    shell: f"{PY} src.viz.figS1_levels"
+
+
+rule causal_triangulation:
+    input:
+        f"{CSL}/sdid_summary.csv",
+        f"{CSL}/layer_b/estimates.csv",
+        f"{CSL}/layer_b/satellite_at_stations.csv",
+        "data/processed/composition/trends.parquet",
+        "src/causal/triangulation.py",
+        "src/causal/decisions.py",
+    output:
+        f"{CSL}/triangulation.csv",
+        f"{CSL}/investigation.csv",
+    shell: f"{PY} src.causal.triangulation"
+
+
+rule causal_robustness:
+    input:
+        f"{CSL}/sdid_summary.csv",
+        f"{CSL}/sdid/primary/loo.parquet",
+        f"{CSL}/layer_b/estimates.csv",
+        rules.causal_event_study.output,
+        rules.causal_cs.output,
+        "src/causal/robustness.py",
+        "src/causal/decisions.py",
+    output: f"{CSL}/robustness.csv"
+    shell: f"{PY} src.causal.robustness"
+
+
+# Figure 1 with the Phase 7 step (DEC-150): its own output name, so the Phase 6 figure rule stays ungated
+rule fig1_policy:
+    input:
+        f"{CSL}/sdid_summary.csv",
+        f"{CSL}/layer_b/estimates.csv",
+        "data/processed/composition/summary.csv",
+        "data/processed/composition/h4.csv",
+        "src/viz/fig1_decomposition.py",
+        "src/viz/style.py",
+    output: expand("reports/figures/fig1_decomposition_policy.{ext}", ext=["png", "svg"])
+    shell: f"{PY} src.viz.fig1_decomposition --policy"
+
+
 rule causal:
     input:
         f"{STUB}/composition.done",
         f"{STUB}/pre_period_checks.done",
         "docs/causal_report.md",
-        expand("reports/figures/fig4_event_study.{ext}", ext=["png", "svg"]),
+        expand("reports/figures/{f}.{ext}", f=["fig4_event_study", "figS1_levels", "fig1_decomposition_policy"], ext=["png", "svg"]),
     output:
         f"{STUB}/causal.done",
     run:

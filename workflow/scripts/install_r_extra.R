@@ -14,14 +14,15 @@ github_pins <- c(synthdid = "synth-inference/synthdid@70c1ce3eac58e28c30b67435ca
 
 type <- if (.Platform$OS.type == "windows") "binary" else "source"
 
-# Windows only: replace conda-forge's builds of these packages with CRAN's binaries of the SAME
-# version (DEC-138). conda-forge's MinGW builds can fail to load with "32 bit pseudo relocation out of
-# range" whenever Windows places their DLL more than 2 GB from R.dll; the layout can change within a
-# boot. On 2026-10-01 Matrix failed on every load (taking did and mgcv with it) and, once CRAN's Matrix
-# was in place, so did RcppArmadillo and RcppEigen; CRAN's builds of the same versions loaded every
-# time under that layout (as mgcv's did in DEC-093). This must run before anything loads Matrix, so it
-# checks a stamp file instead of loading the namespace. Linux is unaffected.
-win_cran_binaries <- c(Matrix = "1.7.6", RcppArmadillo = "15.6.0.1", RcppEigen = "0.3.4.0.2")
+# Windows only: CRAN's binaries of these packages, at the versions conda-forge has for Linux (DEC-138,
+# DEC-156). conda-forge's MinGW builds can fail to load with "32 bit pseudo relocation out of range"
+# whenever Windows places their DLL more than 2 GB from R.dll, and the layout can change within a boot.
+# On 2026-10-01 Matrix failed on every load (taking did and mgcv with it); RcppArmadillo and RcppEigen
+# did too; CRAN's builds of the same versions loaded every time. Since DEC-156 the win-64 lock no longer
+# contains r-matrix, r-rcppeigen, r-bmisc or r-rcpparmadillo, so these are ordinary pins on Windows.
+# In an environment built from the older lock they replace conda's files. Either way this runs before
+# anything loads Matrix, and a stamp file (not loading the namespace) records that it is done.
+win_cran_binaries <- c(Matrix = "1.7.6", RcppArmadillo = "15.6.0.1", RcppEigen = "0.3.4.0.2", BMisc = "1.4.10")
 if (.Platform$OS.type == "windows") {
   for (pkg in names(win_cran_binaries)) {
     stamp <- file.path(.libPaths()[1], pkg, "NCAP_CRAN_BINARY")
