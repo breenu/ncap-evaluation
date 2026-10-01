@@ -1017,3 +1017,41 @@ Numbers from `docs/causal_report.md` (generated). No specification was changed a
 
 **DEC-153 (workflow note): Part A through Snakemake; reproducibility of the re-run.** After adding the `causal:` config block (read only by `src/causal/` Phase 7 modules; `git diff` shows nothing else changed), upstream outputs were marked current with `snakemake --touch`, as in DEC-108/134. So was the 83-minute SDID rule, which had been run by hand with the rule's own command. The seven quick Part A rules (summary, event study, CS, HonestDiD, report, figure 4, target) then ran through Snakemake (log `data/interim/logs/snakemake_phase7_partA.log`), and `snakemake -n causal` has nothing to do.
 - **Against the hand-built outputs:** the SDID summary and every Callaway & Sant'Anna file are byte-identical. The event-study coefficients differ by at most 1e-16 (floating-point summation order). HonestDiD's smoothness rows, which the solver already flags as possibly inaccurate, move by up to 9e-6. That changes one cell of the report in the fourth decimal (M = 0 lower bound +0.0040 → +0.0041). No verdict, rule check or headline number changed.
+
+## 2026-10-01: Part A reviewed (Reenu); additions for Part B, written BEFORE Part B computes anything
+
+**DEC-154: Part A review (Reenu). The H1 verdict stands exactly as registered: "not identified by this design". No rule or specification changes because of it. Five additions for Part B.**
+1. **Wording.** The positive Layer A estimate is never described as an effect of NCAP. The fixed wording is: *"NCAP units' satellite PM2.5 did not fall relative to comparable units; the estimates point to a relative rise of about 3–5%"*. It always appears next to the "not identified" verdict. This applies to the report, the figures, the phase note and PROGRESS.
+2. **Descriptive context, labelled descriptive.**
+   - What: the mean annual population-weighted PM2.5 (ACAG V5.GL.06, µg/m³) of the 113 NCAP units and of the 923 control-pool units, 2010–2024, 2020 included. Each is the unweighted mean over units, with a 95% t-interval and the median.
+   - Where: a table in `docs/causal_report.md` and a supplementary figure, `reports/figures/figS1_levels` (not one of the proposal's eight).
+   - No effect is computed from it.
+3. **One exploratory check, "exploratory, added after seeing H1"** (DEC-155).
+4. **Calibration leakage.** The report connects the leakage result to the Phase 3/6 finding that new stations read about 6% cleaner (Phase 3 −5.8%; Phase 6 −6.3% raw, −6.8% deweathered; numbers read from the pipeline outputs). It is presented as a possible mechanism the design cannot test.
+5. **Environment** (DEC-156): update `conda-lock.yml` for the CRAN builds; confirm CI on the results commit (done: run 36843581029 passed on `655fb65`); at the end, a full rebuild of Phase 7 that confirms Part A's numbers reproduce.
+
+FIRMS: Reenu will try to download it during Part B. If it is not in `data/raw/firms/` when the battery runs, the VIIRS check stays listed as not run (DEC-147 item 17). On 2026-10-01 before Part B it is not there.
+
+**DEC-155 (EXPLORATORY, added after seeing H1, 2026-10-01): SDID restricted to an overlapping range of 2015 population. Not a decision rule; it cannot change the H1 verdict.**
+- **Why (Reenu).** City size was the largest pre-registration imbalance: log-population SMD 1.44 (plan §6). The check asks whether the Layer A estimate depends on comparing large NCAP cities with small control towns.
+- **Size measure:** log10 of the unit's 2015 population (GHSL UCDB, the pre-treatment epoch used for the control pool).
+- **Variant (i), Reenu's example as written: min–max common support.**
+  - Keep treated and control units whose log10 population lies in [max(min_T, min_C), min(max_T, max_C)], i.e. 100,050 to 4,593,947.
+  - Result: 98 of 113 treated units (cohorts 75 / 15 / 8) and all 923 controls.
+  - It drops the 11 treated units above the largest control (the megacity units: Delhi, Kolkata, Mumbai, Bengaluru, Chennai, Hyderabad, Ahmedabad, Pune, Surat, Lucknow, and the Hajipur centre holding Muzaffarpur) and the 4 below 100,000.
+  - **It does not improve size balance:** SMD 1.63 against 1.44. The controls are concentrated at 100,000–200,000, so trimming the ends of the range leaves the two distributions different in shape.
+- **Variant (ii): overlap of the 5–95% population ranges.**
+  - Keep units within [max(P5_T, P5_C), min(P95_T, P95_C)] of log10 population, i.e. 121,197 to 721,889.
+  - Result: 42 treated, 704 controls; SMD 0.91.
+  - It is shown because variant (i) cannot address the imbalance. Narrower overlaps were checked: P10–P90 leaves 23 treated units, P25–P75 leaves none.
+- **How these were chosen.** The variants and their sizes were compared on 2015 population only (counts and SMDs), before any outcome was estimated under any restriction. Neither variant was chosen for its result.
+- **Design otherwise the primary's:** V5.GL.06 population-weighted log annual mean, listing cohorts, never-treated controls from the restricted pool, 2020 dropped, 500-replication joint placebo drawn from the restricted pool.
+- **Reported** in its own "exploratory" section, never in the registered robustness table.
+
+**DEC-156: Lock the Windows CRAN builds (Reenu's request on DEC-138).**
+- **Change.** On Windows, conda no longer installs `r-matrix`, `r-rcppeigen` or `r-bmisc`, and so not `r-rcpparmadillo`, which only `r-bmisc` requires in the lock. In `environment.yml` these become `# [linux]`, and the lock is re-solved in update mode for those four names only.
+- **On Windows,** `install_r_extra.R` installs CRAN's binaries of the same versions from the 2026-09-25 snapshot: Matrix 1.7-6, RcppArmadillo 15.6.0-1, RcppEigen 0.3.4.0.2, BMisc 1.4.10. They are then ordinary pins rather than an overwrite of conda's files, so the stamp files of DEC-138 are no longer needed.
+- **Linux is unchanged.** CI needs conda's `r-rcppeigen` headers to build `fastglm` from source.
+- **Checks:**
+  - the lock diff for linux-64 must be empty, and for win-64 only these four packages removed;
+  - the new environment is built under a new name, tested (full `pytest`, every compiled R package loads), and only then replaces `ncap`; the old environment is kept as `ncap_prev` until the end-of-phase rebuild passes.
