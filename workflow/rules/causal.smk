@@ -73,11 +73,166 @@ rule pre_period_checks:
         stub_done(output[0])
 
 
-# Gated: estimates post-2019 treatment effects (hard rule 4, DEC-012).
+# ---------------------------------------------------------------------------------------------------
+# Phase 7 (RQ3). GATED: every module below calls require_gate() before reading post-2018 outcomes
+# (hard rule 4, DEC-012). Rules DEC-138 to DEC-150. Part A = Layer A (satellite), H1/H2.
+
+CSL = "data/processed/causal"
+ES = f"{CSL}/event_study"
+SDID_A = ["primary", "v6gl03", "area", "placebo2016", "placebo2016_rm"]  # Part A specifications
+ONE_THREAD = "OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1"
+
+
+rule causal_era5_units:
+    input:
+        "data/raw/era5_monthly/MANIFEST.csv",
+        f"{INT}/sat_units.gpkg",
+        "src/causal/era5_units.py",
+    output: f"{CSL}/era5_unit_year.parquet"
+    shell: f"{PY} src.causal.era5_units"
+
+
+rule causal_panels:
+    input:
+        f"{STUB}/pre_period_checks.done",
+        "data/processed/unit_year_sat.parquet",
+        "data/processed/unit_month_sat.parquet",
+        f"{INT}/pregate/units.csv",
+        f"{INT}/pregate/monitor_gain.csv",
+        "src/causal/layer_a.py",
+    output:
+        f"{CSL}/panel_annual.parquet",
+        f"{CSL}/panel_pre2019.parquet",
+        f"{CSL}/design_units.csv",
+    shell: f"{PY} src.causal.layer_a panels"
+
+
+rule causal_specs:
+    input:
+        f"{CSL}/panel_annual.parquet",
+        f"{CSL}/panel_pre2019.parquet",
+        "data/processed/composition/city_changes.parquet",  # the units with a Layer B panel (DEC-150)
+        "src/causal/layer_a.py",
+    output:
+        f"{CSL}/specs/specs.csv",
+        f"{CSL}/specs/spec_units.parquet",
+        f"{CSL}/specs/spec_fitsets.csv",
+        f"{CSL}/specs/spec_estimands.csv",
+    shell: f"{PY} src.causal.layer_a specs"
+
+
+# ~1.5 h on 8 workers; resumable (replications in chunks, a spec's hash guards its outputs)
+rule causal_sdid_part_a:
+    input:
+        rules.causal_specs.output,
+        "src/causal/sdid.R",
+    output: expand(f"{CSL}/sdid/{{s}}/done.txt", s=SDID_A)
+    shell: f"{ONE_THREAD} {PY} src.causal.layer_a run {' '.join(SDID_A)}"
+
+
+rule causal_summary:
+    input: rules.causal_sdid_part_a.output
+    output: f"{CSL}/sdid_summary.csv"
+    shell: f"{PY} src.causal.layer_a summarise"
+
+
+rule causal_event_study:
+    input:
+        f"{CSL}/panel_annual.parquet",
+        f"{CSL}/design_units.csv",
+        f"{CSL}/era5_unit_year.parquet",
+        "src/causal/event_study.py",
+    output:
+        expand(f"{ES}/{{n}}_{{f}}", n=["es_primary", "es_own2020", "es_himalayan"],
+               f=["coefs.csv", "vcov.csv", "meta.json", "cohort_coefs.csv"]),
+        f"{ES}/es_own2020_own.csv",
+    shell: f"{PY} src.causal.event_study"
+
+
+rule causal_honest:
+    input:
+        f"{ES}/es_primary_coefs.csv",
+        f"{ES}/es_primary_vcov.csv",
+        "src/causal/honest.R",
+    output: expand(f"{ES}/es_primary_honest_{{f}}.csv", f=["rm", "sm", "summary"])
+    shell: f"{PY} src.causal.r_steps honest"
+
+
+rule causal_cs:
+    input:
+        f"{CSL}/panel_annual.parquet",
+        f"{CSL}/design_units.csv",
+        "src/causal/cs_did.R",
+    output: expand(f"{CSL}/cs/cs_{{c}}_{{f}}.csv", c=["nevertreated", "notyettreated"], f=["simple", "dynamic", "attgt"])
+    shell: f"{PY} src.causal.r_steps cs"
+
+
+rule fig4:
+    input:
+        rules.causal_summary.output,
+        rules.causal_event_study.output,
+        rules.causal_honest.output,
+        rules.causal_cs.output,
+        "src/viz/fig4_event_study.py",
+        "src/viz/style.py",
+    output: expand("reports/figures/fig4_event_study.{ext}", ext=["png", "svg"])
+    shell: f"{PY} src.viz.fig4_event_study"
+
+
+rule causal_report:
+    input:
+        rules.causal_summary.output,
+        rules.causal_event_study.output,
+        rules.causal_honest.output,
+        rules.causal_cs.output,
+        "src/causal/causal_report.py",
+        "src/causal/decisions.py",
+    output:
+        "docs/causal_report.md",
+        f"{CSL}/partA_results.json",
+    shell: f"{PY} src.causal.causal_report"
+
+
+# ---------------------------------------------------------------------------------------------------
+# Part B (after Reenu's go-ahead): the Layer A robustness battery, Layer B, triangulation (DEC-147 to DEC-150)
+SDID_B = ["v6gl0204", "towns", "towns_nopatancheruvu", "asansol_alone", "treated100k", "spill25", "funded",
+          "anticip2018", "incl2020", "noigp", "restricted_pm25", "restricted_pm25_v6gl0204"]
+
+
+# ~2 h on 8 workers; resumable
+rule causal_sdid_part_b:
+    input:
+        rules.causal_specs.output,
+        "src/causal/sdid.R",
+    output: expand(f"{CSL}/sdid/{{s}}/done.txt", s=SDID_B)
+    shell: f"{ONE_THREAD} {PY} src.causal.layer_a run {' '.join(SDID_B)}"
+
+
+rule causal_loo:
+    input: f"{CSL}/sdid/primary/done.txt"
+    output: f"{CSL}/sdid/primary/loo.parquet"
+    shell: f"{ONE_THREAD} {PY} src.causal.layer_a loo primary"
+
+
+rule causal_layer_b:
+    input:
+        f"{DW}/station_year.parquet",
+        "data/processed/composition/station_year_fitted.parquet",
+        "data/processed/station_year_sat.parquet",
+        f"{CSL}/design_units.csv",
+        f"{CSL}/panel_annual.parquet",
+        "src/causal/layer_b.py",
+    output:
+        expand(f"{CSL}/layer_b/{{f}}", f=["estimates.csv", "its_cities.csv", "misfit_by_year.csv", "satellite_at_stations.csv"]),
+    shell: f"{PY} src.causal.layer_b"
+
+
 rule causal:
     input:
         f"{STUB}/composition.done",
         f"{STUB}/pre_period_checks.done",
+        "docs/causal_report.md",
+        expand("reports/figures/fig4_event_study.{ext}", ext=["png", "svg"]),
     output:
         f"{STUB}/causal.done",
     run:

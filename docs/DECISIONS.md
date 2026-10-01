@@ -971,3 +971,49 @@ The gate is open (plan `6e24eca`, OSF https://osf.io/jksne/). The registered pla
   - *PM2.5 (pooled view):* the Layer A restricted ATT (the H4 PM2.5 cities are exactly the units with a 2018 PM2.5 panel), as % with its 95% CI, drawn from the corrected level. A last bar, "remaining change" = corrected − policy, is the part of the corrected change not attributed to NCAP. The figure states that the time bases differ (ground endpoints 2018 → 2025; satellite average effect over 2019 and 2021–2024).
   - *PM10 (pooled view):* there is no satellite PM10, so the policy step is the ground DiD for PM10, labelled "Layer B, secondary, one pre-year".
   - *Per-city view:* the policy step stays a placeholder, "city effects: Phase 8 (shrunken)", because unshrunk city claims are not made (plan §5).
+
+## 2026-10-01: Phase 7 Part A results (rules DEC-138 to DEC-150, committed and pushed in `eebaecc` before computing)
+
+Numbers from `docs/causal_report.md` (generated). No specification was changed after any estimate was seen. Two implementation fixes were made before the outputs they affect were first produced; both are recorded in DEC-152.
+
+**DEC-151: H1 is "not identified by this design": the registered pre-trend test (rule b) fails. Every Layer A estimate is an increase, not a reduction. H2 is not tested.**
+- **Rules, as registered and read in DEC-135/141:**
+  - (a) **not met:** primary SDID ATT = +0.0352 (+3.6%), 95% CI +2.4% to +4.8%. This is an increase relative to the synthetic counterfactual. By cohort: 2019 +3.9%, 2020 +2.0%, 2021 +3.3%. In µg/m³: +1.88 (+1.19 to +2.57).
+  - (b) **failed:** the Sun & Abraham pre-period coefficients −9 … −2 are jointly significant (Wald χ² = 26.8, 8 df, p = 0.0008). The individual pre-coefficients are small (−1.6% to +0.8%). The satellite series is smooth, so their SEs are 0.5–0.8%, and l = −7 alone has z ≈ −3.1.
+  - (c) **met:** the 2016 placebo is −0.1% (95% CI −0.9% to +0.7%).
+  - (d) **not met:** Callaway & Sant'Anna +4.6%, area-weighted +3.5%, V6.GL.03 +3.2%; all positive.
+- **Verdict (first branch of DEC-141):** "not identified by this design (failed: (b) pre-trend Wald test)". Even setting (b) aside, branch 3 would give "not supported: the estimate is an increase".
+- **HonestDiD, reported alongside as registered:**
+  - The original CI of the average post-period effect lies above 0 (+1.7% to +4.5%).
+  - The relative-magnitudes breakdown is M̄ = 0.20. The robust CI keeps excluding 0 only if post-period violations of parallel trends are at most a fifth of the largest pre-period one.
+  - Smoothness bounds include 0 from the first M > 0.
+  - Package warnings are kept with each row: the relative-magnitudes CIs are open at the grid edge from M̄ = 1; the smoothness solver flags every row as possibly inaccurate.
+- **Always reported:**
+  - Equivalence: the 90% CI (+2.6% to +4.6%) lies inside ±5%.
+  - The 95% CI excludes a 20%, 30% and 40% reduction (PM2.5, not PM10).
+  - The MDE is 1.2% (2.8 × the real design's SE = 1.6%).
+  - Placebo in space: permutation p = 0.004, the minimum possible with 500 replications.
+- **H2: not tested** (H1 not supported). Exploratory: winter +2.9%, non-winter +2.8%, difference +0.1% (−1.3% to +1.4%).
+- **Calibration leakage (registered warning rule): fires, on its second clause.**
+  - Gained a monitor (74 units): +2.5% (+1.1% to +4.0%).
+  - Did not (39): +5.5% (+3.5% to +7.5%).
+  - Difference: −2.8% (−5.1% to −0.5%).
+  - Both groups are increases. The direction is the one leakage would produce, but the comparison cannot separate it from real differences between the groups. The report says so.
+- **Checks made before accepting the numbers** (implementation only; nothing was re-specified):
+  - **Event study:** 1,036 units × 14 years = 14,504 observations. The aggregated coefficient at l = −9 equals the cohort-share-weighted mean of the cohort coefficients, recomputed by hand. The references are as DEC-142 states.
+  - **The positive sign:** an unweighted DiD of means on the same panel gives +5.0% (cohort 2019), +5.8% (2020) and +2.1% (2021). By region, cohort 2019 against same-region controls is positive in the IGP (+4.6%) and peninsular/other (+5.2%), and slightly negative on the coast (−0.7%) and in the north-east (−1.4%). The sign is in the data, not in the estimator.
+  - **Callaway & Sant'Anna:** never- and not-yet-treated agree to 4 decimals. The not-yet-treated pool adds only 24 units, and only before 2021; 27 of the 39 group-time cells differ, slightly.
+- **Run:** primary 58.5 min (500 replications × 18 fits), V6.GL.03 8.7, area-weighted 9.1, 2016 placebos 2.7 and 3.8 min; HonestDiD 11.5 min. This matches the pre-run estimate (Part A ≈ 1.5–2 h).
+
+**DEC-152: Implementation fixes and checks during Part A (none changes a specification).**
+- **The estimand names were made unique per outcome** (`att` = the headline log outcome; `att:<outcome>` for the others). The first version would have summed fit-set ATTs across outcomes under one name. Caught in code review before `summarise` first ran; a regression test was added.
+- **`honest.R` records the package warnings with each result row** and states the direction of the original CI. The first run printed the warnings only to the log. The re-run gave identical numbers (checked).
+- **Wald test size, checked on synthetic panels** shaped like the real design (100 controls, cohorts 2019 and 2021, 2020 dropped), 40 seeds per design, nothing planted before adoption:
+  - with no effects planted, rejection at nominal 10% / 5% was 10.0% / 5.0% (cohorts of 30 and 10 units), 10.0% / 5.0% (30 and 40) and 12.5% / 7.5% (90 and 40);
+  - one batch with planted post-period effects gave 20% / 12.5%. Monte Carlo SE ≈ 5 pp at 10%, so that batch is about two SEs high.
+  - Read together, the test is not grossly over-sized, so the p = 0.0008 in DEC-151 is not an artefact of it. The unit test checks the algebra and a gross-failure bound, not one draw's p.
+- **Figure 4** was re-laid out twice after looking at the render: the header text overlapped the axes, and the legend overlapped the source note. It now states that Callaway & Sant'Anna's pre-listing points are year-on-year differences (base period varying), so the two estimators are like-for-like only after listing.
+- **Windows:** a spec id `nul` (a reserved device name) broke a synthetic test's output folder; it was renamed.
+
+**DEC-153 (workflow note): Part A through Snakemake; reproducibility of the re-run.** After adding the `causal:` config block (read only by `src/causal/` Phase 7 modules; `git diff` shows nothing else changed), upstream outputs were marked current with `snakemake --touch`, as in DEC-108/134. So was the 83-minute SDID rule, which had been run by hand with the rule's own command. The seven quick Part A rules (summary, event study, CS, HonestDiD, report, figure 4, target) then ran through Snakemake (log `data/interim/logs/snakemake_phase7_partA.log`), and `snakemake -n causal` has nothing to do.
+- **Against the hand-built outputs:** the SDID summary and every Callaway & Sant'Anna file are byte-identical. The event-study coefficients differ by at most 1e-16 (floating-point summation order). HonestDiD's smoothness rows, which the solver already flags as possibly inaccurate, move by up to 9e-6. That changes one cell of the report in the fourth decimal (M = 0 lower bound +0.0040 → +0.0041). No verdict, rule check or headline number changed.

@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-10-01. **Phase 6 (network composition, H4) reviewed and closed by Reenu on 2026-10-01** (DEC-125 to DEC-137). **Next: Phase 7 (causal analysis); START at "Next: Phase 7" below.***
+*Last updated: 2026-10-01. **Phase 7 Part A (Layer A, H1/H2) done and pushed; CHECKPOINT: waiting for Reenu's go-ahead before Part B** (DEC-138 to DEC-152). START at "Phase 7" below.*
 
 ## Status
 
@@ -16,9 +16,10 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 4 Analysis-plan gate | ✅ 2026-09-27: plan `6e24eca` registered at https://osf.io/jksne/; gate opened in `0d9aa42` (DEC-084 to DEC-099) |
 | 5 Deweathering | ✅ approved 2026-09-28; pushed (DEC-100 to DEC-124) |
 | 6 Network composition, H4 | ✅ reviewed and closed 2026-10-01; pushed (DEC-125 to DEC-137) |
-| 7–10 | not started |
+| 7 Causal analysis | Part A ✅ 2026-10-01 (H1 not identified: rule (b) fails); **Part B waits for Reenu's go-ahead** |
+| 8–10 | not started |
 
-Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). No post-2019 effect estimates exist yet; they belong to Phase 7.
+Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). Phase 7's rules (DEC-138 to DEC-150) were pushed in `eebaecc` before any estimate; the first post-2019 effect estimates are Part A's (DEC-151).
 
 ## Done
 
@@ -70,9 +71,37 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Phase 7 (causal analysis, RQ3): IN PROGRESS. START HERE in a new chat
+## Phase 7 (causal analysis, RQ3): Part A DONE, CHECKPOINT. START HERE in a new chat
 
-**Rules:** DEC-138 to DEC-150, committed and pushed before any Phase 7 estimate (Part A and Part B both). Reenu's instruction (2026-10-01): implement plan §5 exactly with DEC-135's readings; any departure is a dated deviation; **checkpoint after Part A** (push, report H1/H2 in the registered wording with every rule check), then Part B only after her go-ahead.
+**Rules:** DEC-138 to DEC-150, committed and pushed in `eebaecc` before any Phase 7 estimate (Part A and Part B both). Reenu's instruction (2026-10-01): implement plan §5 exactly with DEC-135's readings; any departure is a dated deviation; **checkpoint after Part A** (push, report H1/H2 in the registered wording with every rule check), then Part B only after her go-ahead.
+
+**Part A result (DEC-151; numbers in `docs/causal_report.md`, figure `reports/figures/fig4_event_study`):**
+- **H1: "not identified by this design"**, because rule (b) fails (event-study pre-trend Wald p = 0.0008). Rule (c) holds (2016 placebo −0.1%). Rules (a) and (d) fail too: every estimate is an *increase*. Primary SDID +3.6% (95% CI +2.4% to +4.8%); CS +4.6%; area-weighted +3.5%; V6.GL.03 +3.2%.
+- **HonestDiD:** original CI above 0; relative-magnitudes breakdown M̄ = 0.20.
+- **H2 not tested;** exploratory winter − non-winter +0.1%.
+- **Calibration-leakage warning fires** (difference −2.8%, CI −5.1% to −0.5%; both groups are increases).
+- **Environment (DEC-138):** CRAN binaries of Matrix/RcppArmadillo/RcppEigen on Windows (conda-forge's builds stopped loading); HonestDiD 0.2.8 installed. **Implementation fixes and checks (DEC-152):** none changes a specification.
+- **Open for Reenu:** the VIIRS fire check cannot run until FIRMS is downloaded (DEC-039/147).
+
+**How to rebuild Part A:** `snakemake --cores 1 causal` (gated). Or, inside the `ncap` env:
+```bash
+python -m src.causal.era5_units           # ERA5 monthly -> unit-year covariates (~20 s)
+python -m src.causal.layer_a panels       # satellite panels, Asansol-alone value (~35 s)
+python -m src.causal.layer_a specs        # every SDID specification (Part A and Part B)
+python -m src.causal.layer_a run primary v6gl03 area placebo2016 placebo2016_rm   # ~83 min, resumable
+python -m src.causal.layer_a summarise
+python -m src.causal.event_study          # Sun & Abraham (~20 s)
+python -m src.causal.r_steps cs           # Callaway & Sant'Anna (~15 s)
+python -m src.causal.r_steps honest       # HonestDiD (~11 min)
+python -m src.causal.causal_report        # -> docs/causal_report.md, data/processed/causal/partA_results.json
+python -m src.viz.fig4_event_study
+```
+Workflow: `snakemake --touch` was used for upstream outputs after adding the `causal:` config block, and for the 83-minute SDID rule run by hand with the rule's own command (as DEC-108/134). The seven quick Part A rules then ran through Snakemake (log `data/interim/logs/snakemake_phase7_partA.log`).
+
+**Part B (after the go-ahead; code written and tested on synthetic data, NOT yet run on real data):**
+- `python -m src.causal.layer_a run <SDID_B ids>` (~2 h); `python -m src.causal.layer_a loo primary` (~20 min);
+- `python -m src.causal.layer_b`; `python -m src.causal.triangulation`; `python -m src.causal.robustness`;
+- then: extend `causal_report.py` with the Part B sections; figure 1's policy step (DEC-150); Part B Snakemake rules into the `causal` target; tests; phase note `docs/phase-notes/07-causal.md`.
 
 **Build plan (files and functions):**
 - `src/causal/era5_units.py`: ERA5 monthly means → unit-year covariates (`data/processed/causal/era5_unit_year.parquet`; DEC-142).
