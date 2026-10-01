@@ -48,10 +48,14 @@ from src.normalise.aggregate import OUT as DW_OUT
 OUT = PROCESSED / "composition"
 FAMILY_NAME = {"gam": "GAM", "lgbm": "LightGBM", "gam_k4": "GAM (k = 4/yr)", "raw": "none (raw)"}
 SCHEME_NAME = {"seasonal": "seasonal", "annual": "Grange & Carslaw"}
-CHANGE_COLS = ["reported", "weather", "composition", "corrected", "comp_raw", "weather_pan", "comp_dw",
-               "h4", "h4_weather", "h4_composition"]  # fmt: skip
-ALL_CITY_METRICS = ["comp_raw", "comp_dw", "weather", "composition", "weather_pan"]  # measurement only
-NCAP_METRICS = ["h4", "h4_weather", "h4_composition", "reported", "corrected", *ALL_CITY_METRICS]
+CHANGE_COLS = ["reported", "unmodelled", "weather", "raw_minus_dw", "composition", "corrected", "comp_raw",
+               "weather_pan", "comp_dw", "h4", "h4_unmodelled", "h4_weather", "h4_raw_minus_dw",
+               "h4_composition"]  # fmt: skip
+ALL_CITY_METRICS = ["comp_raw", "comp_dw", "unmodelled", "weather", "raw_minus_dw", "composition",
+                    "weather_pan"]  # measurement only
+NCAP_METRICS = ["h4", "h4_unmodelled", "h4_weather", "h4_raw_minus_dw", "h4_composition", "reported", "corrected",
+                *ALL_CITY_METRICS]  # fmt: skip
+FAMILIES = ("gam", "lgbm", "gam_k4")
 
 
 def ccfg() -> dict:
@@ -142,8 +146,11 @@ def select(sy: pd.DataFrame, spec: Spec) -> pd.DataFrame:
         v = v[~v.sid.isin(params().get("posthoc_drop_registered", []))]
     v = v[v.raw.notna() & v[spec.dw_col].notna()]
     guard = v[f"guard_{spec.dw_col}"] if f"guard_{spec.dw_col}" in v else False  # DEC-117 flag, never a filter
+    # fitted annual mean (DEC-136): the family's prediction under the actual weather; raw has none
+    fcol = f"fit_{spec.family}"
+    fit = v.raw if spec.family == "raw" else (v[fcol] if fcol in v else np.nan)
     return pd.DataFrame({"sid": v.sid, "pollutant": v.pollutant, "unit_id": v.unit_id, "year": v.year.astype(int),
-                         "raw": v.raw, "dw": v[spec.dw_col], "guard": guard}).reset_index(drop=True)  # fmt: skip
+                         "raw": v.raw, "dw": v[spec.dw_col], "fit": fit, "guard": guard}).reset_index(drop=True)  # fmt: skip
 
 
 def panel_members(v: pd.DataFrame, baseline: int, end: int, strict: bool = True) -> pd.DataFrame:
@@ -169,39 +176,49 @@ def pct(a, b):
     return 100 * (np.asarray(b, dtype=float) / np.asarray(a, dtype=float) - 1)
 
 
-def decompose(raw_all, dw_all, raw_pan, dw_pan) -> dict:
-    """The per-city quantities from (baseline, end) pairs of the four city means. Each argument is
-    an array whose last axis is (baseline, end); works for one city or a batch of bootstrap draws."""
+def decompose(raw_all, dw_all, raw_pan, dw_pan, fit_all=None) -> dict:
+    """The per-city quantities from (baseline, end) pairs of the city means. Each argument is an
+    array whose last axis is (baseline, end); works for one city or a batch of bootstrap draws.
+    `fit_all` (the all-station fitted mean, DEC-136) splits raw - deweathered into unmodelled change
+    (raw - fitted) and modelled weather (fitted - deweathered); without it both are NaN and only
+    the combined `raw_minus_dw` exists."""
     ra, da, rp, dp = (pct(x[..., 0], x[..., 1]) for x in map(np.asarray, (raw_all, dw_all, raw_pan, dw_pan)))
+    fa = np.full_like(ra, np.nan) if fit_all is None else pct(np.asarray(fit_all)[..., 0], np.asarray(fit_all)[..., 1])
     return {
-        "chg_raw_all": ra, "chg_dw_all": da, "chg_raw_panel": rp, "chg_dw_panel": dp,
-        "reported": ra, "weather": ra - da, "composition": da - dp, "corrected": dp,
+        "chg_raw_all": ra, "chg_dw_all": da, "chg_raw_panel": rp, "chg_dw_panel": dp, "chg_fit_all": fa,
+        "reported": ra, "unmodelled": ra - fa, "weather": fa - da, "raw_minus_dw": ra - da,
+        "composition": da - dp, "corrected": dp,
         "comp_raw": ra - rp, "weather_pan": rp - dp, "comp_dw": da - dp,
-        "h4": dp - ra, "h4_weather": da - ra, "h4_composition": dp - da,
+        "h4": dp - ra, "h4_unmodelled": fa - ra, "h4_weather": da - fa, "h4_raw_minus_dw": da - ra,
+        "h4_composition": dp - da,
     }  # fmt: skip
 
 
-def city_matrix(g: pd.DataFrame, b: int, e: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, list[str]]:
-    """One unit-pollutant: per station, raw and dw annual means at (b, e) (NaN where not valid), and
-    its panel flag."""
+def city_matrix(g: pd.DataFrame, b: int, e: int) -> tuple:
+    """One unit-pollutant: per station, raw, dw and fitted annual means at (b, e) (NaN where not
+    valid), and its panel flag."""
     g = g[g.year.isin([b, e])]
     raw = g.pivot_table(index="sid", columns="year", values="raw").reindex(columns=[b, e])
     dw = g.pivot_table(index="sid", columns="year", values="dw").reindex(columns=[b, e]).loc[raw.index]
+    fit = g.pivot_table(index="sid", columns="year", values="fit", dropna=False).reindex(index=raw.index, columns=[b, e])
     pan = g.groupby("sid").in_panel.first().loc[raw.index].to_numpy()
-    return raw.to_numpy(), dw.to_numpy(), pan, list(raw.index)
+    return raw.to_numpy(), dw.to_numpy(), fit.to_numpy(), pan, list(raw.index)
 
 
-def means_from(raw: np.ndarray, dw: np.ndarray, pan: np.ndarray, idx: np.ndarray) -> tuple:
-    """City means over the stations in `idx` (last axis): all stations valid in each year, and the
-    panel stations. idx may be (n,) or (draws, n)."""
-    r, d, p = raw[idx], dw[idx], pan[idx]
+def means_from(raw: np.ndarray, dw: np.ndarray, fit: np.ndarray, pan: np.ndarray, idx: np.ndarray) -> tuple:
+    """City means over the stations in `idx` (last axis): all stations valid in each year (raw, dw,
+    fitted) and the panel stations (raw, dw). idx may be (n,) or (draws, n). The fitted mean is NaN
+    for a year in which any valid station lacks a fitted value (DEC-136), never a partial mean."""
+    r, d, f, p = raw[idx], dw[idx], fit[idx], pan[idx]
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)  # a draw with no station valid in a year -> NaN
         ra, da = np.nanmean(r, axis=-2), np.nanmean(d, axis=-2)
+        fa = np.nanmean(f, axis=-2)
+        fa = np.where(np.isfinite(f).sum(axis=-2) == np.isfinite(r).sum(axis=-2), fa, np.nan)
         pm = p[..., None]
         rp = np.nanmean(np.where(pm, r, np.nan), axis=-2)
         dp = np.nanmean(np.where(pm, d, np.nan), axis=-2)
-    return ra, da, rp, dp
+    return ra, da, rp, dp, fa
 
 
 def city_changes(v: pd.DataFrame, spec: Spec) -> pd.DataFrame:
@@ -213,16 +230,17 @@ def city_changes(v: pd.DataFrame, spec: Spec) -> pd.DataFrame:
     for (u, pol), g in v.groupby(["unit_id", "pollutant"]):
         if not g.in_panel.any():
             continue
-        raw, dw, pan, sids = city_matrix(g, b, e)
-        ra, da, rp, dp = means_from(raw, dw, pan, np.arange(len(sids)))
+        raw, dw, fit, pan, sids = city_matrix(g, b, e)
+        ra, da, rp, dp, fa = means_from(raw, dw, fit, pan, np.arange(len(sids)))
         r = {"unit_id": u, "pollutant": pol, "n_panel": int(pan.sum()),
              "n_all_base": int(np.isfinite(raw[:, 0]).sum()), "n_all_end": int(np.isfinite(raw[:, 1]).sum()),
              "raw_all_base": ra[0], "raw_all_end": ra[1], "dw_all_base": da[0], "dw_all_end": da[1],
              "raw_panel_base": rp[0], "raw_panel_end": rp[1], "dw_panel_base": dp[0], "dw_panel_end": dp[1],
+             "fit_all_base": fa[0], "fit_all_end": fa[1],
              "watch_stations": ", ".join(sorted(watch & set(sids))),
              "guard_all": int(g[g.year.isin([b, e])].guard.sum()),
              "guard_panel": int(g[g.year.isin([b, e]) & g.in_panel].guard.sum())}  # fmt: skip
-        r.update({k: float(x) for k, x in decompose(ra, da, rp, dp).items()})
+        r.update({k: float(x) for k, x in decompose(ra, da, rp, dp, fa).items()})
         rows.append(r)
     return pd.DataFrame(rows).assign(spec=spec.label, **asdict(spec))
 
@@ -236,12 +254,13 @@ def station_bootstrap(v: pd.DataFrame, spec: Spec, draws: int, seed: int) -> pd.
     for (u, pol), g in v.groupby(["unit_id", "pollutant"]):
         if not g.in_panel.any():
             continue
-        raw, dw, pan, sids = city_matrix(g, b, e)
+        raw, dw, fit, pan, sids = city_matrix(g, b, e)
         rng = np.random.default_rng([seed, zlib.crc32(f"{spec.label}|{u}|{pol}".encode())])
         ip, io = np.flatnonzero(pan), np.flatnonzero(~pan)
         idx = np.concatenate([rng.choice(ip, (draws, len(ip))), rng.choice(io, (draws, len(io))) if len(io)
                               else np.empty((draws, 0), dtype=int)], axis=1)  # fmt: skip
-        res = decompose(*means_from(raw, dw, pan, idx))  # each (draws, 2)
+        ra, da, rp, dp, fa = means_from(raw, dw, fit, pan, idx)  # each (draws, 2)
+        res = decompose(ra, da, rp, dp, fa)
         r = {"unit_id": u, "pollutant": pol, "n_panel": len(ip), "n_other": len(io)}
         for k in CHANGE_COLS:
             x = res[k][np.isfinite(res[k])]
@@ -295,7 +314,9 @@ def h4_table(ch: pd.DataFrame, ncap: set[str], spec_list: list[Spec], draws: int
             "station_years_used": int((g.n_all_base + g.n_all_end).sum()),
             "guard_flags_all": int(g.guard_all.sum()), "guard_flags_panel": int(g.guard_panel.sum()),
             "reported_mean": g.reported.mean(), "corrected_mean": g.corrected.mean(),
-            "h4_weather_mean": g.h4_weather.mean(), "h4_composition_mean": g.h4_composition.mean(),
+            "h4_unmodelled_mean": g.h4_unmodelled.mean(), "h4_weather_mean": g.h4_weather.mean(),
+            "h4_raw_minus_dw_mean": g.h4_raw_minus_dw.mean(), "h4_composition_mean": g.h4_composition.mean(),
+            "cities_without_split": int(g.h4_weather.isna().sum()),
             "h4_mean": b["mean"], "h4_lo": b["lo"], "h4_hi": b["hi"], "h4_se": b["se"], "h4_median": b["median"],
             "cities_positive": int((g.h4 > 0).sum()),
             "detectable_2p8se": 2.8 * b["se"] if b["lo"] <= 0 <= b["hi"] else np.nan,
@@ -493,6 +514,52 @@ def coverage(ch_reg: pd.DataFrame, ncap: set[str]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+# ------------------------------------------------------------------ fitted annual means (DEC-136)
+
+
+def fitted_station_years() -> pd.DataFrame:
+    """Per station-year, completeness variant and validity rule: each family's fitted annual mean =
+    the mean over the variant's valid days of exp(fitted) x the series' smearing factor (the model's
+    prediction under the actual weather, on the deweathered scale, DEC-101). NaN if any of those
+    days has no fitted value (days that are not fit days: the 60% variant's 15-17-hour days).
+    Rules are stacked as in src.normalise.aggregate.with_rules: primary = run `main`; registered
+    flags = run `registered` for the refitted series, `main` otherwise."""
+    from src.normalise import collect
+    from src.normalise.aggregate import VARIANTS, raw_days
+    from src.normalise.features import INPUTS
+
+    raw = raw_days()
+    runs = {}
+    for run in ("main", "registered"):
+        series = pd.read_csv(INPUTS / run / "series.csv")
+        if "skipped" in series:
+            series = series[series.skipped.isna()]
+        parts = []
+        for r in series.itertuples():
+            per = None
+            for fam in FAMILIES:
+                out = collect.load(run, fam, r.pollutant, r.sid)[0]
+                f = out.fitted.to_numpy()
+                ok = out.y.notna().to_numpy()
+                smear = float(np.mean(np.exp(out.y.to_numpy()[ok] - f[ok])))
+                d = pd.DataFrame({"date": out.date, f"fit_{fam}": np.exp(f) * smear})
+                per = d if per is None else per.merge(d, on="date")
+            parts.append(per.assign(sid=r.sid, pollutant=r.pollutant))
+        day = raw.merge(pd.concat(parts, ignore_index=True), on=["sid", "pollutant", "date"], how="inner")
+        cols = [f"fit_{f}" for f in FAMILIES]
+        rows = []
+        for v, (hcol, t) in VARIANTS.items():
+            d = day[day[hcol] >= int(np.ceil(24 * t))].assign(year=lambda x: x.date.dt.year)
+            g = d.groupby(["sid", "pollutant", "year"])[cols]
+            m = g.mean().where(g.count().eq(g.size(), axis=0))  # a partial mean is never used
+            rows.append(m.reset_index().assign(variant=v))
+        runs[run] = (pd.concat(rows, ignore_index=True), series[["sid", "pollutant"]])
+    main_t, (reg_t, reg_series) = runs["main"][0], runs["registered"]
+    keep = main_t.merge(reg_series.assign(_r=True), on=["sid", "pollutant"], how="left")._r.isna().to_numpy()
+    return pd.concat([main_t.assign(rule="primary"), main_t[keep].assign(rule="registered_flags"),
+                      reg_t.assign(rule="registered_flags")], ignore_index=True)  # fmt: skip
+
+
 # ------------------------------------------------------------------ main
 
 
@@ -511,6 +578,9 @@ def main() -> None:
     draws, seed = c["bootstrap_draws"], params()["seed"]
     OUT.mkdir(parents=True, exist_ok=True)
     sy = pd.read_parquet(DW_OUT / "station_year.parquet")
+    fitted = fitted_station_years()
+    fitted.to_parquet(OUT / "station_year_fitted.parquet", index=False)
+    sy = sy.merge(fitted, on=["sid", "pollutant", "year", "variant", "rule"], how="left")
     ncap = ncap_units()
     spec_list = specs()
     chs, vs = [], {}

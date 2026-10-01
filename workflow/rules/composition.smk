@@ -7,7 +7,7 @@ CMP = "data/processed/composition"
 CMP_TABLES = [f"{CMP}/{f}" for f in ("city_changes.parquet", "summary.csv", "h4.csv", "city_boot.csv",
                                      "trends.parquet", "composition_by_year.csv", "ground_sat.csv",
                                      "ground_sat_summary.csv", "entrants.csv", "entrants_summary.csv",
-                                     "coverage.csv")]
+                                     "coverage.csv", "station_year_fitted.parquet")]
 FAMDIAG = [f"{CMP}/family_diag_{f}.csv" for f in ("cities", "contrib", "check", "era5", "attribution", "misfit_h4")]
 FIG1 = ["fig1_decomposition", "fig1_decomposition_cities"]
 
@@ -19,6 +19,7 @@ rule composition_tables:
         "data/processed/unit_year_sat.parquet",
         f"{INT}/pregate/units.csv",
         f"{INT}/station_regions.csv",
+        f"{NRM}/fits/main/_all.done",  # fitted values for the unmodelled / modelled-weather split (DEC-136)
         "src/normalise/composition.py",
     output: CMP_TABLES
     shell: f"{PY} src.normalise.composition"

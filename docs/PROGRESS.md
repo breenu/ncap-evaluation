@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-09-30. **Phase 6 (network composition, H4) built and committed; awaiting Reenu's approval** (DEC-125 to DEC-134). **Next: Reenu's review, then Phase 7; START at "Next" below.***
+*Last updated: 2026-10-01. **Phase 6 (network composition, H4) reviewed and closed by Reenu on 2026-10-01** (DEC-125 to DEC-137). **Next: Phase 7 (causal analysis); START at "Next: Phase 7" below.***
 
 ## Status
 
@@ -15,7 +15,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 3 Storage, cleaning, audit, EDA | ✅ approved 2026-09-26; pushed (DEC-080 to DEC-082) |
 | 4 Analysis-plan gate | ✅ 2026-09-27: plan `6e24eca` registered at https://osf.io/jksne/; gate opened in `0d9aa42` (DEC-084 to DEC-099) |
 | 5 Deweathering | ✅ approved 2026-09-28; pushed (DEC-100 to DEC-124) |
-| 6 Network composition, H4 | built 2026-09-30; awaiting approval (DEC-125 to DEC-134) |
+| 6 Network composition, H4 | ✅ reviewed and closed 2026-10-01; pushed (DEC-125 to DEC-137) |
 | 7–10 | not started |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). No post-2019 effect estimates exist yet; they belong to Phase 7.
@@ -70,65 +70,98 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Next: Reenu reviews Phase 6; after approval, Phase 7 (causal analysis, RQ3). START HERE in a new chat
+## Next: Phase 7 (causal analysis, RQ3). START HERE in a new chat
 
-**Phase 6 is built and committed (2026-09-30) and waits for Reenu's approval.** Do not start Phase 7 until it is approved. Review material:
-- `docs/phase-notes/06-composition.md` (plain language);
-- `docs/composition_report.md` (generated; every number);
-- figure 1 v1: `reports/figures/fig1_decomposition*.png`;
-- DEC-125 to DEC-133.
+**Phase 6 was reviewed and closed by Reenu on 2026-10-01** (DEC-135 to DEC-137). Start Phase 7. Per CLAUDE.md:
+- write a short plan first (files and functions);
+- fix any rule the plan leaves open in DECISIONS, and commit it before computing (the practice since Phase 5);
+- build;
+- at the end: run the tests, commit and push, update this file and DECISIONS, write `docs/phase-notes/07-causal.md`, and stop.
 
-**Open items for Reenu from Phase 6:**
-1. **H4's sign reading (DEC-127).** It clarifies ambiguous registered text. It was committed before computing (`29874cf`); Reenu may want to note it on OSF.
-2. **The DEC-130 → DEC-133 method change** in the family diagnostic. The pre-set log-scale split failed its own check, and an annual-mean-scale split replaced it. Its main finding: the GAM's misfit (the change its trend and weather terms do not reproduce) is counted as "weather" by raw − deweathered. It averages about −1 pp across the H4 cities, but reaches ±11 in single cities (Kolkata, Kanpur).
-3. **Completeness 90% and FY2025-26:** neither H4 sensitivity is computable. Stated, not hidden.
-4. **Single-station panels dominate** (16 of 18 PM2.5, 11 of 13 PM10 H4 cities). Phase 7's Layer B inherits this.
+**Spec:**
+- proposal stage 7 and the validation table;
+- PLAN.md §4 Phase 7;
+- `docs/analysis_plan.md` §2 (treatment, controls), §4 (variables), §5 (models, decision rules, leakage check, triangulation, the robustness table);
+- the gate is open (`config/gate.yaml` cites `6e24eca`).
+
+**Binding readings of the registered rules (DEC-135, committed and pushed in `ba397a2` before any Phase 7 computation).** Apply them exactly:
+- **Sign convention:** effect = treated − counterfactual on log concentration; negative = reduction.
+- **H1:**
+  - (a) ATT < 0 with its 95% CI entirely below 0;
+  - (d) the point estimate < 0 in CS, area-weighted and V6.GL.03.
+- **Equivalence:** the 90% CI strictly between ln 0.95 and ln 1.05, as registered (asymmetric).
+- **H2:** the winter − non-winter difference < 0, with its CI entirely below 0.
+- **H3:**
+  - the log(PM2.5/PM10) effect > 0 with its CI above 0;
+  - β_PM10 < β_PM2.5 **and** β_PM10 < 0 in ≥ 2 of 3 specifications;
+  - the Layer A vs Layer B PM2.5 comparison is not "conflict".
+- **H5:** the IGP coefficient (IGP = 1; effect in IGP minus elsewhere) has its credible interval above 0.
+- **Robustness "agrees":** same sign as the primary, and the point estimate inside the primary 95% CI, on the same scale.
+- **Layer-disagreement categories, in this order:** uninformative → conflict → consistent → different magnitude → "unclassified". Every category except consistent triggers the registered investigation.
 
 **Carried into Phase 7 (added checks, not rule changes):**
-- **Layer B without 2019 (DEC-123):** rerun the ground-layer estimates excluding 2019, because the small lockdown smear under the one-year-knot trend falls mostly on 2019 (smear test: 2019 alone 0.95%). It is an added sensitivity analysis, reported and labelled as added on 2026-09-28; no registered rule changes.
-- **Satna post-hoc drop** in every registered-flags version where site_1433 contributes (DEC-124; `config/params.yaml: posthoc_drop_registered`). Label it "added after inspecting the data". In Phase 6 it could not enter H4, because its unit is a control.
-- **Triangulation input:** the plan's investigation step 1 (network composition) is Phase 6's `city_changes.parquet`. Step 2 (ground–satellite) is `ground_sat.csv`: per-city gaps are large (single monitors in Agra, Lucknow, Kanpur and Jodhpur fell 45–63% where the satellite fell 22–27%), while the mean gap is small.
-- **Model misfit:** Layer B's deweathered ITS also drops each station's misfit (DEC-133). Show the LightGBM version beside the GAM, as in Phase 6.
+- **Layer B without 2019 (DEC-123):** rerun the ground-layer estimates excluding 2019. Label it as added on 2026-09-28. Phase 6 adds a reason: under the 2019 baseline, the GAM's raw − deweathered part is almost all unmodelled change (DEC-137).
+- **Satna post-hoc drop** in every registered-flags version where site_1433 contributes (DEC-124; `config/params.yaml: posthoc_drop_registered`). Label it "added after inspecting the data". Satna's unit (u0908) is a control, so it can enter ground DiD as a control station.
+- **LightGBM beside the GAM** wherever deweathered ground data are used (DEC-118). Layer B's deweathered series drop each station's unmodelled change (DEC-133/136).
+- **Triangulation inputs from Phase 6:**
+  - investigation step 1 (network composition) = `data/processed/composition/city_changes.parquet` and `trends.parquet`;
+  - step 2 (ground–satellite) = `ground_sat.csv`. The mean gap is small, but per-city gaps are large (single monitors in Agra, Lucknow, Kanpur and Jodhpur fell 45–63% where the satellite fell 22–27%).
+- **Single-station panels dominate** the ground layer (16 of 18 PM2.5 and 11 of 13 PM10 NCAP panels). State the scope wherever a Layer B result appears, as for H4 (DEC-136).
+- **No claims about individual weather variables** anywhere (DEC-136).
+- **HonestDiD 0.2.8:** install via `workflow/scripts/install_r_extra.R` (DEC-097) before the event study.
 
-## Phase 6 (network composition, RQ1 and H4): what was built (2026-09-30)
+**For Reenu:** post the OSF clarification, `docs/osf/clarification_2026-10-01.md` (159 words, first person). It covers DEC-127 and DEC-135, with the commit hashes.
 
-**Rules first:** DEC-125 to DEC-130 were committed in `29874cf` and DEC-131 in `2254a70`, before any Phase 6 number was computed. Results: DEC-132. Method change after a failed pre-set check: DEC-133.
+## Phase 6 (network composition, RQ1 and H4): what was built (2026-09-30; review changes 2026-10-01)
+
+**Rules first:**
+- DEC-125 to DEC-130 in `29874cf` and DEC-131 in `2254a70`, both before any Phase 6 number was computed. Results: DEC-132.
+- Method change after a failed pre-set check: DEC-133.
+- Review: DEC-135 (sign audit of every registered rule; `ba397a2`, pushed before Phase 7), then DEC-136 (weather split, scope, no per-variable claims; `86e62c7`, before computing). Split results: DEC-137.
 
 **How to rebuild:** `snakemake --cores 1 composition`. Or, inside the `ncap` env:
 ```bash
-python -m src.normalise.composition          # ~1 min; all tables in data/processed/composition/
+python -m src.normalise.composition          # ~2-3 min (reads every Phase 5 fit for the fitted means); all tables
 python -m src.normalise.family_diag          # ~25-30 min (LightGBM TreeSHAP for the pre-set log-scale split)
 python -m src.viz.fig1_decomposition
 python -m src.normalise.composition_report   # -> docs/composition_report.md
 ```
 
 **Code:**
-- `src/normalise/composition.py`: `Spec` (one version), `specs()` (the 31 versions of DEC-128), `select`, `panel_members`, `mark_panel`, `decompose`, `city_changes`, `station_bootstrap`, `cluster_boot`, `h4_table`, `trends`, `composition_by_year`, `ground_vs_sat`, `entrants`, `coverage`.
-- `src/normalise/family_diag.py` + `family_terms.R`: GAM terms, LightGBM SHAP, the annual-mean attribution (DEC-133), ERA5 facts, `misfit_h4`.
+- `src/normalise/composition.py`:
+  - `Spec` (one version) and `specs()` (the 31 versions of DEC-128);
+  - `select`, `panel_members`, `mark_panel`;
+  - `decompose` (reported = unmodelled + modelled weather + composition + corrected);
+  - `city_changes`, `station_bootstrap`, `cluster_boot`, `h4_table`;
+  - `trends`, `composition_by_year`, `ground_vs_sat`, `entrants`, `coverage`;
+  - `fitted_station_years` (DEC-136).
+- `src/normalise/family_diag.py` + `family_terms.R`: GAM terms, LightGBM SHAP, the annual-mean attribution (DEC-133), ERA5 summaries, `misfit_h4`. The per-variable outputs are kept for the record only; no per-variable claims (DEC-136).
 - `src/normalise/composition_report.py`, `src/viz/fig1_decomposition.py`.
-- `workflow/rules/composition.smk` (real rules; the stub is gone).
-- Tests: `tests/test_composition.py` (13, synthetic); full suite 172 passed.
+- `workflow/rules/composition.smk` (real rules).
+- Tests: `tests/test_composition.py` (15, synthetic); full suite 174 passed.
 
 **Outputs:** `data/processed/composition/`:
 - `city_changes.parquet`, `summary.csv`, `h4.csv`, `city_boot.csv`;
 - `trends.parquet`, `composition_by_year.csv`;
 - `ground_sat*.csv`, `entrants*.csv`, `coverage.csv`;
-- `family_diag_*.csv`.
+- `station_year_fitted.parquet`, `family_diag_*.csv`.
 
-**Results in brief** (numbers in `docs/composition_report.md`):
+OSF clarification draft: `docs/osf/clarification_2026-10-01.md`.
+
+**Results in brief** (numbers in `docs/composition_report.md`). H4's scope: only the 18 (PM2.5) and 13 (PM10) NCAP cities with a station valid every year 2018–2025, mostly single stations.
 - **H4 supported** in the primary version:
-  - PM2.5 +9.5 pp (95% CI +4.8 to +14.5; 18 NCAP cities);
-  - PM10 +6.0 (+1.8 to +10.0; 13 cities);
+  - PM2.5 +9.5 pp (95% CI +4.8 to +14.5) = unmodelled +0.8, modelled weather +2.9, composition +5.8;
+  - PM10 +6.0 (+1.8 to +10.0) = −0.5, +5.4, +1.0;
   - LightGBM beside it: +8.6 / +5.3;
   - as registered, no deviations: +10.3 / +6.5.
   - It fails in 2 of 31 PM10 versions: LightGBM with the 2019 baseline, and no deweathering.
-  - PM2.5's gap is mostly composition; PM10's is mostly weather (2025 was a favourable year).
+  - With the 2019 baseline, the GAM's raw − deweathered part is almost all unmodelled change (DEC-137).
 - **Composition bias (all 23 PM2.5 panel cities):** −3.7 pp (−7.2 to −0.4), appearing from 2022–23. PM10: +0.9 (−1.1 to +3.3).
 - **Ground vs satellite (PM2.5, 2018 → 2024):** mean gap +3.0 pp (−5.0 to +10.6); correlation of changes 0.68. Per-city gaps are large.
 - **New stations read cleaner** (PM2.5 −6.3% raw, −6.8% deweathered; paired −0.6 pp, CI spans 0): location, not weather.
-- **Family disagreement:** see the report, §5. The biggest single driver in Kolkata and Kanpur is the GAM's misfit, not a weather variable.
+- **Family disagreement:** in 8 of 13 flagged city-pollutants the GAM–LightGBM gap is mostly the GAM's misfit (change it reproduces with neither trend nor weather), not modelled weather.
 
-**Workflow note:** see DEC-134 (the `snakemake --touch` step after adding the `composition:` config block).
+**Workflow notes:** DEC-134 and DEC-137 (`snakemake --touch` after the config block; Snakemake re-runs; `snakemake -n pregate` has nothing to do).
 
 ## Phase 5 (deweathering, RQ2): how it was built and run
 

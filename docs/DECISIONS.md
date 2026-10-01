@@ -823,3 +823,26 @@ Reenu accepted DEC-127 (H4 read as improvements). She asked for every registered
   - The per-variable outputs of the family diagnostic stay in `data/processed/composition/family_diag_*.csv` for the record.
   - The report and figures make no statement about which variable drove anything.
   - The family diagnostic is reported only as modelled weather (all variables together) and misfit.
+
+**DEC-137: Results of the DEC-136 split (rule committed in `86e62c7` before computing). Phase 6 closes.**
+- **H4 is unchanged** in every version: all 62 rows (31 versions × 2 pollutants) are identical in mean, CI and verdict before and after the split (checked programmatically).
+- **Primary (GAM) split of H4.** Scope: the 18 and 13 NCAP cities with a station valid every year 2018–2025.
+
+  | | H4 | unmodelled change | modelled weather | composition |
+  |---|---|---|---|---|
+  | PM2.5 | +9.5 pp | +0.8 | +2.9 | +5.8 |
+  | PM10 | +6.0 pp | −0.5 | +5.4 | +1.0 |
+
+  - LightGBM: unmodelled +0.5 and +0.2.
+  - So on average the old combined "weather" part was mostly modelled weather.
+- **One version where it is not: the GAM with the 2019 baseline.**
+  - The raw − deweathered part is almost all unmodelled change (PM2.5 +4.8, PM10 +5.7 pp; modelled weather ≈ 0). LightGBM's is not (unmodelled +0.6 and +0.4).
+  - This is consistent with the lockdown smear that DEC-122 found falling on 2019; the mechanism is untested. It is reported, and it feeds Phase 7's added without-2019 Layer B check (DEC-123).
+- **Not split:** completeness 60%, where fitted values are missing on the 15–17-hour days. The combined raw − deweathered part is shown, as DEC-136 states.
+- **Family diagnostic (two-way: modelled weather vs misfit):** misfit is the larger part of the GAM–LightGBM gap in 8 of the 13 flagged city-pollutants.
+- **Workflow:**
+  - `composition_tables` now also writes `station_year_fitted.parquet` and depends on the Phase 5 fits;
+  - it, `fig1` and `composition_report` ran through Snakemake (the report was byte-identical to the hand-built one);
+  - `family_diag` was marked current, as in DEC-134 (its inputs were rewritten with the same seeded content);
+  - `snakemake -n pregate` reports nothing to do;
+  - 174 tests pass.

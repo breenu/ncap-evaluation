@@ -36,11 +36,29 @@ def test_panel_strict_needs_every_year_loose_only_the_ends():
 
 def test_decomposition_adds_up_and_h4_is_minus_weather_plus_composition():
     d = C.decompose(np.array([200.0, 120.0]), np.array([180.0, 150.0]), np.array([100.0, 80.0]), np.array([95.0, 90.0]))
-    assert d["reported"] == pytest.approx(d["weather"] + d["composition"] + d["corrected"])
-    assert d["h4"] == pytest.approx(d["h4_weather"] + d["h4_composition"])
-    assert d["h4"] == pytest.approx(-(d["weather"] + d["composition"]))
+    assert d["reported"] == pytest.approx(d["raw_minus_dw"] + d["composition"] + d["corrected"])
+    assert d["h4"] == pytest.approx(d["h4_raw_minus_dw"] + d["h4_composition"])
+    assert d["h4"] == pytest.approx(-(d["raw_minus_dw"] + d["composition"]))
     # the other order (composition first on raw, then weather on the panel) adds up to the same total
-    assert d["comp_raw"] + d["weather_pan"] == pytest.approx(d["weather"] + d["composition"])
+    assert d["comp_raw"] + d["weather_pan"] == pytest.approx(d["raw_minus_dw"] + d["composition"])
+
+
+def test_weather_split_into_unmodelled_and_modelled_adds_up():
+    # DEC-136: raw - deweathered = (raw - fitted) + (fitted - deweathered)
+    d = C.decompose(np.array([200.0, 120.0]), np.array([180.0, 150.0]), np.array([100.0, 80.0]),
+                    np.array([95.0, 90.0]), np.array([190.0, 130.0]))  # fmt: skip
+    assert d["unmodelled"] + d["weather"] == pytest.approx(d["raw_minus_dw"])
+    assert d["reported"] == pytest.approx(d["unmodelled"] + d["weather"] + d["composition"] + d["corrected"])
+    assert d["h4"] == pytest.approx(d["h4_unmodelled"] + d["h4_weather"] + d["h4_composition"])
+    no_fit = C.decompose(np.array([200.0, 120.0]), np.array([180.0, 150.0]), np.array([100.0, 80.0]), np.array([95.0, 90.0]))
+    assert np.isnan(no_fit["weather"]) and np.isfinite(no_fit["raw_minus_dw"])
+
+
+def test_fitted_city_mean_is_never_partial():
+    raw = np.array([[100.0, 80.0], [50.0, 40.0]])
+    fit = np.array([[98.0, 81.0], [np.nan, 41.0]])  # station 2 has no fitted value in the baseline year
+    ra, da, rp, dp, fa = C.means_from(raw, raw, fit, np.array([True, False]), np.arange(2))
+    assert np.isnan(fa[0]) and fa[1] == pytest.approx(61.0)
 
 
 def test_h4_is_positive_when_a_clean_entrant_and_good_weather_flatter_the_reported_fall():
@@ -119,7 +137,8 @@ def test_h4_table_supported_only_with_positive_ci():
     ch = pd.DataFrame({"spec": C.PRIMARY.label, "pollutant": "pm25", "unit_id": [f"u{i}" for i in range(6)],
                        "h4": [5.0, 6, 7, 4, 5, 6], "n_panel": 1, "reported": -20.0, "corrected": -14.0,
                        "h4_weather": 3.0, "h4_composition": 3.0, "watch_stations": "",
-                       "n_all_base": 1, "n_all_end": 1, "guard_all": 0, "guard_panel": 0})  # fmt: skip
+                       "n_all_base": 1, "n_all_end": 1, "guard_all": 0, "guard_panel": 0, "h4_unmodelled": 1.0,
+                       "h4_raw_minus_dw": 3.0})  # fmt: skip
     t = C.h4_table(ch, set(ch.unit_id), [C.PRIMARY], 500).iloc[0]
     assert t.supported and t.h4_lo > 0 and np.isnan(t.detectable_2p8se)
     ch2 = ch.assign(h4=[5.0, -6, 7, -4, 5, -6])
