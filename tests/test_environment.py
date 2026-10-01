@@ -81,3 +81,27 @@ def test_r_estimators_run():
     out = subprocess.run(["Rscript", "-e", R_CHECK], capture_output=True, text=True, timeout=600)
     assert out.returncode == 0, out.stderr[-2000:]
     assert "R_OK" in out.stdout
+
+
+R_HONEST = r"""
+if (!requireNamespace("HonestDiD", quietly = TRUE)) { cat("R_SKIP\n"); quit(status = 0) }
+suppressPackageStartupMessages(library(HonestDiD))
+# HonestDiD's bundled Benzarti & Carloni event study: relative-magnitudes and smoothness bounds
+data(BCdata_EventStudy)
+b <- BCdata_EventStudy
+npre <- length(b$prePeriodIndices); npost <- length(b$postPeriodIndices)
+rm <- createSensitivityResults_relativeMagnitudes(b$betahat, b$sigma, npre, npost, Mbarvec = c(0, 1))
+sm <- createSensitivityResults(b$betahat, b$sigma, npre, npost, Mvec = c(0, 0.01))
+stopifnot(nrow(rm) == 2, all(is.finite(rm$lb)), nrow(sm) == 2, all(is.finite(sm$ub)))
+cat("R_OK\n")
+"""
+
+
+@pytest.mark.skipif(shutil.which("Rscript") is None, reason="Rscript not on PATH")
+def test_r_honestdid_runs():
+    """HonestDiD (Phase 7, DEC-097/138). Skipped where it is not installed (Linux CI, DEC-138)."""
+    out = subprocess.run(["Rscript", "-e", R_HONEST], capture_output=True, text=True, timeout=600)
+    assert out.returncode == 0, out.stderr[-2000:]
+    if "R_SKIP" in out.stdout:
+        pytest.skip("HonestDiD not installed (NCAP_SKIP_HONESTDID=1)")
+    assert "R_OK" in out.stdout

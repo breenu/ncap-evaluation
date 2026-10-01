@@ -70,7 +70,27 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Next: Phase 7 (causal analysis, RQ3). START HERE in a new chat
+## Phase 7 (causal analysis, RQ3): IN PROGRESS. START HERE in a new chat
+
+**Rules:** DEC-138 to DEC-150, committed and pushed before any Phase 7 estimate (Part A and Part B both). Reenu's instruction (2026-10-01): implement plan §5 exactly with DEC-135's readings; any departure is a dated deviation; **checkpoint after Part A** (push, report H1/H2 in the registered wording with every rule check), then Part B only after her go-ahead.
+
+**Build plan (files and functions):**
+- `src/causal/era5_units.py`: ERA5 monthly means → unit-year covariates (`data/processed/causal/era5_unit_year.parquet`; DEC-142).
+- `src/causal/layer_a.py`: `panels()` (annual + season panels for every product and weighting, Asansol-alone value; gated), `specs()` (membership, fit sets and estimands of every SDID specification, DEC-139/145/146/147/150), `run()` (calls `sdid.R`), `summarise()` (ATT, SE, CIs, permutation p, equivalence, leakage) → `data/processed/causal/`.
+- `src/causal/sdid.R`: generic, resumable SDID engine: per-spec real fits, joint-placebo replications in chunks, effect curves, unit weights, leave-one-out donors.
+- `src/causal/event_study.py`: Sun & Abraham via pyfixest (`sa_design`, `fit`, `aggregate`, `wald`), 2020 own-coefficient fit, Himalayan 5-region variant.
+- `src/causal/honest.R` (HonestDiD) and `src/causal/cs_did.R` (Callaway & Sant'Anna).
+- `src/causal/decisions.py`: H1 verdict (DEC-141), equivalence, targets, H2, leakage warning, robustness "agrees", layer categories (DEC-135).
+- `src/causal/layer_b.py` (Part B): ITS, ground DiD, the Layer B checks; `src/causal/triangulation.py` (Part B).
+- `src/causal/causal_report.py` → `docs/causal_report.md` (generated). `src/viz/fig4_event_study.py`; figure 1's policy step (Part B).
+- `workflow/rules/causal.smk`: real, gated rules. `tests/test_causal.py`: synthetic tests of every rule.
+
+**Run-time estimate** (8 workers; ~0.38 s per SDID fit at full size, scaled from Phase 4's measured 8,000 fits in 35 min by a synthetic timing test):
+- **Part A ≈ 1.5–2 h:** primary + seasonal + level + leakage joint placebo (9,000 fits, ~60 min); V6.GL.03 and area-weighted with SEs (3,000 fits, ~20 min); 2016 placebo (1,000 short fits, ~5 min); ERA5 covariates, event study, HonestDiD, CS (~20–30 min).
+- **Robustness battery (Part B) ≈ 2.5–3 h:** 13 more SDID specifications with SEs (~2 h), leave-one-out donors (≤ 2,800 fits, ~20 min), Layer B estimators and checks with bootstraps (~20 min).
+- Neither exceeds 6 h.
+
+## Next: Phase 7 (causal analysis, RQ3). Handoff notes written at the end of Phase 6
 
 **Phase 6 was reviewed and closed by Reenu on 2026-10-01** (DEC-135 to DEC-137). Start Phase 7. Per CLAUDE.md:
 - write a short plan first (files and functions);

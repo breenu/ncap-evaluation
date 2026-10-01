@@ -23,6 +23,7 @@ jobs:
       - name: R packages not on conda-forge (pinned)
         env:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}   # avoids anonymous API rate limits for install_github
+          NCAP_SKIP_HONESTDID: "1"                    # its deps build from source against GLPK/GMP on Linux (DEC-138)
         run: Rscript workflow/scripts/install_r_extra.R
 
       - name: Unit and environment tests

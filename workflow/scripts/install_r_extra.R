@@ -14,6 +14,29 @@ github_pins <- c(synthdid = "synth-inference/synthdid@70c1ce3eac58e28c30b67435ca
 
 type <- if (.Platform$OS.type == "windows") "binary" else "source"
 
+# Windows only: replace conda-forge's builds of these packages with CRAN's binaries of the SAME
+# version (DEC-138). conda-forge's MinGW builds can fail to load with "32 bit pseudo relocation out of
+# range" whenever Windows places their DLL more than 2 GB from R.dll; the layout can change within a
+# boot. On 2026-10-01 Matrix failed on every load (taking did and mgcv with it) and, once CRAN's Matrix
+# was in place, so did RcppArmadillo and RcppEigen; CRAN's builds of the same versions loaded every
+# time under that layout (as mgcv's did in DEC-093). This must run before anything loads Matrix, so it
+# checks a stamp file instead of loading the namespace. Linux is unaffected.
+win_cran_binaries <- c(Matrix = "1.7.6", RcppArmadillo = "15.6.0.1", RcppEigen = "0.3.4.0.2")
+if (.Platform$OS.type == "windows") {
+  for (pkg in names(win_cran_binaries)) {
+    stamp <- file.path(.libPaths()[1], pkg, "NCAP_CRAN_BINARY")
+    if (!file.exists(stamp) || readLines(stamp, warn = FALSE)[1] != win_cran_binaries[[pkg]]) {
+      install.packages(pkg, lib = .libPaths()[1], repos = cran_snapshot, type = "binary",
+                       dependencies = FALSE)
+      got <- utils::packageDescription(pkg, lib.loc = .libPaths()[1])$Version
+      if (package_version(got) != package_version(win_cran_binaries[[pkg]])) {
+        stop(sprintf("%s: wanted %s, snapshot installed %s", pkg, win_cran_binaries[[pkg]], got))
+      }
+      writeLines(win_cran_binaries[[pkg]], stamp)
+    }
+  }
+}
+
 for (pkg in names(cran_pins)) {
   have <- requireNamespace(pkg, quietly = TRUE) &&
     as.character(packageVersion(pkg)) == cran_pins[[pkg]]
@@ -35,7 +58,30 @@ for (pkg in names(github_pins)) {
   }
 }
 
-for (pkg in c(names(cran_pins), names(github_pins))) {
+# HonestDiD (Rambachan & Roth 2023), Phase 7 event-study sensitivity (DEC-097, DEC-138). Unlike the
+# packages above, its dependencies (CVXR, Rglpk, lpSolveAPI, TruncatedNormal, ...; 24 in all) are not
+# in environment.yml, so they are installed with it from the same dated snapshot. On Linux they would
+# build from source against system libraries (GLPK, GMP), so CI skips it (NCAP_SKIP_HONESTDID=1) and
+# its test skips when the package is absent.
+honest_pins <- c(HonestDiD = "0.2.8")
+if (Sys.getenv("NCAP_SKIP_HONESTDID") != "1") {
+  for (pkg in names(honest_pins)) {
+    have <- requireNamespace(pkg, quietly = TRUE) &&
+      as.character(packageVersion(pkg)) == honest_pins[[pkg]]
+    if (!have) {
+      install.packages(pkg, repos = cran_snapshot, type = type,
+                       dependencies = c("Depends", "Imports", "LinkingTo"))
+    }
+    got <- as.character(packageVersion(pkg))
+    if (got != honest_pins[[pkg]]) {
+      stop(sprintf("%s: wanted %s, snapshot installed %s", pkg, honest_pins[[pkg]], got))
+    }
+  }
+} else {
+  honest_pins <- character(0)
+}
+
+for (pkg in c(names(cran_pins), names(github_pins), names(honest_pins))) {
   suppressPackageStartupMessages(library(pkg, character.only = TRUE))
   cat(sprintf("%-9s %s\n", pkg, as.character(packageVersion(pkg))))
 }

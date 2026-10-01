@@ -846,3 +846,128 @@ Reenu accepted DEC-127 (H4 read as improvements). She asked for every registered
   - `family_diag` was marked current, as in DEC-134 (its inputs were rewritten with the same seeded content);
   - `snakemake -n pregate` reports nothing to do;
   - 174 tests pass.
+
+## 2026-10-01: Phase 7 (causal analysis, RQ3). Rules written BEFORE any Phase 7 estimate
+
+The gate is open (plan `6e24eca`, OSF https://osf.io/jksne/). The registered plan (§2, §4, §5) and the sign readings of DEC-135 bind. Everything below fills a gap the plan leaves open, for Part A (satellite, H1/H2) **and** Part B (ground, triangulation, the robustness battery). All of it is committed and pushed before any Phase 7 quantity is computed, so no Part B choice can depend on a Part A result. Any later change will be a dated deviation with its reason.
+
+**DEC-138 (environment, no analysis change): CRAN's Windows binaries of Matrix, RcppArmadillo and RcppEigen replace conda-forge's builds of the same versions; HonestDiD 0.2.8 is installed.**
+- **What happened.** Installing HonestDiD (DEC-097) failed because `library(Matrix)` (conda-forge build 1.7.6) stopped with "Mingw-w64 runtime failure: 32 bit pseudo relocation … out of range" on every load, taking `did` and `mgcv` with it. `did` had loaded normally earlier the same session, so the DLL layout can change within a boot, not only between boots as DEC-093 assumed. Nothing in the R library had changed (folder timestamps checked).
+- **Test, under the failing layout.** CRAN's binary of the same Matrix version (1.7-6, 2026-09-25 snapshot), in a throwaway library, loaded 3 of 3 times, with `did` and `mgcv` loading through it. With it in place, every one of the 46 compiled packages in the environment was loaded once: only RcppArmadillo (15.6.0-1) and RcppEigen (0.3.4.0.2) failed, and CRAN's binaries of the same versions loaded.
+- **Change.** `workflow/scripts/install_r_extra.R` installs these three CRAN binaries into the environment's library on Windows only, before anything loads Matrix, with a stamp file so it is idempotent. Same versions, so no code changes; `conda-lock.yml` is unchanged (conda's files are overwritten on Windows). It then installs HonestDiD 0.2.8 and its 24 dependencies from the same snapshot. After the change all 63 compiled packages load under the failing layout, and the R environment tests (now including a HonestDiD test on its bundled example) passed 3 of 3 runs.
+- **CI (Linux)** skips HonestDiD (`NCAP_SKIP_HONESTDID=1`): its dependencies would build from source against GLPK and GMP. Its test skips when the package is absent. The Linux build is unaffected by the Windows DLL problem.
+
+**DEC-139: Layer A primary SDID, implemented exactly as plan §5 item 1.**
+- **Units and roles** are read from the gate-time file `data/interim/pregate/units.csv` (113 treated, 923 controls; cohorts 89 / 15 / 9), never recomputed.
+- **Outcome:** log of the population-weighted ACAG V5.GL.06 annual mean, 2010–2024. **2020 is removed before any estimation.** The panel must be complete (asserted).
+- **Per cohort g:** `synthdid_estimate` with default settings (as in Phase 4) on the matrix of all 923 controls plus cohort g's treated units, over 2010–2024 without 2020; T0 = the number of those years before g. Cohort 2020 therefore has pre-years 2010–2019 and post-years 2021–2024.
+- **Aggregate ATT** = Σ_g N_g · ATT_g / Σ_g N_g.
+- **Joint placebo SE** (500 replications; the draws are made in the master process from the config seed, so results do not depend on the number of workers): each replication draws 113 distinct controls and partitions them into disjoint sets of the cohorts' sizes. Each set gets its cohort's adoption year and is estimated against the controls not drawn in that replication; the aggregate is formed as for the real data. SE = SD of the 500 placebo aggregates. 95% CI = ATT ± 1.96 SE; 90% CI = ATT ± 1.645 SE (equivalence).
+- **The same draws serve every outcome** (log annual, µg/m³ annual, log winter, log non-winter) and the calibration-leakage split (DEC-146): each replication's 113 controls are partitioned into the six (leakage group × cohort) cells, and a cohort's set is the union of its two cells.
+- **Placebo in space** (plan's "500 permutations") = the equal-tailed permutation p of the primary ATT against these 500 placebo aggregates, computed as in Phase 4 (DEC-091). These are the same draws as the SE, not a separate run.
+- **Effects** follow DEC-135: treated − counterfactual, natural-log units; % = 100 × (e^β − 1). The µg/m³ fit is secondary.
+
+**DEC-140: Seasonal outcomes for H2.**
+- ACAG V5.GL.06 monthly, population-weighted (`unit_month_sat`). Winter season-year t = October t to February t+1; non-winter t = March to September t. A season's value is the mean of its monthly means, and it needs every month.
+- **Season-years 2010–2023 for both seasons.** Winter 2024 would need February 2025, which the product does not have. Non-winter is restricted to the same season-years, as in Phase 4 (DEC-087).
+- **Season-year 2020 is dropped for both seasons.** Non-winter 2020 holds the national lockdown; dropping the same season-year from both keeps winter minus non-winter like with like.
+- **Post = season-year ≥ the cohort year.** For cohort 2019, winter 2018 (October 2018 to February 2019) counts as pre, as plan §4 implies ("winter 2019 is the first fully after launch"). The two months of it after launch can only pull the estimate towards zero.
+- **H2** = ATT_winter − ATT_non-winter, with its SE from the per-replication differences of the same joint-placebo draws. Supported if the 95% CI lies entirely below 0 (DEC-135). Tested only if H1 is supported; otherwise reported as exploratory.
+
+**DEC-141: The H1 verdict, every branch fixed in advance** (rules from plan §5, read as in DEC-135).
+- (a) primary ATT < 0 and its 95% CI entirely below 0;
+- (b) event-study pre-period coefficients −9 to −2 jointly insignificant: Wald p > 0.10 (DEC-142);
+- (c) the 2016 placebo-in-time 95% CI includes 0 (DEC-145);
+- (d) point estimate < 0 in Callaway & Sant'Anna (simple aggregation, never-treated controls), in SDID on the area-weighted outcome and in SDID on V6.GL.03 (each with the primary design otherwise).
+- **Verdict, first match wins:**
+  1. (b) or (c) fails → **"not identified by this design"**, whatever the ATT. If (b) fails, the HonestDiD bounds are reported alongside and do not overturn it.
+  2. the 95% CI excludes 0 and ATT < 0: if (d) holds → **"H1 supported"**; otherwise → **"H1 not supported: the sign is not robust"** (naming the specification that flips).
+  3. the 95% CI excludes 0 and ATT > 0 → **"H1 not supported: the estimate is an increase"**.
+  4. the 95% CI includes 0 → **"no detectable effect"** (never "no effect"), with the equivalence test: if the 90% CI lies strictly between ln 0.95 and ln 1.05, "effects of 5% or larger in either direction are ruled out"; otherwise "inconclusive".
+- **Always reported:** the 90% CI and the equivalence result; whether the 95% CI excludes a 20%, 30% and 40% reduction (ln 0.80, 0.70, 0.60; DEC-135), with the statement that a PM2.5 result says nothing directly about PM10 attainment; the MDE (1.2%); the calibration-leakage result beside H1.
+
+**DEC-142: Event study (Sun & Abraham), plan §5 item 2.**
+- **Sample:** the 113 treated and 923 never-treated units, 2010–2024 without 2020 (primary); outcome as in DEC-139.
+- **Regressors:** cohort-specific relative-year indicators 1{cohort = e} · 1{t − e = l} for every observed l except the reference. The reference is l = −1 for cohorts 2019 and 2020. For cohort 2021, l = −1 is 2020, which is dropped, so its reference is l = −2 (2019), the last observed pre-year; `did` makes the same choice for this panel (checked on synthetic data). Relative years outside −9 to +5 (cohort 2020: −10; cohort 2021: −11, −10) get their own indicators, so they are not pooled into −9, and are not reported (Sun & Abraham advise against binning).
+- **Fixed effects:** unit, and region × year (the 4 regions of DEC-075).
+- **ERA5 covariates** (unit-year): annual means of 2 m temperature, relative humidity (from monthly-mean temperature and dew point, Magnus formula as DEC-100), 10 m wind speed (the speed of the monthly-mean wind vector: the monthly-means download has no scalar speed, a stated limitation), boundary-layer height and solar radiation (SSRD), and annual total precipitation. Each is the area-weighted mean of the 0.25° ERA5 cells over the unit's polygon (exact coverage fractions, exactextract), the same for treated and control units. Entered linearly. No claim is made about any individual covariate (DEC-136).
+- **Estimation:** pyfixest OLS, SEs clustered by unit (CRV1, pyfixest's default small-sample adjustment).
+- **Aggregation (interaction-weighted):** δ_l = Σ_e w_{e,l} δ_{e,l}, with w_{e,l} the share of cohort e among treated units in cohorts that have an estimated δ_{e,l} (a cohort is not counted at its own reference period). The covariance of the aggregated coefficients comes from the delta method on the clustered covariance, with the weights treated as fixed.
+- **Rule (b):** the Wald χ² test (8 df) of the aggregated δ_{−9} … δ_{−2} = 0 with their aggregated covariance; (b) holds if p > 0.10.
+- **Average post-period effect** = the mean of δ_0 … δ_5, with its delta-method SE; reported, and used as the event study's comparison number.
+- **The 2020 coefficient, shown separately:** a second fit includes 2020. There, a treated unit's 2020 observation gets a cohort-specific "2020" indicator instead of its relative-year indicator; cohort 2021 keeps l = −2 as its reference. The cohort-share-weighted 2020 coefficient is shown on its own in figure 4, and this fit's relative-year coefficients are the "2020 included; own coefficient" event-study sensitivity.
+
+**DEC-143: HonestDiD (Rambachan & Roth), plan §5 item 2 and DEC-097.**
+- **Inputs:** the aggregated δ at l = −9 … −2 (8 pre-periods) and 0 … +5 (6 post-periods) and their aggregated covariance; the target is the average post-period effect (weights 1/6 on each post-period).
+- **Relative magnitudes:** M̄ = 0, 0.5, 1, 1.5, 2 (the package's default method, C-LF). **Smoothness:** 6 values of M evenly spaced from 0 to twice the largest SE among the pre-period coefficients ("0 to that value in 5 equal steps"), the package's default method (FLCI). The original (unrestricted) CI is shown beside them.
+- **Breakdown value:** the largest M̄ at which the relative-magnitudes robust 95% CI excludes 0. It is found by bisection to 0.01 between the grid points that bracket the change, because the robust CI widens as M̄ grows. Reported as "none" if the CI includes 0 at M̄ = 0, and as "> 5" if it still excludes 0 at M̄ = 5.
+
+**DEC-144: Callaway & Sant'Anna, plan §5 item 3.**
+- R `did` 2.5.1 `att_gt` on the primary panel (2010–2024 without 2020). With that gap, `did` uses 2019 as the base year of cohorts 2020 and 2021, which a synthetic check confirmed against a hand-computed DiD.
+- Settings: gname = listing cohort (0 for never-treated), est_method = "dr" (as registered), xformla = ~1, base_period = "varying" (the package default), bootstrap with uniform bands (biters = 1,000), clustered by unit, config seed. **The registered text names no covariates, so none are added; without covariates the doubly robust estimator is the unconditional DiD.** Stated in the report.
+- Never-treated controls are primary; not-yet-treated is the sensitivity check.
+- Simple aggregation (rule d uses its point estimate) and dynamic aggregation over e = −9 … +5, with uniform 95% bands (shown in figure 4).
+
+**DEC-145: The 2016 placebo in time (rule c).**
+- Data 2010–2018 only, read through Phase 4's pre-period reader (it filters to year ≤ 2018 and asserts it).
+- The real 113 treated units get a simultaneous fake adoption in 2016 (every real cohort adopts after 2018, so there are no cohorts to keep); SDID against all 923 controls.
+- **SE from 500 random control sets of 113** given fake adoption in 2016 against the remaining controls. That is the same kind of null as the primary's joint placebo, so (c) is judged on the primary's SE design. 95% CI = ATT ± 1.96 SE; (c) holds if it includes 0. The region-matched null (as in Phase 4) is reported beside it for information and is not used for the rule.
+
+**DEC-146: Calibration-leakage split, as registered (DEC-096).**
+- Groups from `data/interim/pregate/monitor_gain.csv`: gained 74 (cohorts 61 / 7 / 6), not gained 39 (28 / 8 / 3). Both are ≥ 10 units, so both are estimated.
+- Each group: per-cohort SDID with all 923 controls, aggregated by cohort size within the group, 2020 dropped.
+- SEs for each group and for the difference (gained − not gained) come from the primary's joint-placebo replications (DEC-139), with disjoint cells of the six group × cohort sizes.
+- The warning rule is as registered: the gained group's ATT < 0 with its 95% CI excluding 0 while the not-gained CI includes 0, **or** the difference < 0 with its 95% CI excluding 0. Reported beside H1 as a warning, not proof.
+
+**DEC-147: Layer A robustness checks: definitions.** Every SDID check uses the primary design except for the one change named, and gets its own 500-replication joint-placebo SE, drawn from its own control pool. "Agrees" follows DEC-135: same sign as the primary and the point estimate inside the primary's 95% CI, log scale.
+1. **V6.GL.03** (population-weighted, annual). Also rule (d).
+2. **V6.GL.02.04** (vintage): 2010–2023, so its post-period ends in 2023.
+3. **Area-weighted** V5.GL.06 mean. Also rule (d).
+4. **Towns without a GHSL centre included** as 1.87 km buffers: the 10 buffered towns join as treated units with their listing cohorts (123 treated).
+5. **Patancheruvu excluded:** the primary has no Patancheruvu unit (its point lies inside the Hyderabad centre, which is treated on Hyderabad's own listing), so the primary is unchanged by construction and is reported as such. The check is run on version 4, without Patancheruvu's buffer.
+6. **Asansol centre alone:** the unit's value is replaced by the population-weighted V5.GL.06 mean over UCDB centre 11080 alone, computed in this phase with Phase 3's zonal code (`src/clean/zonal.py`); nothing else changes.
+7. **Treated units ≥ 100k** (2015 population): drops 4 treated units.
+8. **Spillover:** only controls ≥ 25 km from every NCAP place (754).
+9. **First-funding cohorts** (units: 2020: 86, 2021: 25, 2022: 2).
+10. **Anticipation:** units holding any of the 94 cities on CPCB's 2017 list are treated from 2018; the others keep their listing cohort.
+11. **2020 included** as an ordinary year. The cohort-size-weighted 2020 value of SDID's per-period effect curve (cohorts 2019 and 2020) is reported as its own coefficient.
+12. **Exclude the IGP:** treated and control units in the IGP region are both removed.
+13. **Himalayan region split:** Himalayan = a non-north-east centre in Jammu & Kashmir, Ladakh or Himachal Pradesh, or in an IGP state with mean elevation ≥ 350 m (the complement of DEC-075's plains rule within those states). The split changes only the region × year effects, so it applies to the event study (5 regions); SDID has no region term, so it is not applicable there. Its comparison number is the event study's average post-period effect, set against the primary SDID as the rule requires, with the 4-region event study beside it.
+14. **Callaway & Sant'Anna with not-yet-treated controls** (DEC-144).
+15. **Leave-one-out donors:** every control with SDID unit weight > 0 in any cohort's primary fit is dropped in turn, and the aggregate is re-estimated (point estimates only). Reported: the range, the share that "agree", and the donor whose removal moves the ATT most.
+16. **Placebo in space** = DEC-139's permutation p. **Placebo in time** = rule (c), DEC-145. **HonestDiD** = DEC-143.
+17. **VIIRS fire covariate: not run.** FIRMS has not been downloaded (DEC-039; cut item 4). It is listed as not run, with the reason, until Reenu supplies the data; it is not substituted.
+18. **Raw MAIAC AOD: not run** (registered as "if time allows"; not downloaded).
+
+**DEC-148: Layer B (ground) estimators, plan §5 item 4.**
+- **Stations and panels:** Phase 6's selection code (`src/normalise/composition.py`), so a Layer B version and the H4 version with the same settings use the same stations. Stations inside the unit polygon (DEC-105), strict balanced panel valid every year from the baseline to 2025 (DEC-125), city-year = the mean of the panel stations' annual means. **Primary version** = H4's: GAM, seasonal resampling, primary validity rule, baseline 2018, completeness q1_t75. Deweathered values exclude each station's unmodelled change by construction (DEC-136); stated beside every Layer B result.
+- **Treated cities** = NCAP units with a panel, including a buffered town if a station is inside it (DEC-125); cohort = the unit's listing cohort. **Control stations** = panel stations inside control-pool units (role = control), so Satna's unit (a control) can enter.
+- **ITS, per city c** (deweathered, log): β_c = mean of log y_ct over post-years (t ≥ g_c) − mean over pre-years (baseline ≤ t < g_c), 2020 excluded from both. With the 2018 baseline, cohort 2019 has one pre-year, so this is the registered before–after contrast; no pre-trend can be fitted. Pooled ITS = the unweighted mean of β_c over cities; 95% CI from a cluster bootstrap over cities (1,000 resamples, percentile, config seed).
+- **Ground DiD:** for each treated cohort g, OLS on station-years of cohort-g treated stations plus all control stations: log y_st = α_s + λ_t + β_g · 1{treated} · 1{t ≥ g}, baseline to 2025 without 2020. A cohort is compared only with never-treated controls, which avoids staggered-adoption bias. Aggregate β = Σ_g n_g β_g / Σ_g n_g, n_g = treated cities in cohort g. Observations are stations, as registered ("NCAP vs non-NCAP stations"). 95% CI from a cluster bootstrap over cities (1,000), **stratified by treated cohort and control**, so every draw keeps both groups. A stratum with one city contributes no between-city variance, and the report says where that happens.
+- **Added before computing (labelled as such):** the same DiD on city means (each city's panel mean is one observation), because one city (New Delhi, 23 of 41 treated PM2.5 panel stations at the 2018 baseline) dominates the station-level version.
+- **2020, sensitivity "included; own coefficient":** a treated × 2020 indicator (DiD) or a 2020 term (ITS). The β is then identical to the primary by construction; the 2020 coefficient itself is reported.
+- PM2.5 and PM10 are estimated separately; never pooled. **Scope line wherever a Layer B result appears:** cities, stations, and how many panels hold one station (DEC-136). Every Layer B result is secondary (plan §1) and carries the one-pre-year limitation. The audit's missingness bias (median +0.7%, `audit_report.md`) is stated beside it.
+- City-level ITS values are shown descriptively. No unshrunk city-level claim is made in Phase 7: city claims come from Phase 8's shrunken estimates, or are held to Benjamini–Hochberg 5% (plan §5).
+
+**DEC-149: Layer B robustness checks** (each for ITS and DiD, PM2.5 and PM10; "agrees" against the Layer B primary of the same estimator and pollutant, DEC-135):
+- **deweathering:** LightGBM (the other family); none (raw panel means, the proposal's "no-normalisation baseline"); GAM with Grange & Carslaw resampling (DEC-109's sensitivity);
+- **as registered, no deviations:** GAM k = 4/yr, Grange & Carslaw, registered flags only (as in H4, DEC-128); and registered flags only with the primary GAM;
+- **post-hoc, "added after inspecting the data" (DEC-124):** each registered-flags version again without site_1433;
+- **baseline 2019; completeness 60% and 90%, and 3 of 4 quarter-hours; without the 5 Reenu-decided stations; without station-years with reliability < 50.** A version with no treated city holding a panel is reported as not computable;
+- **without 2019 (DEC-123, added 2026-09-28):** post-years 2021–2025 under the 2018 baseline, for the GAM and LightGBM. **The DEC-137 follow-up:** per year, the mean over the Layer B panel stations of log(raw / fitted) for each family, at both baselines; and the GAM − LightGBM ITS gap with and without 2019 and at the 2019 baseline. This is reported descriptively; no threshold was set, so no claim is made beyond the numbers;
+- **2020 included, own coefficient** (DEC-148);
+- **FY2025-26 (+ January–March 2026): not computable.** No deweathered values exist after 2025-12-31 (DEC-079/128).
+
+**DEC-150: Triangulation and figure 1's policy step.**
+- **Layer A restricted** (plan §5): the primary SDID design with only the treated units that have a Layer B PM2.5 panel, all 923 controls, and a joint-placebo SE (500) with sets of the same cohort sizes. Buffered towns are not Layer A units, so they cannot enter.
+- **Two pairs are classified** with DEC-135's ordered categories: Layer A restricted against the PM2.5 ground DiD (the like-for-like pair, both treated-vs-control contrasts) and against the PM2.5 ITS. The windows differ (satellite post-years 2019 and 2021–2024; ground 2019 and 2021–2025); this is stated, not adjusted.
+- **H3 (iii) (Phase 8)** is met only if neither pair is "conflict".
+- **The registered investigation**, run for every pair not classified "consistent", with each step reported whether or not it closes the gap:
+  1. network composition: ITS and DiD on the all-station city series instead of the panel;
+  2. calibration: Layer A restricted on V6.GL.02.04 (to 2023) against V5.GL.06, and the yearly correlation between ground panel means and the satellite over the same cities (Phase 6 trends);
+  3. spatial coverage: the ITS of the satellite value at the panel stations' own 0.01° cells (`station_year_sat`) against the population-weighted polygon value, same cities, 2018–2024;
+  4. deweathering: Layer B on raw against deweathered values.
+- **Figure 1's policy step (both views fixed now):**
+  - *PM2.5 (pooled view):* the Layer A restricted ATT (the H4 PM2.5 cities are exactly the units with a 2018 PM2.5 panel), as % with its 95% CI, drawn from the corrected level. A last bar, "remaining change" = corrected − policy, is the part of the corrected change not attributed to NCAP. The figure states that the time bases differ (ground endpoints 2018 → 2025; satellite average effect over 2019 and 2021–2024).
+  - *PM10 (pooled view):* there is no satellite PM10, so the policy step is the ground DiD for PM10, labelled "Layer B, secondary, one pre-year".
+  - *Per-city view:* the policy step stays a placeholder, "city effects: Phase 8 (shrunken)", because unshrunk city claims are not made (plan §5).

@@ -151,6 +151,24 @@ composition:                          # Phase 6, RQ1 and H4 (DEC-125 to DEC-130)
   diag_draws: 100                     # weather draws per day used to split a model's weather effect by variable
   cold_months: [1, 2, 10, 11, 12]     # "cold months" of a calendar year for the ERA5 summary (DEC-130)
 
+causal:                               # Phase 7, RQ3 (DEC-139 to DEC-150; fixed before any estimate)
+  years_drop: [2020]                  # removed from the primary panel before estimation (plan §5)
+  placebo_reps: 500                   # joint-placebo replications per SDID specification (DEC-139)
+  workers: 8                          # R parallel workers; one BLAS thread each (as DEC-087)
+  event_window: [-9, 5]               # relative years reported and aggregated (plan §5 item 2)
+  wald_p_min: 0.10                    # rule (b): pre-period coefficients jointly insignificant if p > this
+  season_years: [2010, 2023]          # winter 2024 needs Feb 2025, which ACAG does not have (DEC-140)
+  target_reductions_pct: [20, 30, 40] # NCAP targets the 95% CI is set against (DEC-135/141)
+  honest_mbar: [0, 0.5, 1, 1.5, 2]    # relative-magnitudes grid (plan §5; DEC-143)
+  honest_smooth_steps: 5              # smoothness M: 0 to 2 x largest pre-period SE in 5 equal steps
+  honest_breakdown_max: 5             # breakdown search upper limit
+  honest_breakdown_tol: 0.01          # bisection precision
+  cs_biters: 1000                     # did multiplier bootstrap for the uniform bands (DEC-144)
+  ground_bootstrap: 1000              # Layer B cluster bootstrap over cities (plan §5 item 4)
+  asansol_alone_ucdb: 11080           # Asansol's own GHSL centre, without "Mejia" (DEC-147 item 6)
+  himalayan_states: ["Jammu & Kashmir", "Ladakh", "Himachal Pradesh"]   # DEC-147 item 13
+  himalayan_min_elevation_m: 350      # IGP-state centres at or above this are foothills/hills (DEC-075)
+
 robustness:                           # proposal validation table
   placebo_year: 2016
   placebo_space_permutations: 500
