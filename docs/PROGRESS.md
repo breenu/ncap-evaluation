@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-10-01. **Phase 7 Part A (Layer A, H1/H2) done and pushed; CHECKPOINT: waiting for Reenu's go-ahead before Part B** (DEC-138 to DEC-152). START at "Phase 7" below.*
+*Last updated: 2026-10-02. **Phase 7 (causal analysis) complete, Parts A and B; waiting for Reenu's review** (DEC-138 to DEC-160). START at "Phase 7" below.*
 
 ## Status
 
@@ -16,7 +16,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 4 Analysis-plan gate | ✅ 2026-09-27: plan `6e24eca` registered at https://osf.io/jksne/; gate opened in `0d9aa42` (DEC-084 to DEC-099) |
 | 5 Deweathering | ✅ approved 2026-09-28; pushed (DEC-100 to DEC-124) |
 | 6 Network composition, H4 | ✅ reviewed and closed 2026-10-01; pushed (DEC-125 to DEC-137) |
-| 7 Causal analysis | Part A ✅ 2026-10-01 (H1 not identified: rule (b) fails); **Part B waits for Reenu's go-ahead** |
+| 7 Causal analysis | ✅ done 2026-10-02 (H1 not identified: rule (b) fails); Part A reviewed by Reenu; **Part B waits for her review** |
 | 8–10 | not started |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). Phase 7's rules (DEC-138 to DEC-150) were pushed in `eebaecc` before any estimate; the first post-2019 effect estimates are Part A's (DEC-151).
@@ -71,7 +71,22 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Phase 7 (causal analysis, RQ3): Part A DONE, CHECKPOINT. START HERE in a new chat
+## Phase 7 (causal analysis, RQ3): DONE, waiting for Reenu's review. START HERE in a new chat
+
+**Next:** Reenu reviews Part B. Then Phase 8 (heterogeneity and mechanism: hierarchical model of city effects, H5, H3 with DEC-135's readings; H3 (iii) uses the triangulation categories of DEC-150: neither pair may be "conflict", and the ITS pair IS "conflict").
+
+**Part B result (DEC-159; review additions DEC-154 to DEC-158; phase note `docs/phase-notes/07-causal.md`):**
+- **Wording (DEC-154):** the positive Layer A estimates are never an effect of NCAP. The fixed sentence: "NCAP units' satellite PM2.5 did not fall relative to comparable units; the estimates point to a relative rise of about 3–5%", always beside "not identified".
+- **Layer B (secondary):** PM2.5 ITS −14.0%, ground DiD −4.7% (CI includes 0); PM10 ITS −5.0%, DiD +9.2%. 18 / 13 cities, mostly single stations, against 5–6 control cities.
+- **Triangulation:** Layer A restricted +3.8%. Against the DiD: uninformative; against the ITS: conflict. In the investigation, ground and satellite agree on the before–after fall in the same cities (−13.4% vs −11.1%), so the conflict is about the estimand, not the measurement.
+- **Robustness:** Layer A 16/18 agree, all positive; Layer B 26/32 per pollutant. VIIRS fire and MAIAC not run.
+- **Descriptive:** 2018 → 2024, NCAP units −16.8%, control pool −24.3%.
+- **Exploratory (DEC-155):** population overlap +3.7% / +3.0%.
+- **Environment (DEC-156):** win-64 lock without conda's r-matrix / r-rcppeigen / r-bmisc / r-rcpparmadillo; CRAN binaries via `install_r_extra.R`. Built fresh as `ncap_new`; 199 tests passed; it then replaced `ncap` (old kept as `ncap_prev`; DEC-160).
+- **CI:** the DAG check failed on undeclared EDA outputs; fixed (DEC-158).
+- **FIRMS:** still not downloaded; the VIIRS check stays "not run".
+
+**How to rebuild all of Phase 7:** `snakemake --cores 1 causal` (gated; ~5 h: SDID ~3.5 h, leave-one-out ~50 min, HonestDiD ~11 min).
 
 **Rules:** DEC-138 to DEC-150, committed and pushed in `eebaecc` before any Phase 7 estimate (Part A and Part B both). Reenu's instruction (2026-10-01): implement plan §5 exactly with DEC-135's readings; any departure is a dated deviation; **checkpoint after Part A** (push, report H1/H2 in the registered wording with every rule check), then Part B only after her go-ahead.
 
@@ -98,10 +113,20 @@ python -m src.viz.fig4_event_study
 ```
 Workflow: `snakemake --touch` was used for upstream outputs after adding the `causal:` config block, and for the 83-minute SDID rule run by hand with the rule's own command (as DEC-108/134). The seven quick Part A rules then ran through Snakemake (log `data/interim/logs/snakemake_phase7_partA.log`).
 
-**Part B (after the go-ahead; code written and tested on synthetic data, NOT yet run on real data):**
-- `python -m src.causal.layer_a run <SDID_B ids>` (~2 h); `python -m src.causal.layer_a loo primary` (~20 min);
-- `python -m src.causal.layer_b`; `python -m src.causal.triangulation`; `python -m src.causal.robustness`;
-- then: extend `causal_report.py` with the Part B sections; figure 1's policy step (DEC-150); Part B Snakemake rules into the `causal` target; tests; phase note `docs/phase-notes/07-causal.md`.
+**Part B, step by step** (inside the `ncap` env, after Part A):
+```bash
+python -m src.causal.layer_a run v6gl0204 towns towns_nopatancheruvu asansol_alone treated100k spill25 funded anticip2018 incl2020 noigp restricted_pm25 restricted_pm25_v6gl0204 explore_support_minmax explore_support_q5_95   # ~2 h
+python -m src.causal.layer_a loo primary          # ~50 min (all 923 donors have weight > 0)
+python -m src.causal.layer_a summarise
+python -m src.causal.layer_b                      # ground ITS / DiD and checks (~1 min)
+python -m src.causal.descriptive                  # levels.csv
+python -m src.causal.triangulation
+python -m src.causal.robustness
+python -m src.causal.causal_report
+python -m src.viz.figS1_levels
+python -m src.viz.fig1_decomposition --policy     # figure 1 with the Phase 7 step (gated; v1 stays Phase 6's)
+python -m src.viz.fig4_event_study
+```
 
 **Build plan (files and functions):**
 - `src/causal/era5_units.py`: ERA5 monthly means → unit-year covariates (`data/processed/causal/era5_unit_year.parquet`; DEC-142).

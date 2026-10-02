@@ -66,20 +66,20 @@ def main() -> None:
     add("A", "Patancheruvu excluded (primary)", "registered", p.att, p.lo95, p.hi95,
         note="identical to the primary by construction: no primary unit is Patancheruvu's (it lies inside Hyderabad's centre)")
     o = own_2020()
-    rows.append({"layer": "A", "check": "2020 included: SDID per-period effect in 2020 (own coefficient)", "status": "registered",
+    rows.append({"layer": "A", "check": "2020 included: SDID per-period estimate in 2020 (own coefficient)", "status": "registered",
                  "est": o["est"], "lo95": o["lo95"], "hi95": o["hi95"], "agrees": None, "note": f"fit sets {o['cohorts']}; not an ATT"})  # fmt: skip
     for name in ("es_primary", "es_himalayan"):
         m = json.loads((ES / f"{name}_meta.json").read_text(encoding="utf-8"))
         a = m["avg_post"]
-        lab = {"es_primary": "Event study, 4 regions: average post-period effect",
-               "es_himalayan": "Himalayan region split (event study, 5 regions): average post-period effect"}[name]
+        lab = {"es_primary": "Event study, 4 regions: average post-period estimate",
+               "es_himalayan": "Himalayan region split (event study, 5 regions): average post-period estimate"}[name]
         add("A", lab, "registered", a["coef"], a["lo95"], a["hi95"], note=f"pre-trend Wald p = {m['wald_pre']['p']:.4f}")
     for cg in ("nevertreated", "notyettreated"):
         r = pd.read_csv(A.OUT / "cs" / f"cs_{cg}_simple.csv").iloc[0]
         add("A", f"Callaway & Sant'Anna, {'never' if cg == 'nevertreated' else 'not-yet'}-treated controls", "registered", r.att, r.lo95, r.hi95)
     lo = loo_summary(p.att, p.lo95, p.hi95)
     add("A", "Leave-one-out donors: the most influential donor dropped", "registered", lo["att_without_it"],
-        note=f"{lo['donors']} donors with weight > 0; ATT range {lo['min']:+.4f} to {lo['max']:+.4f}; {100 * lo['share_agree']:.0f}% agree; most influential {lo['most_influential']}")  # fmt: skip
+        note=f"{lo['donors']} donors with weight > 0; estimate range {lo['min']:+.4f} to {lo['max']:+.4f} (log); {100 * lo['share_agree']:.0f}% agree; most influential {lo['most_influential']}")  # fmt: skip
     pl = s.loc[("placebo2016", "att")]
     add("A", "Placebo in time 2016 (rule c)", "registered", pl.att, pl.lo95, pl.hi95, ref=(0, -np.inf, np.inf),
         note="a placebo: expected near 0; 'agrees' not applicable")
@@ -91,6 +91,7 @@ def main() -> None:
         rows.append({"layer": "A", "check": c, "status": "registered", "est": np.nan, "agrees": None, "note": why})
 
     est = pd.read_csv(B.OUT / "estimates.csv")
+    labels = {v.key: v.label for v in B.versions()}
     for pol in B.POLS:
         for estimator in ("ITS", "DiD"):
             pr = est[(est.version == "primary") & (est.estimator == estimator) & (est.pollutant == pol)]
@@ -99,11 +100,13 @@ def main() -> None:
             pr = pr.iloc[0]
             for _, r in est[(est.estimator == estimator) & (est.pollutant == pol) & (est.version != "primary")].iterrows():
                 if not r.get("computable", True) or pd.isna(r.get("est")):
-                    rows.append({"layer": f"B {pol}", "check": f"{estimator}: {r.version}", "status": "", "est": np.nan,
+                    rows.append({"layer": f"B {pol}", "check": f"{estimator}: {labels.get(r.version, r.version)}", "status": "", "est": np.nan,
                                  "agrees": None, "note": "not computable: no treated city (or no control) holds a panel"})  # fmt: skip
                     continue
                 add(f"B {pol}", f"{estimator}: {r.label}", r.status, r.est, r.lo95, r.hi95, ref=(pr.est, pr.lo95, pr.hi95),
-                    note=f"{int(r.cities)} cities ({int(r.single_station_cities)} single-station)")  # fmt: skip
+                    note=(f"{int(r.cities_used)} of {int(r.cities)} panel cities used (cohorts listed 2020-21 only, DEC-157)"
+                          if pd.notna(r.get("cities_used")) and int(r.cities_used) < int(r.cities)
+                          else f"{int(r.cities)} cities ({int(r.single_station_cities)} single-station)"))  # fmt: skip
     pd.DataFrame(rows).to_csv(A.OUT / "robustness.csv", index=False)
 
 

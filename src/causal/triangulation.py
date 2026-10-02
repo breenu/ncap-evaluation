@@ -47,7 +47,8 @@ def ground_sat_correlation() -> pd.DataFrame:
     """Per year, across the H4 PM2.5 cities: correlation of log ground panel mean (raw) and log satellite."""
     t = pd.read_parquet(C.OUT / "trends.parquet")
     units = set(A.restricted_units("pm25"))
-    t = t[(t.pollutant == "pm25") & (t.set == "panel") & t.unit_id.isin(units) & t.sat.notna()]
+    # the panel is defined from the baseline year (DEC-125), so the series starts there (DEC-150)
+    t = t[(t.pollutant == "pm25") & (t.set == "panel") & t.unit_id.isin(units) & t.sat.notna() & (t.year >= C.PRIMARY.baseline)]
     rows = []
     for y, g in t.groupby("year"):
         rows.append({"year": int(y), "cities": len(g), "corr_log": float(np.corrcoef(np.log(g.raw), np.log(g.sat))[0, 1])})

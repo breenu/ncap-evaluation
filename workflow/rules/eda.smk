@@ -15,6 +15,10 @@ rule eda_figures:
     output:
         "data/processed/station_year.parquet",
         expand("reports/figures/{f}.{ext}", f=EDA_FIGS, ext=["png", "svg"]),
+        # written by src/viz/eda.py since Phase 3 but first declared in Phase 7 (DEC-158), when a gated rule
+        # first made a clean clone's DAG need them (pregate_panel reads station_first_year.csv)
+        expand(f"{INT}/eda/{{f}}.csv", f=["station_first_year", "entrants", "ground_vs_satellite", "seasonal_ground",
+                                            "seasonal_satellite", "city_trends"]),
     shell: f"{PY} src.viz.eda"
 
 

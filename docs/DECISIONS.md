@@ -1062,3 +1062,36 @@ FIRMS: Reenu will try to download it during Part B. If it is not in `data/raw/fi
 - **How it is reported:** each 2019-baseline row states its coverage. It is not a check on the 2019 cohort, and an "agrees" flag on it means little; the report says so.
 - **The DEC-137 follow-up is unaffected:** the per-year misfit table needs no pre-period.
 - **Code:** `layer_b.py` skips empty cohorts and marks a version "not computable" when no treated contrast remains. A synthetic test covers it.
+
+## 2026-10-02: Phase 7 Part B results (rules DEC-138 to DEC-150 and DEC-154 to DEC-157, all pushed before the numbers they govern)
+
+Numbers from `docs/causal_report.md` (generated). The H1 verdict is unchanged: "not identified by this design" (DEC-151, confirmed by Reenu, DEC-154).
+
+**DEC-158 (workflow): six EDA outputs declared; CI's DAG check had failed on `5a9d462`.**
+- **What failed.** The environment and all tests passed on Linux CI, but `snakemake -n all` failed. Reproduced in a fresh local clone: `pregate_panel` reads `data/interim/eda/station_first_year.csv`, which `src/viz/eda.py` has written since Phase 3 without any rule declaring it.
+- **Why only now.** No earlier DAG needed `pregate_panel` in a clean clone, because its committed downstream outputs were present. Phase 7's `causal_panels` needs `pregate/units.csv`, which drags `pregate_panel` in.
+- **Fix.** `eda_figures` now declares all six CSVs that `eda.py` writes (`station_first_year`, `entrants`, `ground_vs_satellite`, `seasonal_ground`, `seasonal_satellite`, `city_trends`). The fresh-clone `snakemake -n all` then resolves (80 jobs).
+- Same family of problem as DEC-083: only an end-to-end run, or a DAG check on a clean clone, finds it.
+
+**DEC-159: Part B results.**
+- **Layer B (secondary; one pre-year; strict 2018 panel, mostly single stations):**
+  - *PM2.5* (18 NCAP cities, 16 single-station, against 5 control cities): ITS −14.0% (95% CI −22.7% to −5.3%); ground DiD −4.7% (−13.4% to +4.7%); city-mean DiD −5.1% (−15.9% to +6.7%).
+  - *PM10* (13 cities, 11 single-station, against 6 control cities): ITS −5.0% (−11.3% to +1.7%); ground DiD +9.2% (−0.7% to +23.5%); city-mean DiD +12.2% (+1.3% to +26.5%).
+  - The 2020 own coefficients (ITS) are −14.2% (PM2.5) and −15.3% (PM10).
+- **Triangulation (PM2.5; DEC-135 order):**
+  - Layer A restricted to the 18 ground cities: +3.8% (+1.0% to +6.6%).
+  - Against the ground DiD (like-for-like): **uninformative**. Against the ITS: **conflict**. The registered investigation ran in full.
+  - **Step 3 is the telling one.** Over the same cities and years (2018 → 2024), the ITS of the satellite at the stations' own cells is −11.1%, of the satellite over the polygon −11.2%, and of the ground panel −13.4%. Ground and satellite agree on the before–after fall in these cities. The conflict is between a before–after contrast, which contains the fall shared with every city, and a comparison against comparable units. It is not a disagreement between the two measurements.
+  - **Step 2:** the V6.GL.02.04 vintage gives +1.8% (−1.2% to +4.9%) for the restricted set; the yearly ground–satellite correlation across these cities is 0.71–0.85 over 2018–2024.
+  - **Steps 1 and 4:** the all-station ITS is −18.6% and the raw ITS −16.1%.
+- **Robustness:**
+  - **Layer A:** 16 of 18 checks agree; every Layer A estimate is positive. The two that do not agree have the same sign but lie below the primary CI: the V6.GL.02.04 vintage (+1.4%, +0.1% to +2.7%; to 2023) and the version excluding the IGP (+1.9%, +0.7% to +3.1%).
+  - **Leave-one-out donors:** all 923 controls have positive weight; the estimate ranges from +0.0349 to +0.0354.
+  - **Layer B:** 26 of 32 checks agree for each pollutant. The 2019-baseline rows cover only the cities listed in 2020–21 (2 for PM2.5, 1 for PM10; DEC-157).
+  - **Not run:** VIIRS fire (FIRMS still not downloaded at the time of the battery) and MAIAC AOD.
+- **Descriptive (DEC-154):** from 2018 to 2024 the NCAP units' mean fell from 54.8 to 45.6 µg/m³ (−16.8%) and the control pool's from 59.3 to 44.9 (−24.3%). Both fell; the control pool fell more.
+- **Exploratory (DEC-155; cannot change H1):** min–max common support +3.7% (+2.5% to +5.0%; SMD 1.63); overlap of the 5–95% ranges +3.0% (+1.2% to +4.9%; SMD 0.91). The relative rise does not depend on comparing megacities with small towns.
+- **DEC-123/137 follow-up:**
+  - The GAM's fitted annual means sit 3.7% below the observed in 2019 (PM2.5; PM10 3.0%), against 3.3% above them in 2018. LightGBM's misfit is 1.2–1.8% in both years.
+  - At the 2019 baseline this misfit sits in the baseline year, which is where DEC-137 found the GAM's raw − deweathered part to be almost all unmodelled change. That is consistent with the lockdown smear landing on 2019; the mechanism itself is still untested.
+  - At the 2018 baseline, excluding 2019 barely moves Layer B: ITS PM2.5 −14.0% → −15.0%, and the GAM − LightGBM gap −0.1 → +0.2 pp.
