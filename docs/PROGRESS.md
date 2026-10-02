@@ -85,6 +85,7 @@ snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (
 - **Environment (DEC-156):** win-64 lock without conda's r-matrix / r-rcppeigen / r-bmisc / r-rcpparmadillo; CRAN binaries via `install_r_extra.R`. Built fresh as `ncap_new`; 199 tests passed; it then replaced `ncap` (old kept as `ncap_prev`; DEC-160).
 - **CI:** the DAG check failed on undeclared EDA outputs; fixed (DEC-158).
 - **FIRMS:** still not downloaded; the VIIRS check stays "not run".
+- **Rebuild in the new environment (DEC-160):** Part A plus every quick Part B step reproduce. 272 of 300 files are byte-identical, the rest within 1.4e-13, and the report is unchanged. Part B's SDID and leave-one-out outputs were carried over (Reenu's choice). `snakemake -n causal` and `-n pregate` have nothing to do. A rebuild of Phases 2–6 from raw is left for Phase 10.
 
 **How to rebuild all of Phase 7:** `snakemake --cores 1 causal` (gated; ~5 h: SDID ~3.5 h, leave-one-out ~50 min, HonestDiD ~11 min).
 

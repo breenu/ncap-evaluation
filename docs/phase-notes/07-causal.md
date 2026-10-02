@@ -134,6 +134,9 @@ The GAM's fitted annual means sit 3.7% below the observed in 2019 (PM2.5), again
   - an unweighted DiD of means (+5.0%) confirming the positive sign is in the data;
   - CS never vs not-yet-treated differing only where they should;
   - Layer B's PM2.5 ITS (−14.0%) close to H4's corrected change for the same cities (−14.1%; a different quantity: an endpoint change, not a before–after mean).
-- **Reproducibility:** the end-of-phase rebuild is recorded in DEC-160.
+- **Reproducibility (DEC-160):** Part A and every quick Part B step were rebuilt in the new environment.
+  - 272 of 300 output files are byte-identical, including every SDID replication. The rest differ by at most 1.4e-13 (floating-point order), or only in a timestamp.
+  - `causal_report.md` came out unchanged line for line.
+  - Part B's SDID outputs were carried over from the old environment (Reenu's choice), with their specification hashes confirmed unchanged.
 
 **Not run:** the VIIRS fire covariate (FIRMS not yet downloaded) and raw MAIAC AOD (registered "if time allows").

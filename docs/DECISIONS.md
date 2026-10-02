@@ -1095,3 +1095,18 @@ Numbers from `docs/causal_report.md` (generated). The H1 verdict is unchanged: "
   - The GAM's fitted annual means sit 3.7% below the observed in 2019 (PM2.5; PM10 3.0%), against 3.3% above them in 2018. LightGBM's misfit is 1.2–1.8% in both years.
   - At the 2019 baseline this misfit sits in the baseline year, which is where DEC-137 found the GAM's raw − deweathered part to be almost all unmodelled change. That is consistent with the lockdown smear landing on 2019; the mechanism itself is still untested.
   - At the 2018 baseline, excluding 2019 barely moves Layer B: ITS PM2.5 −14.0% → −15.0%, and the GAM − LightGBM gap −0.1 → +0.2 pp.
+
+**DEC-160 (workflow): the end-of-phase rebuild in the new environment. Part A reproduces; Part B's SDID outputs were carried over (Reenu's choice, 2026-10-02).**
+- **Environment.** `ncap_new`, built from the DEC-156 lock plus `install_r_extra.R`, replaced `ncap` (`conda rename`). The old environment is kept as `ncap_prev`. In the new environment, 199 tests passed before the switch, and the suite was run again after it (`data/interim/logs/pytest_phase7_final.log`).
+- **Scope (Reenu chose this over a full ~5 h rebuild).**
+  - Rebuilt from their inputs in the new environment: ERA5 covariates, panels, specifications, the five Part A SDID specifications, the event study, Callaway & Sant'Anna, HonestDiD, the descriptive table, Layer B, triangulation, the robustness table, the report and figures 1 (Phase 7 step), 4 and S1. Script: `rebuild_partA.sh`; log `data/interim/logs/phase7_rebuild_newenv.log`; 17:01–18:29.
+  - **Carried over from the old environment, not re-run:** the 14 Part B SDID specifications (12 registered, 2 exploratory) and the leave-one-out donors.
+  - Why the carry-over is safe: the new environment differs only in the build source of four R packages, at the same versions. The rebuilt specification hashes are identical to the old ones, so the carried-over outputs match the code that would produce them.
+- **Result, against copies of every output taken before the rebuild:**
+  - 272 of 300 files are byte-identical. That includes every Part A SDID file (real fits, unit weights, all 500 placebo replications of every specification), the panels, the ERA5 covariates, Layer B, triangulation and the summaries.
+  - 19 files differ numerically by at most 3.3e-14: event-study coefficients and covariances, CS group-time and dynamic estimates, the HonestDiD rows. Four JSON files differ by at most 1.4e-13 (the Wald statistic), with no non-numeric field changed.
+  - The 5 `done.txt` timestamps differ.
+  - **`docs/causal_report.md` is unchanged line for line,** and so is every verdict, rule check, category and printed number.
+  - Figure PNGs are byte-identical. The SVGs differ only in their embedded date and element ids (DEC-094); the committed SVGs were kept.
+- **Snakemake:** the outputs were then marked current with `snakemake --touch causal`, as DEC-108/134/153 did: DEC-158's newly declared EDA outputs otherwise mark everything downstream stale. `snakemake -n causal` and `snakemake -n pregate` report nothing to do.
+- **Not done:** a rebuild of Phases 2–6 from raw data in the new environment (several hours, mostly deweathering). It is left for the Phase 10 clean-clone check, as DEC-094 already planned.
