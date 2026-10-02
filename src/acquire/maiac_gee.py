@@ -20,7 +20,7 @@ Means and coverage are formed locally (src/causal/maiac.py). Commands, in order:
 
     python -m src.acquire.maiac_gee check      collection structure, band, scale, projection (DEC-174)
     python -m src.acquire.maiac_gee pilot      one month -> data/interim/maiac_gee_pilot/, EECU projection (DEC-178)
-    python -m src.acquire.maiac_gee submit     one Export.table.toAsset per year (skips years done or running)
+    python -m src.acquire.maiac_gee submit     one Export.table.toDrive per year (skips years done or running; DEC-183)
     python -m src.acquire.maiac_gee status
     python -m src.acquire.maiac_gee download   finished tables -> data/raw/maiac_gee/ with the manifest
 """
@@ -37,7 +37,7 @@ import geopandas as gpd
 import pandas as pd
 
 from src.acquire.common import finish
-from src.common.manifest import download, http_fetch, sha256_file
+from src.common.manifest import download, sha256_file
 from src.common.paths import CONFIG, INTERIM, ROOT, load_yaml, raw_dir
 
 CFG = load_yaml(CONFIG / "maiac.yaml")
@@ -189,22 +189,48 @@ def table(ee, year: int, months: list[int]):
     return ee.FeatureCollection([month_table(ee, year, m, units, proj, w) for m in months]).flatten()
 
 
-def asset_id(name: str) -> str:
-    return f"{CFG['asset_folder']}/{name}"
-
-
-def asset_exists(ee, aid: str) -> bool:
-    try:
-        ee.data.getAsset(aid)
-        return True
-    except ee.EEException:
-        return False
-
-
 def start_export(ee, fc, name: str) -> dict:
-    task = ee.batch.Export.table.toAsset(collection=fc, description=name, assetId=asset_id(name))
+    """Export.table.toDrive into one Drive folder (DEC-183: the project has no asset root)."""
+    task = ee.batch.Export.table.toDrive(collection=fc, description=name, folder=CFG["drive_folder"], fileNamePrefix=name,
+                                         fileFormat="CSV", selectors=COLUMNS)  # fmt: skip
     task.start()
-    return {"name": name, "asset": asset_id(name), "task_id": task.id, "submitted_utc": datetime.now(UTC).isoformat(timespec="seconds")}
+    return {"name": name, "drive_folder": CFG["drive_folder"], "task_id": task.id,
+            "submitted_utc": datetime.now(UTC).isoformat(timespec="seconds")}  # fmt: skip
+
+
+def drive():
+    """Drive API client with the Earth Engine credentials (their scopes include Drive; DEC-183)."""
+    import ee
+    from googleapiclient.discovery import build
+
+    return build("drive", "v3", credentials=ee.data.get_persistent_credentials(), cache_discovery=False)
+
+
+def drive_file(name: str) -> dict:
+    """The exported CSV in the export folder: id, md5Checksum, size. Refuses ambiguous duplicates."""
+    d = drive()
+    q = f"name = '{name}.csv' and trashed = false and mimeType != 'application/vnd.google-apps.folder'"
+    fs = d.files().list(q=q, fields="files(id,name,md5Checksum,size,createdTime,parents)").execute()["files"]
+    folders = d.files().list(q=f"name = '{CFG['drive_folder']}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+                             fields="files(id)").execute()["files"]  # fmt: skip
+    fids = {f["id"] for f in folders}
+    fs = [f for f in fs if fids & set(f.get("parents", []))]
+    if len({f["md5Checksum"] for f in fs}) != 1:
+        raise SystemExit(f"{name}.csv: {len(fs)} files in Drive folder {CFG['drive_folder']} with different contents; decide by hand")
+    return sorted(fs, key=lambda f: f["createdTime"])[-1]
+
+
+def drive_fetch(file_id: str):
+    def fetch(_url: str, tmp: Path) -> None:
+        from googleapiclient.http import MediaIoBaseDownload
+
+        with open(tmp, "wb") as fh:
+            dl = MediaIoBaseDownload(fh, drive().files().get_media(fileId=file_id))
+            done = False
+            while not done:
+                _, done = dl.next_chunk()
+
+    return fetch
 
 
 def task_status(ee, task_id: str) -> dict:
@@ -261,8 +287,6 @@ def cmd_pilot() -> None:
     ee = init()
     y, m = CFG["pilot_month"]
     name = f"maiac_pilot_{y}_{m:02d}"
-    if asset_exists(ee, asset_id(name)):
-        raise SystemExit(f"{asset_id(name)} exists; delete it to re-run the pilot")
     rec = start_export(ee, table(ee, y, [m]), name)
     t0 = time.time()
     st = _wait(ee, rec["task_id"])
@@ -272,9 +296,9 @@ def cmd_pilot() -> None:
     months = 12 * (CFG["years"][1] - CFG["years"][0] + 1)
     proj_h = None if eecu is None else eecu * months / 3600
     PILOT.mkdir(parents=True, exist_ok=True)
-    url = ee.FeatureCollection(asset_id(name)).getDownloadURL(filetype="csv", selectors=COLUMNS, filename=name)
     out = PILOT / f"{name}.csv"
-    http_fetch(url, out)
+    f = drive_file(name)
+    drive_fetch(f["id"])("", out)
     res = {**rec, "status": st, "wall_seconds": round(time.time() - t0), "eecu_seconds": eecu, "months_total": months,
            "projected_eecu_hours": proj_h, "budget_hours": CFG["eecu_budget_hours"],
            "within_budget": proj_h is not None and proj_h <= CFG["eecu_budget_hours"], "csv_sha256": sha256_file(out)}  # fmt: skip
@@ -303,8 +327,6 @@ def cmd_submit() -> None:
         prev = tasks.get(name)
         if prev and task_status(ee, prev["task_id"])["state"] in ("READY", "RUNNING", "COMPLETED"):
             continue
-        if asset_exists(ee, asset_id(name)):
-            raise SystemExit(f"{asset_id(name)} exists without a recorded task; decide by hand")
         rec = start_export(ee, table(ee, y, list(range(1, 13))), name)
         tasks[name] = {**rec, "year": y, "commit": commit, "script_sha256": sha256_file(SCRIPT),
                        "request_sha256": sha(req), "request": req}  # fmt: skip
@@ -341,11 +363,12 @@ def cmd_download() -> None:
         if st["state"] != "COMPLETED":
             errors.append(f"{name}: {st['state']}")
             continue
-        url = ee.FeatureCollection(t["asset"]).getDownloadURL(filetype="csv", selectors=COLUMNS, filename=name)
-        remote = (f"ee-task:{t['task_id']} | commit {t['commit']} | script sha256 {t['script_sha256'][:16]} | "
-                  f"request sha256 {t['request_sha256'][:16]} | eecu_s {eecu_seconds(st)}")  # fmt: skip
+        f = drive_file(name)
+        remote = (f"ee-task:{t['task_id']} | drive:{f['id']} md5 {f['md5Checksum']} | commit {t['commit']} | "
+                  f"script sha256 {t['script_sha256'][:16]} | request sha256 {t['request_sha256'][:16]} | eecu_s {eecu_seconds(st)}")  # fmt: skip
         notes = json.dumps({k: v for k, v in t["request"].items() if k != "projection"}, sort_keys=True)
-        download(dest, f"{name}.csv", f"ee:{t['asset']}", remote_id=remote, notes=notes, fetch=lambda _u, tmp, url=url: http_fetch(url, tmp))
+        download(dest, f"{name}.csv", f"gdrive:{CFG['drive_folder']}/{name}.csv", remote_id=remote, notes=notes,
+                 fetch=drive_fetch(f["id"]), expected_md5=f["md5Checksum"])  # fmt: skip
     proj = next(iter(tasks.values()))["request"]["projection"] if tasks else None
     (STATE / "projection.json").write_text(json.dumps(proj, indent=2), encoding="utf-8")
     finish(dest, "maiac_gee", errors)

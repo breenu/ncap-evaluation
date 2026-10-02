@@ -2,7 +2,7 @@
 # Kept apart from params.yaml so that adding it does not mark every earlier output stale (DEC-108).
 
 gee_project: ncap-evaluation                 # Reenu's Cloud project (not a secret; credentials stay in ~/.config/earthengine)
-asset_folder: projects/ncap-evaluation/assets
+drive_folder: ncap_maiac_gee                 # Export.table.toDrive target in Reenu's Drive (DEC-183: the project has no asset root)
 collection: MODIS/061/MCD19A2_GRANULES       # MCD19A2 C6.1, one image per tile and overpass (checked by `check`)
 band: Optical_Depth_055                       # 0.55 um
 scale: 0.001                                  # valid range -100..8000 -> AOD -0.1..8.0 (negatives kept, DEC-175)
