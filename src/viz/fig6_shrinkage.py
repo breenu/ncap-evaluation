@@ -40,7 +40,7 @@ def main() -> None:
     ax.scatter(pct(c.post_mean), y - 0.22, s=10, color=C_POST, zorder=3)
     ax.axvline(0, color=S.INK_2, linewidth=0.8)
     ax.axvline(pct(avg["mean"]), color=C_POST, linewidth=0.8, linestyle="--")
-    ax.set_xlabel("Relative change in satellite PM2.5 after listing (%; listed minus synthetic comparison)")
+    ax.set_xlabel("Relative change in satellite PM2.5 after listing\n(%; listed unit minus its synthetic comparison)")
     ax.set_ylabel(f"NCAP urban centres (n = {len(c)}), sorted by shrunken estimate")
     ax.set_yticks([])
     ax.set_title("(a) Before and after shrinkage")
@@ -48,10 +48,10 @@ def main() -> None:
         Line2D([], [], color=C_RAW, marker="o", markerfacecolor=S.SURFACE, markeredgecolor=S.INK_2, label="Unshrunk: estimate ± 1.96 × placebo SE"),
         Line2D([], [], color=C_POST, marker="o", label="Shrunken: posterior mean, 95% credible interval"),
         Line2D([], [], color=C_POST, linestyle="--", label=f"Average city-level relative change ({pct(avg['mean']):+.1f}%)"),
-    ], loc="lower right", fontsize=7.5)  # fmt: skip
+    ], loc="upper center", bbox_to_anchor=(0.5, -0.1), ncol=2, fontsize=7.5)  # fmt: skip
     bx.hlines(y, c.rank_lo95, c.rank_hi95, color=C_POST, linewidth=1.4)
     bx.scatter(c.rank_mean, y, s=10, color=C_POST, zorder=3)
-    bx.set_xlabel(f"Rank among the {len(c)} (1 = largest relative fall); 95% interval")
+    bx.set_xlabel(f"Rank among the {len(c)}, 95% interval\n(1 = largest relative fall)")
     bx.set_xlim(0, len(c) + 1)
     bx.set_title("(b) How uncertain the ranking is")
     med_w = float(np.median(c.rank_hi95 - c.rank_lo95))

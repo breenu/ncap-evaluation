@@ -1265,3 +1265,62 @@ Everything below was committed and pushed before any Phase 8 quantity was comput
   - real gated rules in `workflow/rules/hierarchical.smk`;
   - synthetic tests in `tests/test_hierarchical.py`.
 - **Not in Phase 8's figures:** any per-city ranking or unshrunk city name.
+
+## 2026-10-02: Phase 8 results (rules DEC-162 to DEC-167, pushed in `2f80dc4` before computing)
+
+Numbers from `docs/heterogeneity_report.md` (generated). No rule or specification was changed after any Phase 8 estimate was seen. **H1 is not identified (DEC-151), so every number below is a city-level relative change, not an effect of NCAP.**
+
+**DEC-168: Phase 8 results. H5's registered rule is not met; H3 is inconclusive; the dose-response shows nothing.**
+- **City-level estimates (DEC-162).**
+  - 113 per-unit SDIDs, plus 923 single-unit placebos for each cohort year, on V5.GL.06 and V6.GL.03: 5,764 fits, 0 solver warnings.
+  - Placebo SD (= SE) is 0.0487 for cohort 2019 and 0.0524 for cohorts 2020/2021, i.e. about ±10% per unit at 95%.
+  - Cohorts 2020 and 2021 share one placebo distribution: with 2020 dropped, both designs have pre-years 2010–2019 and post-years 2021–2024.
+  - Per-unit estimates: mean +3.5% (Phase 7 primary +3.6%); range −12.3% to +16.4%; 87 of 113 above 0.
+  - **Benjamini–Hochberg 5% on the unshrunk placebo p-values: 0 of 113 units pass.**
+    - Unadjusted, 17 units have p < 0.05. The smallest p is 0.0043 (3 units); the smallest attainable with 923 placebos is 0.0022.
+    - So BH could reject only if several units sat at that floor, and none do.
+  - V6.GL.03 and V5.GL.06 per-unit estimates correlate at r = 0.71.
+- **Hierarchical model (DEC-163).**
+  - All five versions converged at the first attempt: R-hat ≤ 1.007, min ESS ≥ 1,455, 0 divergences.
+  - Primary: between-unit SD τ = 0.013 log units against per-unit SEs of about 0.05, so the estimates shrink strongly towards the moderators' prediction.
+  - Average city-level relative change: +3.5% (95% CrI +2.6% to +4.4%).
+  - Coefficients (log scale, as %):
+    - baseline PM2.5 −1.9% per SD (−3.2% to −0.5%);
+    - IGP −0.3% (−3.3% to +2.6%);
+    - log population −1.1% per SD (−2.5% to +0.3%);
+    - coastal −4.0% (−6.6% to −1.3%);
+    - XV-FC channel +3.1% (+0.2% to +6.0%).
+  - XV-FC and log population correlate at r = 0.72, and IGP and baseline PM2.5 at r = 0.70. Moderators other than IGP are exploratory (plan §5).
+  - Shrunken CrIs: entirely below 0 for 1 unit, entirely above 0 for 62, spanning 0 for 50.
+  - The median 95% rank interval spans 75 of 113 places, so city rankings are mostly uninformative.
+- **H5 (DEC-164): the registered rule is not met.** β_IGP = −0.0034 (−0.3%), 95% CrI −3.3% to +2.6%.
+  - Beside it, none deciding:
+    - IGP-only model −2.6% (−4.6% to −0.4%), the opposite direction to H5;
+    - pre-fit-scaled SEs +0.0%;
+    - wide priors −0.3%;
+    - V6.GL.03 −0.0%.
+  - Because H1 is not identified, this says nothing about whether NCAP worked less in the IGP.
+- **H3 (DEC-165): inconclusive.**
+  - (iii) fails, as known in advance: the ITS pair is "conflict".
+  - (i) fails: the deweathered ratio estimate is +4.5% for the ITS (95% CI −0.0% to +9.2%, its lower bound just below 0) and +0.6% for the DiD (−8.7% to +11.7%).
+  - (ii) fails: it holds for the ITS (2 of 3 specifications) but not the DiD (0 of 3).
+  - Scope: 11 cities with both pollutants (27 co-located stations), against 5 control cities.
+- **Dose-response (DEC-166, exploratory): no association.**
+  - 40 XV-FC units.
+  - −0.4% per doubling of the per-person allocation (95% CrI −3.5% to +2.7%); with IGP +0.1% (−3.1% to +3.3%); without Patna +0.6% (−2.7% to +4.1%).
+  - The caveat is visible in the data: within a state, per-person allocations differ by a median 0.7% (at most 1.5%), while state means run from Rs 788 to Rs 3,746. The dose is effectively a state-level variable.
+- **Layout changes after looking at the renders (no number affected).**
+  - Figure 5's panel titles were wrapped (they overlapped).
+  - Figure 6's legend was moved below the axes (it covered data) and its axis labels wrapped.
+  - Figure 7 shows Layer A restricted (satellite PM2.5) as a reference row in panel (a), not (b) as DEC-167 said. A PM2.5 effect on the ratio's axis would have read as a ratio.
+- **Run notes.**
+  - The first per-unit SDID run stalled because the laptop was on battery: Windows throttled the R workers to about a tenth of normal speed. It was stopped, and `unit_sdid.R` now saves its fits in 200-fit chunks and resumes.
+  - On mains power, V6.GL.03's 2,882 fits took 12.3 min. V5.GL.06 took 25.1 min, its first chunks on battery.
+  - The H3 mechanism step ran before the pooling model; neither reads the other.
+
+**DEC-169 (workflow): Phase 8 through Snakemake; reproducibility of the re-run.**
+- **Config.** The only change to `config/params.yaml` is the new `hierarchical:` block (checked with `git diff 170deac`). Only `src/hierarchical/pooling.py` and `dose.py` read it (checked with `grep`). So, as in DEC-108/134/153, the upstream outputs were marked current with `snakemake --touch causal`.
+- **The long rule.** The per-unit SDID was run by hand with the rule's own command (`python -m src.hierarchical.city_estimates run`), and its two outputs were marked current the same way.
+- **What ran through Snakemake.** The other eight Phase 8 rules ran through Snakemake (`snakemake --cores 1 hierarchical`; log `data/interim/logs/snakemake_phase8.log`): the city table, pooling, dose, mechanism, figures 5–7, the report and the target.
+- **Result.** All 20 outputs are byte-identical to the hand-built ones, including the seeded PyMC posteriors, and `docs/heterogeneity_report.md` is byte-identical. Afterwards `snakemake -n hierarchical`, `-n causal` and `-n pregate` report nothing to do.
+- **Tests:** 208 passed (`data/interim/logs/pytest_phase8.log`).

@@ -43,9 +43,9 @@ def main() -> None:
 
     lim = float(np.ceil(np.abs(pts.mean_pct).max()))
     panels = [
-        ("mean_pct", "(a) Shrunken relative change (posterior mean, %)", DIVERGING, TwoSlopeNorm(0, -lim, lim), "%"),
-        ("width_pp", "(b) Width of its 95% credible interval (pp)", SEQ, None, "percentage points"),
-        ("p_lt0", "(c) Probability the relative change is below 0", SEQ, plt.Normalize(0, 1), "probability"),
+        ("mean_pct", "(a) Shrunken relative change\n(posterior mean, %)", DIVERGING, TwoSlopeNorm(0, -lim, lim), "%"),
+        ("width_pp", "(b) Width of its 95% credible\ninterval (percentage points)", SEQ, None, "percentage points"),
+        ("p_lt0", "(c) Probability that the relative\nchange is below 0", SEQ, plt.Normalize(0, 1), "probability"),
     ]  # fmt: skip
     fig, axes = plt.subplots(1, 3, figsize=(13, 5.6))
     for ax, (col, title, cmap, norm, unit) in zip(axes, panels, strict=True):
@@ -61,12 +61,12 @@ def main() -> None:
     n_lo = int((c.post_hi95 < 0).sum())
     n_hi = int((c.post_lo95 > 0).sum())
     fig.suptitle("City-level relative change in satellite PM2.5 after NCAP listing, shrunken: NOT an effect of NCAP "
-                 "(H1 not identified)", x=0.0, ha="left", fontsize=11, fontweight="bold", color=S.INK)  # fmt: skip
+                 "(H1 not identified)", x=0.0, y=0.93, ha="left", fontsize=11, fontweight="bold", color=S.INK)  # fmt: skip
     S.source_note(fig, f"Each point is one of the {len(c)} NCAP urban centres: its own synthetic difference-in-differences against "
                   "923 non-NCAP centres (log population-weighted ACAG V5.GL.06, 2010-2024 without 2020), pooled in a Bayesian "
                   "measurement-error model with the five registered moderators (DEC-162/163). Blue = PM2.5 fell relative to its "
                   "synthetic comparison; red = it rose. The registered event-study pre-trend test failed, so none of this is "
-                  f"attributable to NCAP. 95% credible interval entirely below 0: {n_lo} units; entirely above 0: {n_hi}. "
+                  f"attributable to NCAP. 95% credible interval entirely below 0: {n_lo} of {len(c)} units; entirely above 0: {n_hi}. "
                   "Sources: ACAG V5.GL.06; GHSL UCDB R2024A; DataMeet boundaries.")  # fmt: skip
     S.save(fig, "fig5_city_map")
 

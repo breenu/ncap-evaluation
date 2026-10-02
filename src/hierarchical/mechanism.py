@@ -15,7 +15,6 @@ DEC-165). Layer B (ground): secondary, one pre-year. GATED (hard rule 4).
 
 import json
 
-import numpy as np
 import pandas as pd
 
 from src.causal import layer_a as A

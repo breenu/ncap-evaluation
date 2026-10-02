@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-10-02. **Phase 8 (heterogeneity and mechanism) in progress; rules DEC-162 to DEC-167 committed before computing.** START at "Phase 8" below.*
+*Last updated: 2026-10-02. **Phase 8 (heterogeneity and mechanism) complete; waiting for Reenu's review** (DEC-161 to DEC-169). START at "Phase 8" below.*
 
 ## Status
 
@@ -17,7 +17,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 5 Deweathering | ✅ approved 2026-09-28; pushed (DEC-100 to DEC-124) |
 | 6 Network composition, H4 | ✅ reviewed and closed 2026-10-01; pushed (DEC-125 to DEC-137) |
 | 7 Causal analysis | ✅ approved 2026-10-02 (H1 not identified: rule (b) fails); pushed (DEC-138 to DEC-161) |
-| 8 Heterogeneity and mechanism | in progress (rules DEC-162 to DEC-167) |
+| 8 Heterogeneity and mechanism | ✅ done 2026-10-02 (H5 rule not met; H3 inconclusive; dose: nothing); **waits for Reenu's review** (DEC-161 to DEC-169) |
 | 9–10 | not started |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). Phase 7's rules (DEC-138 to DEC-150) were pushed in `eebaecc` before any estimate; the first post-2019 effect estimates are Part A's (DEC-151).
@@ -72,21 +72,48 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Phase 8 (heterogeneity and mechanism, RQ4): IN PROGRESS. START HERE in a new chat
+## Phase 8 (heterogeneity and mechanism, RQ4): DONE, waiting for Reenu's review. START HERE in a new chat
 
-Phase 7 approved and pushed by Reenu (2026-10-02). Housekeeping done: `ncap_prev` removed; DEC-155's order of events made explicit (DEC-161).
+**Next:** Reenu reviews Phase 8 (`docs/heterogeneity_report.md`, `docs/phase-notes/08-heterogeneity.md`, figures 5–7, `docs/maiac_scoping.md`). Then Phase 9 (figures 1–8 to the style rules and the read-only dashboard; cut item #3 if time runs short).
 
-**Rules:** DEC-162 to DEC-167, committed and pushed before any Phase 8 estimate. H1 is not identified, so every per-unit number is a "city-level relative change", never an effect of NCAP, with the caveat beside it.
+**Rules:** DEC-162 to DEC-167, pushed in `2f80dc4` before any Phase 8 number. Results DEC-168; workflow DEC-169. Housekeeping DEC-161 (`ncap_prev` removed; DEC-155's order of events stated in DEC-155 and `causal_report.md` §11). **Wording:** H1 is not identified, so every per-unit number and H5 are "city-level relative changes", never effects of NCAP, with the caveat beside each.
 
-**Build plan (files and functions):**
-- `src/hierarchical/unit_sdid.R`: per-unit SDID (113 units) and single-unit placebo fits (every control × each cohort year), V5.GL.06 and V6.GL.03; pre-fit SD per fit (DEC-162).
-- `src/hierarchical/city_estimates.py`: `run()` (calls the R script), `estimates()` (θ̂_i, cohort placebo SE, pre-fit-scaled SE, placebo p, BH count), `moderators()` (DEC-163) → `data/processed/hierarchical/city_estimates.csv`.
-- `src/hierarchical/pooling.py`: `fit(y, s, X, priors)` (PyMC measurement-error model), `converged()`, `summarise()`, the model versions (primary, IGP only, scaled SE, wide priors, V6.GL.03), `h5()` → `posterior_*.csv`, `city_shrunken.csv`.
-- `src/hierarchical/dose.py`: `dose_table()` (XV-FC allocations per person, DEC-166), dose models → `dose_*.csv`.
-- `src/hierarchical/mechanism.py`: H3 conditions (i)–(iii) on Layer B (DEC-165) → `h3_*.csv`.
-- `src/hierarchical/report.py` → `docs/heterogeneity_report.md` (generated).
+**Results** (numbers in `docs/heterogeneity_report.md`; DEC-168):
+- **City-level estimates:** 113 per-unit SDIDs. The SE is the SD over 923 single-control placebos (about 0.05 log units). The mean is +3.5%. BH 5%: 0 of 113 pass.
+- **Hierarchical model:** all 5 versions converged at the first attempt. τ = 0.013, so shrinkage is strong. The average city-level relative change is +3.5% (+2.6% to +4.4%). The median 95% rank interval spans 75 of 113 places.
+- **H5: the registered rule is NOT met.** β_IGP = −0.3% (−3.3% to +2.6%). The IGP-only model gives −2.6% (−4.6% to −0.4%); it does not decide.
+- **H3: inconclusive.** (iii) fails (known in advance); (i) fails (ratio ITS +4.5%, CI −0.0% to +9.2%; DiD +0.6%); (ii) fails (ITS 2/3, DiD 0/3). 11 cities.
+- **Dose (exploratory):** 40 XV-FC units. −0.4% per doubling of the allocation (−3.5% to +2.7%). Per-person allocations are nearly constant within a state, so the dose is really "which state".
+- **MAIAC scoping:** `docs/maiac_scoping.md`. MCD19A2 1 km; 9 tiles; full granules about 330 GB. Recommended: reduce to unit-month means on Google Earth Engine or AppEEARS (< 0.5 GB), then about 1–1.5 h of SDID. Nothing downloaded.
+
+**How to rebuild Phase 8:** `snakemake --cores 1 hierarchical` (gated; about 40 min on mains power). Or, inside the `ncap` env:
+```bash
+python -m src.hierarchical.city_estimates run     # per-unit + placebo SDID, 5,764 fits (~40 min; resumable, saves every 200 fits)
+python -m src.hierarchical.city_estimates table
+python -m src.hierarchical.pooling                # PyMC, 5 models (~10 min)
+python -m src.hierarchical.dose                   # exploratory (~5 min)
+python -m src.hierarchical.mechanism              # H3 (~1 min)
+python -m src.viz.fig5_city_map; python -m src.viz.fig6_shrinkage; python -m src.viz.fig7_mechanism
+python -m src.hierarchical.report                 # -> docs/heterogeneity_report.md
+```
+**Run on mains power.** On battery, Windows throttles the R workers to about a tenth of normal speed (DEC-168).
+
+**Code:**
+- `src/hierarchical/unit_sdid.R`: per-unit and single-unit placebo SDID, with the pre-fit SD.
+- `src/hierarchical/city_estimates.py`: SEs, placebo p, BH, moderators.
+- `src/hierarchical/pooling.py`: the measurement-error model, the convergence rule, the versions, H5.
+- `src/hierarchical/dose.py`.
+- `src/hierarchical/mechanism.py`: H3, reusing Phase 7's Layer B functions.
+- `src/hierarchical/report.py`.
 - `src/viz/fig5_city_map.py`, `fig6_shrinkage.py`, `fig7_mechanism.py`.
-- `workflow/rules/hierarchical.smk` (real, gated rules); `tests/test_hierarchical.py` (synthetic).
+- `workflow/rules/hierarchical.smk` (real, gated rules).
+- `tests/test_hierarchical.py` (9, synthetic). The full suite has 208 tests.
+
+**Outputs:** `data/processed/hierarchical/`: `unit_sdid_*.parquet`, `city_estimates.csv`, `pool_*.csv`, `city_shrunken.csv`, `h5.json`, `h3*.csv/json`, `dose_*.csv`; `docs/heterogeneity_report.md`; `reports/figures/fig5_city_map`, `fig6_shrinkage`, `fig7_mechanism`.
+
+**Open for Reenu:**
+- Decide whether to run the MAIAC check, and by which route (it needs a GEE or Earthdata account).
+- FIRMS is still not downloaded, so the VIIRS fire check stays "not run".
 
 ## Phase 7 (causal analysis, RQ3): DONE and approved (2026-10-02)
 

@@ -13,8 +13,8 @@ import numpy as np
 import pandas as pd
 
 from src.causal import layer_a as A
-from src.causal.report_part_b import ci_pct, lg, pc
 from src.causal.causal_report import md
+from src.causal.report_part_b import ci_pct, lg, pc
 from src.common.paths import DOCS
 from src.hierarchical.city_estimates import MODERATORS, OUT
 
@@ -24,6 +24,7 @@ MOD_LABEL = {"baseline_pm25": "baseline PM2.5 (per SD of 2010-2018 mean log PM2.
              "log_pop": "log population 2015 (per SD)", "coastal": "coastal (vs peninsular/other + north-east)",
              "xvfc": "funding channel XV-FC (vs NCAP channel)"}  # fmt: skip
 POLN = {"pm25": "PM2.5", "pm10": "PM10"}
+REGION = {"igp": "IGP", "coastal": "coastal", "peninsular/other": "peninsular/other", "north-east": "north-east"}
 
 
 def load() -> dict:
@@ -70,7 +71,11 @@ def section_estimates(X: dict) -> str:
         f"(cohort placebo SEs: {e.se.min():.4f} to {e.se.max():.4f}).",
         f"- V6.GL.03 per-unit estimates correlate with V5.GL.06's at r = {r56:.2f} across units.",
         f"- **Unshrunk city claims under Benjamini–Hochberg 5% over the {len(e)} units (plan §5): {nbh} units pass.** "
+        f"Unadjusted, {int((e.p_placebo < 0.05).sum())} have p < 0.05; the smallest p is {e.p_placebo.min():.4f}, and the smallest attainable with "
+        f"{int(e.n_placebo.iloc[0])} placebos is {2 / (e.n_placebo.iloc[0] + 1):.4f}. "
         "They are not named: city-level statements come from the shrunken estimates below, and there is no best/worst table.",
+        "- Cohorts 2020 and 2021 share one placebo distribution: with 2020 dropped, both have pre-years 2010–2019 and post-years "
+        "2021–2024, so the single-unit design is identical.",
         f"- SDID convergence warnings over all {int(us[us.series == 'popw_V5GL06'].n.sum())} V5.GL.06 fits: {warn}.", ""])  # fmt: skip
 
 
@@ -97,8 +102,8 @@ def section_model(X: dict) -> str:
         md(pd.DataFrame(drows)), "",
         "**Primary model** (the five registered moderators; continuous moderators standardised over the 113 units):", "",
         md(pd.DataFrame(crows)), "",
-        f"- Shrunken city-level relative changes: 95% CrI entirely below 0 for **{int((p.post_hi95 < 0).sum())}** units, entirely above 0 for "
-        f"**{int((p.post_lo95 > 0).sum())}**, spanning 0 for {int(((p.post_lo95 <= 0) & (p.post_hi95 >= 0)).sum())} (of {len(p)}).",
+        f"- Shrunken city-level relative changes: 95% CrI entirely below 0 for **{int((p.post_hi95 < 0).sum())} of {len(p)}** units, entirely above 0 for "
+        f"**{int((p.post_lo95 > 0).sum())}**, spanning 0 for {int(((p.post_lo95 <= 0) & (p.post_hi95 >= 0)).sum())}.",
         f"- Median width of a unit's 95% rank interval: {np.median(p.rank_hi95 - p.rank_lo95):.0f} places out of {len(p)} (figure 6).",
         "- The errors of the per-unit estimates are correlated (shared donors, shared regional shocks) but the model treats them as "
         "independent, so its intervals are probably too narrow and a regional coefficient can carry a shock common to that region.", "",
@@ -116,6 +121,7 @@ def section_h5(X: dict) -> str:
         rows.append({"model": v.label, "β_IGP (log)": lg(r["mean"]), "95% CrI (log)": f"{r.lo95:+.4f} to {r.hi95:+.4f}",
                      "as % (95% CrI)": f"{pc(r['mean'])} ({ci_pct(r.lo95, r.hi95)})", "P(> 0)": f"{r.p_gt0:.3f}",
                      "decides H5": "yes" if v.version == "primary" else "no"})  # fmt: skip
+    cbi = float(X["corr"].loc["baseline_pm25", "igp"])
     noigp = X["rob"][X["rob"].check.str.startswith("Exclude the Indo-Gangetic")].iloc[0]
     prim = X["sd"][(X["sd"].spec_id == "primary") & (X["sd"].estimand == "att")].iloc[0]
     verdict = "MET" if h5["rule_met"] else "NOT MET"
@@ -132,14 +138,17 @@ def section_h5(X: dict) -> str:
         "about whether NCAP worked less in the IGP.", "",
         "Every model (only the primary decides; DEC-164):", "", md(pd.DataFrame(rows)), "",
         f"*Context (Phase 7, not part of the rule):* excluding IGP units from both groups moved the Layer A estimate from {pc(prim.att)} to "
-        f"{pc(noigp.est)} ({ci_pct(noigp.lo95, noigp.hi95)}). A regional coefficient also mixes in anything that happened to the whole "
+        f"{pc(noigp.est)} ({ci_pct(noigp.lo95, noigp.hi95)}). IGP membership and baseline PM2.5 correlate at r = {cbi:.2f} across the "
+        "113 units, so the primary model compares IGP and other units of similar baseline pollution, while the IGP-only model does not; "
+        "and its reference group also contains the coastal units. Both differences can move the IGP coefficient; which one does is not "
+        "tested here. A regional coefficient also mixes in anything that happened to the whole "
         "region after 2018 (crop-residue burning, transport, weather), which the per-unit estimates share.", ""])  # fmt: skip
 
 
 def section_cities(X: dict) -> str:
     c = X["c"][X["c"].version == "primary"].copy()
     c = c.sort_values("ncap_cities", key=lambda s: s.str.lower())
-    rows = [{"NCAP unit (cities)": r.ncap_cities.replace(";", ", "), "region": r.region, "cohort": int(r.cohort),
+    rows = [{"NCAP unit (cities)": r.ncap_cities.replace(";", ", "), "region": REGION.get(r.region, r.region), "cohort": int(r.cohort),
              "shrunken relative change (%)": pc(r.post_mean), "95% CrI (%)": ci_pct(r.post_lo95, r.post_hi95),
              "P(< 0)": f"{r.p_lt0:.2f}", "95% rank interval": f"{r.rank_lo95:.0f}–{r.rank_hi95:.0f}"} for r in c.itertuples()]  # fmt: skip
     return "\n".join([
@@ -212,7 +221,7 @@ def section_dose(X: dict) -> str:
     wsr = ws[ws["count"] >= 2]
     return "\n".join([
         "## 6. Funding dose-response (EXPLORATORY; DEC-166)", "",
-        "*Exploratory, not a hypothesis test.* " + NOT_ID.replace("this is a city-level relative change", "this relates city-level relative changes, not effects,") +
+        "*Exploratory, not a hypothesis test.* H1 is not identified by this design (Phase 7, DEC-151), so this relates city-level relative changes, not effects of NCAP, to money." +
         " Dose = XV Finance Commission air-quality **allocation** (FY2020-21 + FY2021-26) per person, not releases: XV-FC releases reward "
         "cities that improved (reverse causality). Allocations avoid that link but not every reverse-causal path.", "",
         f"- Units with a dose: **{len(inc)}** NCAP units (all their cities XV-FC, matched to an allocation row). "
@@ -220,7 +229,7 @@ def section_dose(X: dict) -> str:
         "allocation table in the extracted documents, so they have no dose.",
         f"- Dose range: Rs {inc.rs_per_person.min():,.0f} to Rs {inc.rs_per_person.max():,.0f} per person (median Rs {inc.rs_per_person.median():,.0f}).",
         f"- **Per-person allocations are set largely state by state:** in the {len(wsr)} states with two or more UAs, the within-state range "
-        f"is a median {wsr.range_pct_of_mean.median():.0f}% of the state mean (maximum {wsr.range_pct_of_mean.max():.0f}%), while state means run from "
+        f"is a median {wsr.range_pct_of_mean.median():.1f}% of the state mean (maximum {wsr.range_pct_of_mean.max():.1f}%), while state means run from "
         f"Rs {ws['mean'].min():,.0f} to Rs {ws['mean'].max():,.0f}. So the dose is confounded with state and region.", "",
         md(pd.DataFrame(rows)), ""])  # fmt: skip
 
@@ -235,7 +244,7 @@ def build(X: dict) -> str:
         "report is an effect of NCAP. The per-unit numbers are **city-level relative changes**: how a unit's satellite PM2.5 moved after "
         "listing relative to its own synthetic comparison of non-NCAP centres. H5 is a statement about those relative changes, not about "
         "where NCAP worked.", "",
-        section_estimates(X), section_model(X), section_h5(X), section_h3(X), section_dose(X), section_cities(X),
+        section_estimates(X), section_model(X), section_h5(X), section_cities(X), section_h3(X), section_dose(X),
         "## Figures", "",
         "- Figure 5, `reports/figures/fig5_city_map.{png,svg}`: maps of the shrunken city-level relative changes, their CrI widths and P(< 0).",
         "- Figure 6, `reports/figures/fig6_shrinkage.{png,svg}`: per-unit estimates before and after shrinkage, and rank intervals (no names).",
