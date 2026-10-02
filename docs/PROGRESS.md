@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-10-03. **Phase 8 approved; the FIRMS fire check is done (DEC-170 to DEC-172). Next: Phase 8b, the MAIAC AOD check through Google Earth Engine.** START at "Phase 8b" below.*
+*Last updated: 2026-10-03. **Phase 8b (MAIAC AOD) is in progress and WAITING FOR REENU: the one-month pilot projects ≈ 240–260 EECU-hours for the full export, above the pre-set limit (DEC-184).** START at "Phase 8b: status" below.*
 
 ## Status
 
@@ -18,7 +18,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 6 Network composition, H4 | ✅ reviewed and closed 2026-10-01; pushed (DEC-125 to DEC-137) |
 | 7 Causal analysis | ✅ approved 2026-10-02 (H1 not identified: rule (b) fails); pushed (DEC-138 to DEC-161) |
 | 8 Heterogeneity and mechanism | ✅ approved 2026-10-03 (H5 rule not met; H3 inconclusive; dose: nothing); pushed (DEC-161 to DEC-172) |
-| 8b MAIAC AOD check (Earth Engine) | **next** (Reenu's decision 2026-10-03) |
+| 8b MAIAC AOD check (Earth Engine) | **in progress**: specification pushed (DEC-174 to DEC-183); export blocked by the compute stop rule, waiting for Reenu (DEC-184) |
 | 9–10 | not started |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). Phase 7's rules (DEC-138 to DEC-150) were pushed in `eebaecc` before any estimate; the first post-2019 effect estimates are Part A's (DEC-151).
@@ -73,7 +73,35 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Phase 8b (raw MAIAC AOD check through Google Earth Engine): NEXT. START HERE in a new chat
+## Phase 8b: status (2026-10-03), WAITING FOR REENU
+
+**Done:**
+- The specification, DEC-174 to DEC-181, was pushed in `85acc2a` before any AOD value was pulled.
+- Implementation: DEC-182 (environment, `config/maiac.yaml`, Q1-only sensitivities), DEC-183 (export to Google Drive: the project has no Earth Engine asset root), DEC-184 (pilot).
+- **Environment:** `earthengine-api` 1.7.46 is in `conda-lock.yml` as insertions only, and `ncap` matches the lock (DEC-182).
+- **Reenu has authenticated.** Credentials are in `~/.config/earthengine/`. In PowerShell, run conda by its full path: `& "$env:USERPROFILE\miniforge3\Scripts\conda.exe" run -n ncap --no-capture-output <cmd>`.
+- **Collection check passed** (`data/interim/maiac_gee/check.json`).
+- **Code:**
+  - `src/acquire/maiac_gee.py` (check / pilot / submit / status / download);
+  - `src/causal/maiac.py` (panels / specs / run / event / summarise);
+  - `src/causal/report_maiac.py` (§12, the robustness row, the investigation row);
+  - DEC-180's rules as `decisions.aod_q1` / `aod_q2`;
+  - Snakemake rules `causal_maiac_*` in `causal.smk`;
+  - `tests/test_maiac.py` (11, synthetic).
+
+**Blocked:** the one-month pilot used 1.44 EECU-hours, which projects to ≈ 260 for 180 months (≈ 241 with the tile filter). DEC-178's limit is 100, and the Community tier gives 150 a month. **Reenu chooses one of DEC-184's options (a) Contributor tier, (b) two months, (c) less work.** Then log the chosen option and any new compute limit as a DEC *before* `submit`.
+
+**After the decision, in order:**
+1. `python -m src.acquire.maiac_gee submit`, then `status` until done, then `download`.
+2. `python -m src.causal.maiac panels`. The weight check stops the run if the median difference is above 10%.
+3. `specs`, then `run` (≈ 2 h, mains power), then `event`, then `summarise`.
+4. Then `python -m src.causal.triangulation`, `robustness`, `causal_report`, and `heterogeneity_report`.
+5. `layer_a.py` changed (the split now uses the spec's first outcome; all 19 Phase 7 spec hashes are identical, DEC-182). So `snakemake -n causal` wants to rerun Phase 7: mark Phase 7 current with `snakemake --touch` as in DEC-153/169, then run the Phase 8b rules through Snakemake.
+6. Phase note `docs/phase-notes/08b-maiac.md`; update this file; commit and push.
+
+**Open:** the locked `wcwidth 0.9.1` build is gone from conda-forge's main label. Test this in the Phase 10 clean-clone check (DEC-182).
+
+## Phase 8b: the original handoff (2026-10-03)
 
 **What and why.** This is the registered "if time allows" check under the calibration-leakage threat (plan §5; DEC-096, DEC-147 item 18).
 - ACAG's satellite PM2.5 is calibrated to ground monitors, and Phase 7's pre-specified leakage warning fired (DEC-151).

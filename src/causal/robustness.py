@@ -13,6 +13,7 @@ import pandas as pd
 from src.causal import decisions as D
 from src.causal import layer_a as A
 from src.causal import layer_b as B
+from src.causal import report_maiac as RM
 from src.common.gate import require_gate
 
 ES = A.OUT / "event_study"
@@ -97,8 +98,11 @@ def main() -> None:
     else:
         rows.append({"layer": "A", "check": "VIIRS fire covariate (from 2012)", "status": "registered", "est": np.nan, "agrees": None,
                      "note": "not run: FIRMS has not been downloaded (DEC-039, DEC-147 item 17)"})  # fmt: skip
-    rows.append({"layer": "A", "check": "Raw MAIAC AOD", "status": "registered", "est": np.nan, "agrees": None,
-                 "note": "not run: registered as 'if time allows'; not downloaded (DEC-147 item 18)"})  # fmt: skip
+    if RM.have():  # Phase 8b (DEC-181): log AOD is not on the PM2.5 scale, so "agrees" stays empty
+        rows.append(RM.robustness_row())
+    else:
+        rows.append({"layer": "A", "check": "Raw MAIAC AOD", "status": "registered", "est": np.nan, "agrees": None,
+                     "note": "not run: registered as 'if time allows'; not downloaded (DEC-147 item 18)"})  # fmt: skip
 
     est = pd.read_csv(B.OUT / "estimates.csv")
     labels = {v.key: v.label for v in B.versions()}

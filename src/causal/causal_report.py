@@ -15,6 +15,7 @@ import pandas as pd
 
 from src.causal import decisions as D
 from src.causal import layer_a as A
+from src.causal import report_maiac as RM
 from src.causal import report_part_b as RB
 from src.common.gate import require_gate
 from src.common.paths import DOCS, INTERIM, params
@@ -284,6 +285,8 @@ def build(X: dict, R: dict) -> str:
     if RB.have_part_b():
         body += [RB.section_layer_b(), RB.section_triangulation(), RB.section_robustness(), RB.section_dec137(),
                  RB.section_exploratory(X["s"], X["specs"])]
+    if RM.have():  # Phase 8b (DEC-181)
+        body.append(RM.section())
     tail = ["## Caveats that travel with every Layer A number", "",
             "- The MDE is a best-case lower bound (plan §3); the confidence intervals use the real design's joint-placebo SE.",
             "- ACAG is calibrated to ground monitors (§3 is the pre-specified check; the V6.GL.02.04 vintage comparison is in Part B).",

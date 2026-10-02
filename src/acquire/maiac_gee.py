@@ -121,8 +121,13 @@ def qa_mask(ee, qa, accept: dict):
     return m
 
 
-def collection(ee):
-    return ee.ImageCollection(CFG["collection"])
+def collection(ee, tiles: bool = True):
+    """The granules, restricted to the MODIS tiles that hold the units (DEC-184). Without the tile filter,
+    filterBounds also passes Antarctic tiles, which hold no unit pixel but cost compute."""
+    c = ee.ImageCollection(CFG["collection"])
+    if tiles and CFG.get("tiles"):
+        c = c.filter(ee.Filter.Or(*[ee.Filter.stringContains("system:index", f"_{t}_") for t in CFG["tiles"]]))
+    return c
 
 
 def projection(ee):
@@ -282,11 +287,11 @@ def _wait(ee, task_id: str, every: int = 30) -> dict:
         time.sleep(every)
 
 
-def cmd_pilot() -> None:
+def cmd_pilot(tag: str = "") -> None:
     """DEC-178: one month, timed; the EECU use scaled to 180 months against the budget."""
     ee = init()
     y, m = CFG["pilot_month"]
-    name = f"maiac_pilot_{y}_{m:02d}"
+    name = f"maiac_pilot_{y}_{m:02d}{('_' + tag) if tag else ''}"
     rec = start_export(ee, table(ee, y, [m]), name)
     t0 = time.time()
     st = _wait(ee, rec["task_id"])
@@ -302,7 +307,8 @@ def cmd_pilot() -> None:
     res = {**rec, "status": st, "wall_seconds": round(time.time() - t0), "eecu_seconds": eecu, "months_total": months,
            "projected_eecu_hours": proj_h, "budget_hours": CFG["eecu_budget_hours"],
            "within_budget": proj_h is not None and proj_h <= CFG["eecu_budget_hours"], "csv_sha256": sha256_file(out)}  # fmt: skip
-    (PILOT / "pilot.json").write_text(json.dumps(res, indent=2), encoding="utf-8")
+    (PILOT / f"{name}.json").write_text(json.dumps(res, indent=2), encoding="utf-8")
+    (PILOT / "pilot.json").write_text(json.dumps(res, indent=2), encoding="utf-8")  # the latest pilot decides submit
     print(json.dumps({k: res[k] for k in ("wall_seconds", "eecu_seconds", "projected_eecu_hours", "within_budget")}, indent=2))
     if not res["within_budget"]:
         raise SystemExit("projected compute is over budget or unknown: do not submit; tell Reenu (DEC-178)")
@@ -378,7 +384,7 @@ def main(argv: list[str]) -> None:
     cmds = {"check": cmd_check, "pilot": cmd_pilot, "submit": cmd_submit, "status": cmd_status, "download": cmd_download}
     if not argv or argv[0] not in cmds:
         raise SystemExit(__doc__)
-    cmds[argv[0]]()
+    cmds[argv[0]](*argv[1:])
 
 
 if __name__ == "__main__":

@@ -33,3 +33,6 @@ month_min_days: 4                             # population- (area-) weighted val
 monsoon_months: [6, 7, 8, 9]
 year_min_nonmonsoon_months: 6                 # of the 8 non-monsoon months
 min_kept_treated_share: 0.5                   # below this every AOD result is labelled "limited coverage"
+
+# The 9 MODIS tiles that hold the 1,036 units (computed from the polygons in docs/maiac_scoping.md; DEC-184)
+tiles: [h24v05, h24v06, h24v07, h25v06, h25v07, h25v08, h26v06, h26v07, h27v07]

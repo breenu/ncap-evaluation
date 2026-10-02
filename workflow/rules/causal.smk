@@ -79,6 +79,7 @@ rule pre_period_checks:
 
 CSL = "data/processed/causal"
 ES = f"{CSL}/event_study"
+MAIAC = f"{CSL}/maiac"  # Phase 8b (DEC-174 to DEC-183)
 SDID_A = ["primary", "v6gl03", "area", "placebo2016", "placebo2016_rm"]  # Part A specifications
 SDID_B = ["v6gl0204", "towns", "towns_nopatancheruvu", "asansol_alone", "treated100k", "spill25", "funded",
           "anticip2018", "incl2020", "noigp", "restricted_pm25", "restricted_pm25_v6gl0204",
@@ -198,6 +199,10 @@ rule causal_report:
         f"{INT}/audit/missingness_bias.csv",
         "src/causal/causal_report.py",
         "src/causal/report_part_b.py",
+        "src/causal/report_maiac.py",
+        f"{MAIAC}/results.json",  # Phase 8b, §12 (DEC-181)
+        f"{MAIAC}/weight_check.json",
+        f"{MAIAC}/coverage_by_month.csv",
         "src/causal/decisions.py",
     output:
         "docs/causal_report.md",
@@ -261,7 +266,9 @@ rule causal_triangulation:
         f"{CSL}/layer_b/estimates.csv",
         f"{CSL}/layer_b/satellite_at_stations.csv",
         "data/processed/composition/trends.parquet",
+        f"{MAIAC}/sdid_summary.csv",  # Phase 8b: investigation step 2 (DEC-181)
         "src/causal/triangulation.py",
+        "src/causal/report_maiac.py",
         "src/causal/decisions.py",
     output:
         f"{CSL}/triangulation.csv",
@@ -299,10 +306,81 @@ rule causal_robustness:
         f"{CSL}/layer_b/estimates.csv",
         rules.causal_event_study.output,
         rules.causal_cs.output,
+        f"{MAIAC}/results.json",  # Phase 8b (DEC-181)
         "src/causal/robustness.py",
+        "src/causal/report_maiac.py",
         "src/causal/decisions.py",
     output: f"{CSL}/robustness.csv"
     shell: f"{PY} src.causal.robustness"
+
+
+# Phase 8b: the registered raw MAIAC AOD check (DEC-174 to DEC-183). The Earth Engine export needs Reenu's
+# credentials, so it is run on request:  python -m src.acquire.maiac_gee check | pilot | submit | download
+
+
+rule causal_maiac_panels:
+    input:
+        "data/raw/maiac_gee/MANIFEST.csv",
+        f"{CSL}/design_units.csv",
+        f"{CSL}/panel_annual.parquet",
+        "data/processed/unit_year_sat.parquet",
+        "config/maiac.yaml",
+        "src/causal/maiac.py",
+    output:
+        f"{MAIAC}/panel_aod.parquet",
+        f"{MAIAC}/unit_month.parquet",
+        f"{MAIAC}/unit_year.parquet",
+        f"{MAIAC}/sample.csv",
+        f"{MAIAC}/coverage_by_month.csv",
+        f"{MAIAC}/weight_check.json",
+    shell: f"{PY} src.causal.maiac panels"
+
+
+rule causal_maiac_specs:
+    input:
+        f"{MAIAC}/panel_aod.parquet",
+        f"{MAIAC}/sample.csv",
+        "data/processed/composition/city_changes.parquet",
+        "src/causal/maiac.py",
+        "src/causal/layer_a.py",
+    output:
+        f"{MAIAC}/specs/specs.csv",
+        f"{MAIAC}/specs/spec_units.parquet",
+        f"{MAIAC}/specs/spec_fitsets.csv",
+        f"{MAIAC}/specs/spec_estimands.csv",
+        f"{MAIAC}/specs/yardsticks.json",
+    shell: f"{PY} src.causal.maiac specs"
+
+
+# ~2 h on 8 workers, on mains power (DEC-168); resumable. Which yardstick specs exist depends on the sample,
+# so the rule runs every spec in specs.csv and writes one flag.
+rule causal_maiac_sdid:
+    input:
+        rules.causal_maiac_specs.output,
+        "src/causal/sdid.R",
+    output: f"{MAIAC}/sdid/all.done"
+    shell: f"{ONE_THREAD} {PY} src.causal.maiac run && touch {{output}}"
+
+
+rule causal_maiac_event:
+    input:
+        f"{MAIAC}/specs/spec_units.parquet",
+        f"{MAIAC}/panel_aod.parquet",
+        f"{CSL}/era5_unit_year.parquet",
+        "src/causal/maiac.py",
+        "src/causal/event_study.py",
+    output: f"{MAIAC}/event_study/es_aod_coefs.csv", f"{MAIAC}/event_study/es_aod_meta.json"
+    shell: f"{PY} src.causal.maiac event"
+
+
+rule causal_maiac_summary:
+    input:
+        f"{MAIAC}/sdid/all.done",
+        rules.causal_maiac_event.output,
+        "src/causal/maiac.py",
+        "src/causal/decisions.py",
+    output: f"{MAIAC}/results.json", f"{MAIAC}/sdid_summary.csv"
+    shell: f"{PY} src.causal.maiac summarise"
 
 
 # Figure 1 with the Phase 7 step (DEC-150): its own output name, so the Phase 6 figure rule stays ungated

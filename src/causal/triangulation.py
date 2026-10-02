@@ -20,6 +20,7 @@ import pandas as pd
 from src.causal import decisions as D
 from src.causal import layer_a as A
 from src.causal import layer_b as B
+from src.causal import report_maiac as RM
 from src.common.gate import require_gate
 from src.normalise import composition as C
 
@@ -70,6 +71,8 @@ def investigation(sdid: pd.DataFrame, est: pd.DataFrame, satcell: pd.DataFrame) 
                      ("restricted_pm25_v6gl0204", "Layer A restricted, V6.GL.02.04 vintage (2019, 2021-2023)")):  # fmt: skip
         r = s.loc[(sid, "att")]
         add(2, lab, r.att, r.lo95, r.hi95)
+    if RM.have() and (row := RM.investigation_row()):  # Phase 8b: raw AOD, direction only (DEC-181)
+        add(row["step"], row["quantity"], row["est"], row["lo95"], row["hi95"], row["note"])
     for r in ground_sat_correlation().itertuples():
         add(2, f"correlation of log ground panel and log satellite across {r.cities} cities, {r.year}", r.corr_log, np.nan, np.nan)
     for r in satcell.itertuples():
