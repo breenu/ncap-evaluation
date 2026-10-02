@@ -1383,3 +1383,100 @@ Numbers from `docs/heterogeneity_report.md` (generated). No rule or specificatio
   - The Phase 7 phase note gets a dated addendum, and PROGRESS is updated.
 
 **DEC-173: FIRMS January 2025 – March 2026 will not be downloaded (Reenu, 2026-10-03).** No analysis needs those months: Layer A ends in 2024, and the fire check uses 2012–2024. The country-API part of `src/acquire/firms.py` stays as written and fails (DEC-172); it is not switched to the area API. FIRMS is closed.
+
+## 2026-10-03: Phase 8b (raw MAIAC AOD check). Rules written BEFORE any AOD value is pulled
+
+The registered plan (§5, calibration-leakage threat) lists raw MAIAC aerosol optical depth "if time allows" and says nothing more. Reenu decided on 2026-10-03 to run it through Google Earth Engine (GEE), as Phase 8b. Everything below fills that gap. It was committed and pushed before the Earth Engine API was installed, so before any AOD value existed. **H1 is "not identified by this design" (DEC-151), and nothing in this phase can change that:** the verdict rests on the failed pre-trend test. Nothing here is an effect of NCAP.
+
+**DEC-174 (facts checked 2026-10-03, hard rule 2): the product and the population weights.**
+- **Product:** MODIS MAIAC MCD19A2 Collection 6.1, GEE collection `MODIS/061/MCD19A2_GRANULES`. The catalogue gives availability 2000-02-24 to 2026-09-25, 1 km pixels, band `Optical_Depth_055` with scale 0.001 and valid range −100 to 8000 (so AOD −0.1 to 8.0), and the `AOD_QA` bitmask. LP DAAC data carry no restriction on use or redistribution.
+- **QA bits,** checked against the MCD19 C6.1 user guide (§5.4) and identical in the GEE catalogue: bits 0–2 cloud mask (001 = clear, 010 = possibly cloudy); bits 3–4 surface (00 = land); bits 5–7 adjacency (000 = normal/clear, 011 = adjacent to a single cloudy pixel); bits 8–11 AOD QA (0000 = best quality, 0011 = one neighbour cloud, 1011 = land, research quality: AOD retrieved but cloud mask possibly cloudy); bit 12 glint; bits 13–14 aerosol model.
+- **What the guide recommends (§4):** "The best quality AOD is represented by the QA bit 0000 'Best quality'. It is a combination of the two filters: QA.CloudMask = Clear and QA.AdjacencyMask = Clear." Adjacency should be Normal for general use; "AdjacentToASingleCloudyPixel can also be used as it often represents false cloud detection".
+- **Structure:** each MCD19A2 file holds one layer per overpass (1–2 orbits a day near the equator, Terra and Aqua; guide §3.1). The GEE "_GRANULES" collection is expected to hold one image per tile and overpass. **This is checked on the day, before the export: if the collection is instead a daily composite, or the band or scale differs, the export stops and Reenu is told.**
+- **Population weights:** our local weights are GHS-POP E2020 **R2023A**, 30 arc-seconds (DEC-038). GEE holds `JRC/GHSL/P2023A/GHS_POP`, the same release (R2023A) and epoch (2020), at 100 m (Mollweide). So the release and epoch match exactly; only the grid differs (100 m instead of 30″). Exact weights cannot be uploaded without a Cloud Storage bucket or the web interface, so the GEE 100 m layer is used, summed onto the MODIS grid (DEC-176). A check against our own weights is fixed in DEC-176.
+- **GEE quota:** since 27 April 2026, noncommercial projects have a monthly compute quota. The default "Community" tier is 150 EECU-hours a month (developers.google.com/earth-engine/guides/noncommercial_tiers; checked 2026-10-03). DEC-178 sets how the export stays inside it.
+
+**DEC-175: QA filtering and band.**
+- **Band:** `Optical_Depth_055` (0.55 µm) × 0.001. Small negative retrievals (down to −0.1) are kept as retrieved, not clipped: clipping would bias clean-air means upward. The annual means used are expected to be well above 0; if any unit-year mean is ≤ 0, the analysis stops (the log is undefined) and Reenu is told.
+- **Primary filter (per pixel and overpass):** land (bits 3–4 = 00) **and** cloud mask clear (bits 0–2 = 001) **and** adjacency normal (bits 5–7 = 000) **and** AOD QA best (bits 8–11 = 0000). This is the guide's "best quality", with its two component filters checked explicitly.
+- **Glint (bit 12) is not filtered.** Sun glint matters over water, and water pixels are already excluded; a glint filter on land would remove pixels by viewing geometry (season and latitude), not by quality.
+- **Relaxed filter (sensitivity):** land **and** cloud mask clear or possibly cloudy (001, 010) **and** adjacency normal or adjacent to a single cloudy pixel (000, 011) **and** AOD QA in {0000 best, 0011 one neighbour cloud, 1011 land research quality}. Why it is worth running: MAIAC can flag thick winter haze or smoke as cloud, which removes the most polluted days from the strict filter. The relaxed filter keeps more of them, at the cost of more cloud contamination.
+
+**DEC-176: from overpasses to unit-month values.**
+- **Day:** the UTC date of the overpass (`system:time_start`). Indian MODIS overpasses (about 10:30 and 13:30 local time, i.e. about 05:00 and 08:00 UTC) fall on the same UTC date as the Indian date.
+- **Daily pixel value:** the mean of that day's valid overpasses (Terra and Aqua weighted equally), after the QA filter.
+- **Pixel-month value:** the mean of the pixel's valid daily values in the calendar month, and the pixel's number of valid days. A pixel with no valid day has no value that month.
+- **Unit-month value, primary (population-weighted, as Layer A, DEC-070):** Σ w·c·AOD / Σ w·c over the unit's pixels with a value, where w = the 2020 population of the MODIS pixel and c = the fraction of the pixel inside the polygon.
+  - w: GHS-POP 2020 (R2023A, 100 m) converted to people per m², averaged onto the MODIS 1 km sinusoidal grid with `reduceResolution(mean)` (area-fraction weights, as GEE recommends for count-like layers), times the MODIS pixel area. This is "GHS-POP summed onto the product grid", as DEC-070 does for ACAG.
+  - c: GEE's weighted reducers use the fraction of each pixel covered by the polygon (quantised to 1/256). It plays the role of exactextract's exact coverage fraction in Layer A.
+  - The reduction runs in the MODIS granules' own projection and grid, so no AOD pixel is resampled.
+- **Unit-month value, sensitivity (area-weighted):** Σ c·AOD / Σ c over pixels with a value. The sinusoidal grid is equal-area, so this is an area-weighted mean.
+- **Coverage measures per unit-month:** population coverage = Σ w·c over pixels with a value / Σ w·c over all pixels; population-weighted valid days = Σ w·c·days / Σ w·c (pixels with no value count as 0 days); and the same two on area weights.
+- **What is exported** (per unit and month): the raw sums (Σ w·c, Σ c, and for each filter the sums of w·c, w·c·AOD and w·c·days over valid pixels, plus their area-weighted counterparts for the primary filter). Means and coverage are formed locally, in committed code, from these sums.
+- **Weight check, fixed now:** the GEE weights summed over each unit (Σ w·c) are compared with Phase 3's GHS-POP 30″ population of the same polygon (`unit_year_sat.parquet: pop`). **If the median absolute difference over the 1,036 units exceeds 10%, the analysis stops and Reenu is told.** Otherwise the median and 90th-percentile differences are reported.
+
+**DEC-177: coverage rules, the monsoon, and the analysis sample (fixed before any coverage figure is seen).**
+- **Valid unit-month:** population coverage ≥ 50% **and** population-weighted valid days ≥ 4 (about one clear day a week). The area-weighted sensitivity applies the same thresholds to its area-weighted measures; the relaxed filter applies them to its own measures.
+- **Seasons:** the monsoon months are June–September (IMD's southwest-monsoon season); the other eight (January–May, October–December) are "non-monsoon".
+- **Valid unit-year:** at least 6 of the year's 8 non-monsoon months are valid. Cloud removes most monsoon retrievals in many units in many years, so monsoon months are never required: a rule that needed them would drop units because of where it rains, not because of data quality.
+- **Annual value, primary:** the mean of the year's valid monthly values, monsoon months included when they are valid. (The annual value is formed from the monthly means; ACAG's annual mean also covers the whole year.)
+  - Which monsoon months are valid changes from year to year, so the annual mean's seasonal mix changes too. That adds noise, and it could add bias if monsoon cloudiness trended differently in NCAP units.
+- **Sensitivity, non-monsoon annual:** the mean of the year's valid non-monsoon months only (same year rule). Its seasonal mix varies far less.
+- **Analysis sample:** a unit enters an AOD specification only if that specification's annual series is valid in every year 2010–2019 and 2021–2024 (SDID needs a balanced panel, DEC-139; 2020 is dropped as in Layer A and is not required). Nothing is imputed. The same rule applies to treated and control units.
+  - Reported: units kept and dropped by role, cohort, region and leakage group; valid-month shares by calendar month and region.
+  - A leakage group with fewer than 10 kept units is not estimated (`robustness.leakage_min_units`, as registered). A cohort with no kept unit drops out of the cohort aggregate.
+  - **If fewer than half of the 113 treated units are kept,** every AOD result is labelled "limited coverage" beside its classification.
+  - Dropping units by cloudiness is a selection on geography, not on outcome trends. Its consequence (the AOD sample is not Layer A's sample) is handled by estimating ACAG PM2.5 on the same sample (DEC-179).
+
+**DEC-178: the export (`src/acquire/maiac_gee.py`; nothing is done in the GEE web interface).**
+- **Units:** the 1,036 Layer A units (113 treated, 923 controls) from `data/interim/sat_units.gpkg`, passed in the script as GeoJSON (1.4 MB, 30,443 vertices; under GEE's 10 MB request limit). Roles stay local; nothing about treatment goes to GEE.
+- **Window:** January 2010 to December 2024.
+- **Tasks:** one `Export.table.toAsset` per calendar year (15 tasks, 12 months × 1,036 units each) into the project's assets (`projects/ncap-evaluation/assets/…`). Each table is then downloaded as CSV with `getDownloadURL` and saved, unchanged, as the raw file.
+- **Pilot first:** one month is exported and timed. Its compute (the task's EECU usage) is scaled to 180 months. **If the projected total exceeds 100 EECU-hours** (two thirds of the Community tier's 150 a month, leaving room for re-runs), the full export is not started and Reenu is told. The pilot table is stored under `data/interim/maiac_gee_pilot/`, not as raw data, and no estimate uses it.
+- **Raw data (hard rule 7):** `data/raw/maiac_gee/maiac_unit_month_<year>.csv`, one per year. The manifest records for each file: the GEE asset id as its url; a remote id made of the task id, the commit and sha256 of `maiac_gee.py` at export, and the sha256 of the request parameters; the download time; the sha256 and size of the file; and the request parameters themselves in the notes (collection, band, scale, both QA filters, population asset, projection, years, months). The script is committed before the export runs, so the commit named in the manifest contains the exact code.
+- **Credentials (hard rule 5):** Reenu authenticates in the browser (`earthengine authenticate`). The credentials stay in `~/.config/earthengine/`, outside the repository. The project id (`ncap-evaluation`) is not a secret; it goes in `config/params.yaml`.
+
+**DEC-179: the analysis (Phase 7's engine, unchanged).**
+- **Outcome:** log of the annual unit mean of AOD (dimensionless), 2010–2024 without 2020.
+- **Design, exactly as Layer A's primary (DEC-139):** SDID per listing cohort with never-treated controls, cohort estimates combined by treated units, 2020 dropped, SE from 500 joint-placebo replications drawn from the specification's own controls, 95% CI = estimate ± 1.96 SE. `src/causal/sdid.R` is run unchanged, on its own folder (`data/processed/causal/maiac/`), so no Phase 7 specification, panel or hash changes.
+- **Monitor-gain split (DEC-146):** the same groups (`monitor_gain.csv`: gained a monitor 2019–2024 or not), each group's estimate and the difference (gained − not gained), all from the same joint-placebo draws.
+- **Specifications** (each with its own 500 replications):
+  1. `aod_primary`: log AOD, population-weighted, primary filter, all valid months, with the monitor-gain split. **This one is classified by DEC-180.**
+  2. `acag_aod_sample`: log ACAG V5.GL.06 PM2.5 (population-weighted, Phase 7's series), on exactly the units of `aod_primary`, with the split. It is the like-for-like yardstick: it separates "AOD differs from ACAG" from "the AOD sample differs from Layer A's".
+  3. `aod_nonmonsoon`: as 1, non-monsoon annual (DEC-177).
+  4. `aod_area`: as 1, area-weighted.
+  5. `aod_relaxed`: as 1, relaxed QA filter (DEC-175).
+  6. `aod_restricted`: as 1, with only the treated units that have a Layer B PM2.5 panel (Phase 7's restricted set; DEC-150), for the triangulation investigation's calibration step.
+  Specifications 3–6 are reported beside 1 and classified by the same rule for information; they do not change 1's classification. Each uses the units whose own series is complete (DEC-177), and its yardstick is ACAG on those units.
+- **Event study (DEC-142, unchanged):** Sun & Abraham on log AOD, the `aod_primary` units, unit and region × year fixed effects, the same ERA5 covariates, SEs clustered by unit, relative years −9 to +5. Reported: the coefficients, the pre-trend Wald p and the average post-period estimate. **For information only; it decides nothing here.** Rule (b) belongs to H1 and is unchanged.
+- **Run time:** about 1.5–2 h of SDID on 8 workers (about 0.39 s per fit, DEC-151), on mains power (DEC-168).
+
+**DEC-180: how the AOD results are read, fixed in advance.** AOD is a column measure, not surface PM2.5. Its link to PM2.5 depends on boundary-layer height, humidity and aerosol type, all of which can change over time and differ between places. **So the check tests direction, not size.** No AOD estimate is ever turned into µg/m³ or set on the PM2.5 "agrees" scale. Sizes enter in one place only, as a resolution yardstick: whether an AOD interval is wide enough to contain both "no change" and a change of the same relative size as ACAG's on the same units. That mirrors the registered "uninformative" layer category (plan §5, DEC-135).
+
+Two questions, each classified by the first rule that applies. The inputs are `aod_primary` and `acag_aod_sample`, both on the same units.
+
+- **Q1. Does the relative rise appear in AOD?** A = the AOD estimate (log) with its 95% CI; P = the ACAG estimate on the same units.
+  0. *Not testable on this sample* if P < 0 or P's 95% CI includes 0 (the rise Q1 asks about is then not present in ACAG on these units).
+  1. *Uninformative* if A's 95% CI contains both 0 and P.
+  2. *Rise also in AOD* if A > 0 and its CI excludes 0.
+  3. *Opposite direction* if A < 0 and its CI excludes 0.
+  4. *Rise not reproduced* otherwise (A's CI includes 0 but lies below P).
+- **Q2. Does the gained/not-gained gap appear in AOD?** D_A = the AOD difference (gained − not gained) with its 95% CI; D_P = the ACAG difference on the same units.
+  0. *Not testable on this sample* if D_P is not negative with a 95% CI excluding 0 (the leakage warning is not reproduced in ACAG on these units), or if either group has fewer than 10 kept units.
+  1. *Uninformative* if D_A's 95% CI contains both 0 and D_P.
+  2. *Gap reproduced in AOD (against leakage)* if D_A < 0 and its CI excludes 0.
+  3. *Gap absent from AOD (consistent with leakage)* otherwise (D_A's CI lies above D_P).
+- **What each outcome means, written now:**
+  - Q1 "rise also in AOD": the relative rise of NCAP units also appears in a signal that no ground monitor calibrates, so ACAG's calibration did not produce it. (Leakage as hypothesised pulls units that gained monitors *down*, so it could not have produced a rise anyway; Q1 tests ACAG's processing more broadly.)
+  - Q1 "opposite direction" or "rise not reproduced": raw AOD does not show the rise. Either something in ACAG's processing produced it, or the link between column AOD and surface PM2.5 changed differently in NCAP units (boundary layer, humidity, aerosol mix). This check cannot tell which.
+  - Q2 "gap reproduced": units that gained monitors also rose less in a monitor-free signal, so calibration leakage is an unlikely explanation for the gap. Real differences between the two groups (size, pollution, the AOD–PM link) remain.
+  - Q2 "gap absent": the gap is not in the monitor-free signal. That is what calibration leakage would produce. It is consistent with leakage, not proof: a group difference in the AOD–PM link would look the same.
+  - "Uninformative": AOD is too noisy here to tell. 2.8 × SE is reported beside it as the smallest difference the design could reliably detect (hard rule 8).
+  - "Not testable": stated with the reason.
+- **Always:** H1 stays "not identified by this design" whatever the classification. Every AOD estimate is printed as a % change in AOD (100 × (e^β − 1)), labelled "AOD, not PM2.5", next to that caveat.
+
+**DEC-181: where the results go, and the wording.**
+- **`docs/causal_report.md`, a new section §12 "Raw MAIAC AOD (Phase 8b)",** generated from the outputs: the coverage and sample tables, the weight check, every specification's estimates, the event study, the Q1/Q2 classifications with their pre-written meanings, and the caveats.
+- **The robustness table (§9):** the "Raw MAIAC AOD" row shows the `aod_primary` estimate and CI with "agrees: —". An AOD log change is not on the PM2.5 scale, so DEC-135's "agrees" does not apply and the "17 of 19" count is unchanged. The note gives Q1 and Q2.
+- **The triangulation investigation (§8), step 2 (satellite calibration):** a row "Layer A restricted, raw MAIAC AOD (log AOD; direction only)" from `aod_restricted`, beside the V5.GL.06 and V6.GL.02.04 rows. The two registered pair classifications (§8's first table) are not changed: they compare ground PM2.5 with satellite PM2.5, and AOD is neither.
+- **Wording (DEC-154 and the Phase 8 rule):** nothing is an effect of NCAP. Every AOD estimate carries "H1 is not identified by this design" beside it. Estimates are "relative changes in AOD of listed units against their synthetic comparison".
