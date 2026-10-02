@@ -11,7 +11,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 |---|---|
 | 0 Plan | ✅ approved 2026-09-26 (answers in PLAN.md §8) |
 | 1 Skeleton | ✅ approved 2026-09-26; pushed; CI green |
-| 2 Acquisition | ✅ approved 2026-09-26; pushed. FIRMS VIIRS 2012–2024 downloaded 2026-10-03; the 2025+ API part fails (FIRMS changed its API; DEC-172) |
+| 2 Acquisition | ✅ approved 2026-09-26; pushed. FIRMS VIIRS 2012–2024 downloaded 2026-10-03; the 2025+ part is not fetched (DEC-172/173) |
 | 3 Storage, cleaning, audit, EDA | ✅ approved 2026-09-26; pushed (DEC-080 to DEC-082) |
 | 4 Analysis-plan gate | ✅ 2026-09-27: plan `6e24eca` registered at https://osf.io/jksne/; gate opened in `0d9aa42` (DEC-084 to DEC-099) |
 | 5 Deweathering | ✅ approved 2026-09-28; pushed (DEC-100 to DEC-124) |
@@ -128,10 +128,7 @@ snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (
   - A short report section.
   - A phase note, `docs/phase-notes/08b-maiac.md`.
 
-**Also open, not part of 8b unless Reenu says so: FIRMS January 2025 – March 2026.**
-- FIRMS's country API now answers "Invalid API call", while its area (bounding-box) API works with the same key (DEC-172).
-- No analysis needs those months.
-- Switching the downloader to another endpoint needs Reenu's go-ahead (hard rule 1).
+**FIRMS is closed** (DEC-173): 2012–2024 is downloaded and used; Reenu decided not to fetch January 2025 – March 2026.
 
 ## Phase 8 (heterogeneity and mechanism, RQ4): DONE and approved (2026-10-03)
 
@@ -481,7 +478,7 @@ Built and run (all generated, all in Snakemake `workflow/rules/clean.smk`):
 
 ## Open problems
 
-- **FIRMS January 2025 – March 2026 not downloaded.** FIRMS's country API answers "Invalid API call", while the area API works (DEC-172). No analysis needs those months, and switching the endpoint needs Reenu's go-ahead. 2012–2024 is downloaded and in use.
+- ~~FIRMS~~: closed. 2012–2024 is downloaded and used; January 2025 – March 2026 will not be fetched (Reenu, DEC-173).
 - **Mirror provenance** is one step removed from CPCB (DEC-037). Mitigations: sha256 pinning, the cross-check (2019–21 value-identical), and ODbL for any derived dataset we publish.
 - **Pre-2018 ground network is tiny**: PM10 has 9 valid station-years in 2017 and 66 in 2018. Ground-based and PM10 results are secondary (analysis plan §0).
 - **Stations with no coordinate anywhere** keep an approximate city point (count in `docs/station_metadata_review.md`); they stay out of neighbour checks.

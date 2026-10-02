@@ -1381,3 +1381,5 @@ Numbers from `docs/heterogeneity_report.md` (generated). No rule or specificatio
   - "16 of 18" → **"17 of 19" Layer A checks agree**. Every Layer A estimate is still positive, and H1's verdict is unchanged.
   - Rebuilt through Snakemake: `causal_robustness`, `causal_report` and `heterogeneity_report`. All are byte-identical to the hand-built files, and `snakemake -n causal`, `-n hierarchical` and `-n pregate` report nothing to do.
   - The Phase 7 phase note gets a dated addendum, and PROGRESS is updated.
+
+**DEC-173: FIRMS January 2025 – March 2026 will not be downloaded (Reenu, 2026-10-03).** No analysis needs those months: Layer A ends in 2024, and the fire check uses 2012–2024. The country-API part of `src/acquire/firms.py` stays as written and fails (DEC-172); it is not switched to the area API. FIRMS is closed.
