@@ -1357,3 +1357,27 @@ Numbers from `docs/heterogeneity_report.md` (generated). No rule or specificatio
   - the "VIIRS fire covariate (from 2012)" row of the robustness table (`robustness.csv`, `docs/causal_report.md` §9) and its "x of y checks agree" count;
   - every summary count that quotes it (PROGRESS, the Phase 7 phase note, as a dated addendum).
   - Nothing else in Phase 7 is re-run or changed. H1's verdict cannot change: this is a robustness check, not a rule.
+
+**DEC-172: FIRMS downloaded (2012–2024); the 2025+ API part fails because FIRMS changed its API; the fire-covariate check agrees (Layer A robustness now 17 of 19).** Rules: DEC-171, pushed in `4eb69f7` before any fire value was read.
+- **Download (2026-10-03, new network, new key in `.env`).**
+  - The 13 VIIRS S-NPP yearly India files, 2012–2024: 566 MB, verified and recorded in `data/raw/firms/MANIFEST.csv` (url, upstream ETag / Last-Modified / size, sha256).
+  - Upstream, they are dated 24 June 2025.
+- **The January 2025 – March 2026 part failed.**
+  - All 91 country-API requests returned HTTP 400 "Invalid API call".
+  - The key itself is valid: `mapkey_status` answers, 5,000 transactions per 10 minutes.
+  - FIRMS's area (bounding-box) endpoint answers normally for the same dates. So the country endpoint has changed or been withdrawn.
+  - Under hard rule 1 the downloader was **not** switched to another endpoint. The 91 empty sidecar stubs of the failed attempts were deleted, and the acquisition flag stays unwritten.
+  - No current analysis needs 2025+ fire data: Layer A ends in 2024. This is open for Reenu.
+- **Snakemake.** The fire rules (`causal_fire_covariate`, `causal_fire`) depend on the FIRMS manifest, not on the acquisition flag.
+- **Data as documented.** The code checks every file's columns: `type` codes are within {0, 1, 2, 3} and `confidence` within {l, n, h}. 5,496,513 detections were kept (type 0, nominal or high confidence). Every one of the 1,036 units has at least one kept detection within 100 km in every year 2012–2024.
+- **Result.**
+  - The event study with fire, 2012–2024 without 2020, gives an average post-period estimate of +0.0302 (+3.1%; 95% CI +1.7% to +4.5%). It **agrees** with the primary SDID: same sign, inside +2.4% to +4.8%.
+  - The same window without fire gives +0.0304 (+3.1%), so adding fire changes the estimate by 0.0002.
+  - Fire coefficient: −0.0090 (SE 0.0021). It is reported, not interpreted: as for ERA5's covariates, no claim is made about an individual covariate (DEC-136).
+  - Pre-trend Wald p = 0.0002, for information; rule (b) is the primary's and is unchanged.
+- **Correction to DEC-171's wording.** Relative years −8 (cohort 2020) and −9 (cohort 2021) are *inside* the −9 … +5 window, not outside it. So the Wald test covers −9 … −2, with only the later cohorts at the earliest lags. Nothing computed depends on that sentence.
+- **Changed in Phase 7's outputs, and nothing else:**
+  - the fire row of `robustness.csv` and `docs/causal_report.md` §9;
+  - "16 of 18" → **"17 of 19" Layer A checks agree**. Every Layer A estimate is still positive, and H1's verdict is unchanged.
+  - Rebuilt through Snakemake: `causal_robustness`, `causal_report` and `heterogeneity_report`. All are byte-identical to the hand-built files, and `snakemake -n causal`, `-n hierarchical` and `-n pregate` report nothing to do.
+  - The Phase 7 phase note gets a dated addendum, and PROGRESS is updated.

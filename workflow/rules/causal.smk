@@ -269,8 +269,31 @@ rule causal_triangulation:
     shell: f"{PY} src.causal.triangulation"
 
 
+# The registered fire-covariate check (DEC-171), run 2026-10-03 once FIRMS was downloaded (DEC-039)
+rule causal_fire_covariate:
+    input:
+        "data/raw/firms/MANIFEST.csv",  # the 2012-2024 archive (the 2025+ API part is not used; DEC-172)
+        f"{CSL}/design_units.csv",
+        f"{INT}/sat_units.gpkg",
+        "src/causal/fire.py",
+    output: f"{CSL}/fire_unit_year.parquet"
+    shell: f"{PY} src.causal.fire covariate"
+
+
+rule causal_fire:
+    input:
+        f"{CSL}/fire_unit_year.parquet",
+        f"{CSL}/panel_annual.parquet",
+        f"{CSL}/era5_unit_year.parquet",
+        "src/causal/event_study.py",
+        "src/causal/fire.py",
+    output: expand(f"{ES}/{{n}}_{{f}}", n=["es_fire", "es_fire_window"], f=["coefs.csv", "meta.json"])
+    shell: f"{PY} src.causal.fire run"
+
+
 rule causal_robustness:
     input:
+        rules.causal_fire.output,
         f"{CSL}/sdid_summary.csv",
         f"{CSL}/sdid/primary/loo.parquet",
         f"{CSL}/layer_b/estimates.csv",

@@ -333,10 +333,10 @@ Layer A restricted to the units with a Layer B PM2.5 panel, against the ground D
 | Leave-one-out donors: the most influential donor dropped | registered | +3.5% | yes | 923 donors with weight > 0; estimate range +0.0349 to +0.0354 (log); 100% agree; most influential u1704 |
 | Placebo in time 2016 (rule c) | registered | -0.1% (-0.9% to +0.7%) | — | a placebo: expected near 0; 'agrees' not applicable |
 | Placebo in space (500 permutations) | registered | p = 0.004 | — | equal-tailed permutation p of the primary ATT against the joint-placebo null |
-| VIIRS fire covariate (from 2012) | registered |  | — | not run: FIRMS has not been downloaded (DEC-039, DEC-147 item 17) |
+| VIIRS fire covariate (from 2012) | registered | +3.1% (+1.7% to +4.5%) | yes | event study 2012-2024 with fire FRP within 100 km (DEC-171), average post-period estimate; same window without fire +3.1%; fire coefficient -0.0090 (SE 0.0021); pre-trend Wald p = 0.0002 |
 | Raw MAIAC AOD | registered |  | — | not run: registered as 'if time allows'; not downloaded (DEC-147 item 18) |
 
-16 of 18 checks agree.
+17 of 19 checks agree.
 
 **Layer B, PM2.5**
 

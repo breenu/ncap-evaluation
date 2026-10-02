@@ -48,7 +48,7 @@ Rule (b) fails, so the first branch of the fixed verdict applies: **not identifi
 ## Finding 2: the other Layer A checks tell the same story
 
 - **HonestDiD.** The average post-period event-study estimate is +3.1% (+1.7% to +4.5%). It stays clear of zero only if post-listing departures from parallel trends are at most 0.2 times the largest pre-listing one (breakdown M̄ = 0.20). That is fragile.
-- **Robustness:** 16 of 18 registered checks agree with the primary, and every Layer A estimate is positive. The two that don't "agree" are smaller but still positive:
+- **Robustness:** 17 of 19 registered checks agree with the primary (16 of 18 before the fire check was run on 2026-10-03; see the addendum), and every Layer A estimate is positive. The two that don't "agree" are smaller but still positive:
   - V6.GL.02.04, the older calibration vintage: +1.4%;
   - excluding the IGP: +1.9%.
 - **Leave-one-out:** dropping any one of the 923 donors moves the estimate by at most 0.0003.
@@ -139,4 +139,15 @@ The GAM's fitted annual means sit 3.7% below the observed in 2019 (PM2.5), again
   - `causal_report.md` came out unchanged line for line.
   - Part B's SDID outputs were carried over from the old environment (Reenu's choice), with their specification hashes confirmed unchanged.
 
-**Not run:** the VIIRS fire covariate (FIRMS not yet downloaded) and raw MAIAC AOD (registered "if time allows").
+**Not run:** raw MAIAC AOD (registered "if time allows"; scoped in Phase 8, to run in Phase 8b). The VIIRS fire covariate was not run in Phase 7; see the addendum.
+
+## Addendum, 2026-10-03: the fire-covariate check (DEC-171, DEC-172)
+
+FIRMS was downloaded once a working network was available: VIIRS S-NPP 2012–2024. The registered "VIIRS fire covariate (from 2012)" check was then run, with its details fixed in DEC-171 before any fire value was read:
+- the event study with log(1 + FRP within 100 km of each unit) added, 2012–2024 without 2020;
+- result: +3.1% (+1.7% to +4.5%), which **agrees** with the primary;
+- the same window without fire also gives +3.1%, so fire changes the estimate by 0.0002.
+
+Layer A robustness is now **17 of 19** checks agreeing. Nothing else in Phase 7 was re-run or changed, and H1 stays "not identified by this design".
+
+*If asked "could crop burning explain the relative rise?":* not on this evidence. Controlling for each unit's own nearby fire activity, on top of region × year effects, leaves the estimate where it was.

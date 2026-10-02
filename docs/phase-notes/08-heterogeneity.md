@@ -127,4 +127,4 @@ Dust control should make PM10 fall more than PM2.5, so the PM2.5/PM10 ratio shou
   - cohorts 2020 and 2021 have identical placebo designs, as they must once 2020 is dropped;
   - the BH result is put in context: the smallest attainable p with 923 placebos is 0.0022.
 
-**Not done:** the MAIAC check (scoped only) and the VIIRS fire covariate (FIRMS is still not downloaded).
+**Not done:** the MAIAC check (scoped only; Reenu will run it through Google Earth Engine as Phase 8b). The VIIRS fire covariate was run on 2026-10-03, after Phase 8 closed: it agrees, and Layer A robustness is now 17 of 19 (DEC-172; addendum in `07-causal.md`).

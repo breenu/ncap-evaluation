@@ -86,9 +86,19 @@ def main() -> None:
     rows[-1]["agrees"] = None
     rows.append({"layer": "A", "check": "Placebo in space (500 permutations)", "status": "registered", "est": p.p_perm,
                  "agrees": None, "note": "equal-tailed permutation p of the primary ATT against the joint-placebo null"})  # fmt: skip
-    for c, why in (("VIIRS fire covariate (from 2012)", "not run: FIRMS has not been downloaded (DEC-039, DEC-147 item 17)"),
-                   ("Raw MAIAC AOD", "not run: registered as 'if time allows'; not downloaded (DEC-147 item 18)")):
-        rows.append({"layer": "A", "check": c, "status": "registered", "est": np.nan, "agrees": None, "note": why})
+    if (ES / "es_fire_meta.json").exists():  # run 2026-10-03 after FIRMS was downloaded (DEC-171)
+        m = json.loads((ES / "es_fire_meta.json").read_text(encoding="utf-8"))
+        w = json.loads((ES / "es_fire_window_meta.json").read_text(encoding="utf-8"))
+        a, fc = m["avg_post"], m["fire_coef"]
+        add("A", "VIIRS fire covariate (from 2012)", "registered", a["coef"], a["lo95"], a["hi95"],
+            note=(f"event study 2012-2024 with fire FRP within {m['radius_km']} km (DEC-171), average post-period estimate; "
+                  f"same window without fire {D.pct(w['avg_post']['coef']):+.1f}%; fire coefficient {fc['coef']:+.4f} "
+                  f"(SE {fc['se']:.4f}); pre-trend Wald p = {m['wald_pre']['p']:.4f}"))  # fmt: skip
+    else:
+        rows.append({"layer": "A", "check": "VIIRS fire covariate (from 2012)", "status": "registered", "est": np.nan, "agrees": None,
+                     "note": "not run: FIRMS has not been downloaded (DEC-039, DEC-147 item 17)"})  # fmt: skip
+    rows.append({"layer": "A", "check": "Raw MAIAC AOD", "status": "registered", "est": np.nan, "agrees": None,
+                 "note": "not run: registered as 'if time allows'; not downloaded (DEC-147 item 18)"})  # fmt: skip
 
     est = pd.read_csv(B.OUT / "estimates.csv")
     labels = {v.key: v.label for v in B.versions()}

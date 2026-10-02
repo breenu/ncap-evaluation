@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-10-02. **Phase 8 (heterogeneity and mechanism) complete; waiting for Reenu's review** (DEC-161 to DEC-169). START at "Phase 8" below.*
+*Last updated: 2026-10-03. **Phase 8 approved; the FIRMS fire check is done (DEC-170 to DEC-172). Next: Phase 8b, the MAIAC AOD check through Google Earth Engine.** START at "Phase 8b" below.*
 
 ## Status
 
@@ -11,13 +11,14 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 |---|---|
 | 0 Plan | ✅ approved 2026-09-26 (answers in PLAN.md §8) |
 | 1 Skeleton | ✅ approved 2026-09-26; pushed; CI green |
-| 2 Acquisition | ✅ approved 2026-09-26; pushed. FIRMS pending (Reenu will run it from another network with a new key) |
+| 2 Acquisition | ✅ approved 2026-09-26; pushed. FIRMS VIIRS 2012–2024 downloaded 2026-10-03; the 2025+ API part fails (FIRMS changed its API; DEC-172) |
 | 3 Storage, cleaning, audit, EDA | ✅ approved 2026-09-26; pushed (DEC-080 to DEC-082) |
 | 4 Analysis-plan gate | ✅ 2026-09-27: plan `6e24eca` registered at https://osf.io/jksne/; gate opened in `0d9aa42` (DEC-084 to DEC-099) |
 | 5 Deweathering | ✅ approved 2026-09-28; pushed (DEC-100 to DEC-124) |
 | 6 Network composition, H4 | ✅ reviewed and closed 2026-10-01; pushed (DEC-125 to DEC-137) |
 | 7 Causal analysis | ✅ approved 2026-10-02 (H1 not identified: rule (b) fails); pushed (DEC-138 to DEC-161) |
-| 8 Heterogeneity and mechanism | ✅ done 2026-10-02 (H5 rule not met; H3 inconclusive; dose: nothing); **waits for Reenu's review** (DEC-161 to DEC-169) |
+| 8 Heterogeneity and mechanism | ✅ approved 2026-10-03 (H5 rule not met; H3 inconclusive; dose: nothing); pushed (DEC-161 to DEC-172) |
+| 8b MAIAC AOD check (Earth Engine) | **next** (Reenu's decision 2026-10-03) |
 | 9–10 | not started |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). Phase 7's rules (DEC-138 to DEC-150) were pushed in `eebaecc` before any estimate; the first post-2019 effect estimates are Part A's (DEC-151).
@@ -72,9 +73,74 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Phase 8 (heterogeneity and mechanism, RQ4): DONE, waiting for Reenu's review. START HERE in a new chat
+## Phase 8b (raw MAIAC AOD check through Google Earth Engine): NEXT. START HERE in a new chat
 
-**Next:** Reenu reviews Phase 8 (`docs/heterogeneity_report.md`, `docs/phase-notes/08-heterogeneity.md`, figures 5–7, `docs/maiac_scoping.md`). Then Phase 9 (figures 1–8 to the style rules and the read-only dashboard; cut item #3 if time runs short).
+**What and why.** This is the registered "if time allows" check under the calibration-leakage threat (plan §5; DEC-096, DEC-147 item 18).
+- ACAG's satellite PM2.5 is calibrated to ground monitors, and Phase 7's pre-specified leakage warning fired (DEC-151).
+- Raw MAIAC AOD uses no ground monitors.
+- The check asks whether Layer A's post-2018 relative rise, and its gained/not-gained-monitor pattern, also appear in a signal that no monitor calibrated.
+- It **cannot change H1**: "not identified" rests on the failed pre-trend test, which this check does not touch.
+- AOD is not PM2.5, so the check compares direction and pattern, never µg/m³.
+- Reenu's decision (2026-10-03): run it through **Google Earth Engine**, as a separate phase.
+
+**Read first:**
+- `docs/maiac_scoping.md` (product, tiles, sizes, routes, what the check can and cannot show);
+- DEC-096 and DEC-146 (the leakage split);
+- DEC-139 (the SDID design and the joint placebo);
+- DEC-070 (population-weighted unit values);
+- DEC-135 (signs);
+- DEC-154 and the Phase 8 wording rule: nothing is an effect of NCAP.
+
+**Before any code: what Reenu must provide** (hard rule 5: credentials are never in code or git).
+- **A Google Earth Engine account** registered for non-commercial or research use, and a Google Cloud project with the Earth Engine API enabled. Ask Reenu for the **project id**.
+- **Authentication**, run by Reenu: `earthengine authenticate` (OAuth). The credentials land in `~/.config/earthengine/`, outside the repo.
+- **The `earthengine-api` package.**
+  - Add it to `environment.yml` (conda-forge), and update the lock in update mode for that one package (see "Re-locking on this machine" under Phase 4 below; needs `PYTHONNOUSERSITE=1`).
+  - Check the lock diff: only it and its new dependencies should change. Then re-run the tests.
+  - **Ask Reenu before changing the locked environment.**
+
+**Then, as in every phase: write the open choices in DECISIONS and push them before any AOD value is computed.** At least these:
+- **Product:** `MODIS/061/MCD19A2_GRANULES` (1 km, daily, both overpasses). Verify the collection id and version on the day.
+- **QA:** the `AOD_QA` bit fields.
+  - Read the MCD19 C6.1 user guide for the exact bits.
+  - Keep cloud mask "clear" and QA "best".
+  - Fix how adjacency and glint are handled.
+- **Daily value:** `Optical_Depth_055` × its scale factor (verify; 0.001), averaged over the day's overpasses.
+- **Unit value.**
+  - Population-weighted (DEC-070), with GHS-POP 2020 weights matching our 30 arc-second file. Verify which GEE GHSL asset and epoch match `data/raw/ghsl`.
+  - Area-weighted as the sensitivity.
+  - If the weights cannot be matched exactly, say so and decide.
+- **Aggregation.**
+  - Unit-month mean and valid pixel-day count; the annual value from the monthly means.
+  - Fix the minimum valid days per month and valid months per year before looking (the July–August monsoon is cloudy).
+- **Units:** the 1,036 Layer A units. Roles (treated / control) are in `data/processed/causal/design_units.csv`; polygons are in `data/interim/sat_units.gpkg`. Upload them to GEE as a FeatureCollection asset, or pass them in the script.
+- **Raw data (hard rule 7).**
+  - The exported table (unit × month × fields, CSV, < 0.5 GB) is the raw file. **Confirm its size before exporting.**
+  - It goes in `data/raw/maiac_gee/`, with a manifest: GEE script commit, collection id, export date, sha256.
+  - The GEE script lives in `src/acquire/maiac_gee.py`. Nothing is done by clicking in the GEE web interface.
+- **Analysis:** the Phase 7 SDID engine (`src/causal/sdid.R`, through `layer_a` specs) on log annual AOD, 2010–2024 without 2020:
+  - the primary design (113 treated, 923 controls, listing cohorts, joint placebo 500);
+  - the gained/not-gained leakage split and its difference (DEC-146);
+  - a rule, fixed in advance, for how these are read against ACAG's numbers (+3.6% primary; +2.5% vs +5.5%; difference −2.8%).
+  - Run time: about 1–1.5 h **on mains power**. On battery, Windows throttles the R workers to about a tenth of normal speed (DEC-168).
+- **Outputs.**
+  - The "Raw MAIAC AOD" row of the robustness table (`docs/causal_report.md` §9). Decide in the rules whether an AOD log-change belongs on the "agrees" scale. It probably does not, in which case it is reported as information and the "17 of 19" count is unchanged.
+  - A short report section.
+  - A phase note, `docs/phase-notes/08b-maiac.md`.
+
+**Also open, not part of 8b unless Reenu says so: FIRMS January 2025 – March 2026.**
+- FIRMS's country API now answers "Invalid API call", while its area (bounding-box) API works with the same key (DEC-172).
+- No analysis needs those months.
+- Switching the downloader to another endpoint needs Reenu's go-ahead (hard rule 1).
+
+## Phase 8 (heterogeneity and mechanism, RQ4): DONE and approved (2026-10-03)
+
+**Approved by Reenu 2026-10-03.** Closing items:
+- figure 7's panel change is logged as a deviation (DEC-170);
+- CI passed on the final Phase 8 commit (run 37045282068);
+- FIRMS was downloaded and the fire check run (DEC-171/172).
+
+After Phase 8b comes Phase 9: figures 1–8 to the style rules, and the read-only dashboard (cut item #3 if time runs short).
 
 **Rules:** DEC-162 to DEC-167, pushed in `2f80dc4` before any Phase 8 number. Results DEC-168; workflow DEC-169. Housekeeping DEC-161 (`ncap_prev` removed; DEC-155's order of events stated in DEC-155 and `causal_report.md` §11). **Wording:** H1 is not identified, so every per-unit number and H5 are "city-level relative changes", never effects of NCAP, with the caveat beside each.
 
@@ -111,9 +177,7 @@ python -m src.hierarchical.report                 # -> docs/heterogeneity_report
 
 **Outputs:** `data/processed/hierarchical/`: `unit_sdid_*.parquet`, `city_estimates.csv`, `pool_*.csv`, `city_shrunken.csv`, `h5.json`, `h3*.csv/json`, `dose_*.csv`; `docs/heterogeneity_report.md`; `reports/figures/fig5_city_map`, `fig6_shrinkage`, `fig7_mechanism`.
 
-**Open for Reenu:**
-- Decide whether to run the MAIAC check, and by which route (it needs a GEE or Earthdata account).
-- FIRMS is still not downloaded, so the VIIRS fire check stays "not run".
+**Decided by Reenu (2026-10-03):** the MAIAC check runs through Google Earth Engine, as Phase 8b (above). The VIIRS fire check has been run, and it agrees (DEC-172).
 
 ## Phase 7 (causal analysis, RQ3): DONE and approved (2026-10-02)
 
@@ -123,12 +187,12 @@ python -m src.hierarchical.report                 # -> docs/heterogeneity_report
 - **Wording (DEC-154):** the positive Layer A estimates are never an effect of NCAP. The fixed sentence: "NCAP units' satellite PM2.5 did not fall relative to comparable units; the estimates point to a relative rise of about 3–5%", always beside "not identified".
 - **Layer B (secondary):** PM2.5 ITS −14.0%, ground DiD −4.7% (CI includes 0); PM10 ITS −5.0%, DiD +9.2%. 18 / 13 cities, mostly single stations, against 5–6 control cities.
 - **Triangulation:** Layer A restricted +3.8%. Against the DiD: uninformative; against the ITS: conflict. In the investigation, ground and satellite agree on the before–after fall in the same cities (−13.4% vs −11.1%), so the conflict is about the estimand, not the measurement.
-- **Robustness:** Layer A 16/18 agree, all positive; Layer B 26/32 per pollutant. VIIRS fire and MAIAC not run.
+- **Robustness:** Layer A 17/19 agree, all positive (the VIIRS fire check, run 2026-10-03, agrees: +3.1%; DEC-172); Layer B 26/32 per pollutant. MAIAC not run (Phase 8b).
 - **Descriptive:** 2018 → 2024, NCAP units −16.8%, control pool −24.3%.
 - **Exploratory (DEC-155):** population overlap +3.7% / +3.0%.
 - **Environment (DEC-156):** win-64 lock without conda's r-matrix / r-rcppeigen / r-bmisc / r-rcpparmadillo; CRAN binaries via `install_r_extra.R`. Built fresh as `ncap_new`; 199 tests passed; it then replaced `ncap` (old kept as `ncap_prev`; DEC-160).
 - **CI:** the DAG check failed on undeclared EDA outputs; fixed (DEC-158).
-- **FIRMS:** still not downloaded; the VIIRS check stays "not run".
+- **FIRMS:** downloaded 2026-10-03 (2012–2024); the VIIRS check has been run (DEC-171/172).
 - **Rebuild in the new environment (DEC-160):** Part A plus every quick Part B step reproduce. 272 of 300 files are byte-identical, the rest within 1.4e-13, and the report is unchanged. Part B's SDID and leave-one-out outputs were carried over (Reenu's choice). `snakemake -n causal` and `-n pregate` have nothing to do. A rebuild of Phases 2–6 from raw is left for Phase 10.
 
 **How to rebuild all of Phase 7:** `snakemake --cores 1 causal` (gated; ~5 h: SDID ~3.5 h, leave-one-out ~50 min, HonestDiD ~11 min).
@@ -141,7 +205,7 @@ python -m src.hierarchical.report                 # -> docs/heterogeneity_report
 - **H2 not tested;** exploratory winter − non-winter +0.1%.
 - **Calibration-leakage warning fires** (difference −2.8%, CI −5.1% to −0.5%; both groups are increases).
 - **Environment (DEC-138):** CRAN binaries of Matrix/RcppArmadillo/RcppEigen on Windows (conda-forge's builds stopped loading); HonestDiD 0.2.8 installed. **Implementation fixes and checks (DEC-152):** none changes a specification.
-- **Open for Reenu:** the VIIRS fire check cannot run until FIRMS is downloaded (DEC-039/147).
+- ~~VIIRS fire check waiting for FIRMS~~: run 2026-10-03, agrees (DEC-172).
 
 **How to rebuild Part A:** `snakemake --cores 1 causal` (gated). Or, inside the `ncap` env:
 ```bash
@@ -417,7 +481,7 @@ Built and run (all generated, all in Snakemake `workflow/rules/clean.smk`):
 
 ## Open problems
 
-- **FIRMS not downloaded**: the host is unreachable from the current network; Reenu will run it later with a new key (DEC-039). Lowest priority (cut item #4).
+- **FIRMS January 2025 – March 2026 not downloaded.** FIRMS's country API answers "Invalid API call", while the area API works (DEC-172). No analysis needs those months, and switching the endpoint needs Reenu's go-ahead. 2012–2024 is downloaded and in use.
 - **Mirror provenance** is one step removed from CPCB (DEC-037). Mitigations: sha256 pinning, the cross-check (2019–21 value-identical), and ODbL for any derived dataset we publish.
 - **Pre-2018 ground network is tiny**: PM10 has 9 valid station-years in 2017 and 66 in 2018. Ground-based and PM10 results are secondary (analysis plan §0).
 - **Stations with no coordinate anywhere** keep an approximate city point (count in `docs/station_metadata_review.md`); they stay out of neighbour checks.
