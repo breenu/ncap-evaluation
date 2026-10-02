@@ -6,6 +6,7 @@ testpaths = ["tests"]
 pythonpath = ["."]
 markers = [
     "env: environment smoke tests (heavy imports and R packages); slower",
+    "slow: samples a PyMC model (about a minute)",
 ]
 
 [tool.ruff]

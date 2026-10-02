@@ -465,6 +465,8 @@ GAM against LightGBM, ITS:
 
 *Not a decision rule; it cannot change the H1 verdict.* City size was the largest pre-registration imbalance (log-population SMD 1.44). Variant (i), min–max common support, drops the megacity units and the sub-100,000 towns but does not improve balance, because the control pool is concentrated at 100,000–200,000. Variant (ii) keeps the overlap of the 5–95% ranges, which halves the imbalance. Both use the primary design otherwise, with joint-placebo SEs from their own pools.
 
+*Order of events (DEC-161):* variant (ii) was written after seeing variant (i)'s result on size balance (SMD 1.63, from 2015 population alone) and before it was run. Both variants were committed together (`a90213d`) before either restricted SDID was run. Both are reported; both are exploratory.
+
 | sample | treated | controls | log-population SMD | estimate (log) | estimate (%) | 95% CI (%) |
 |---|---|---|---|---|---|---|
 | Primary: V5.GL.06, population-weighted, listing cohorts, never-treated controls, 2020 dropped | 113 | 923 | 1.44 | +0.0352 | +3.6% | +2.4% to +4.8% |

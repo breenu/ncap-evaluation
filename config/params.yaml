@@ -169,6 +169,15 @@ causal:                               # Phase 7, RQ3 (DEC-139 to DEC-150; fixed 
   himalayan_states: ["Jammu & Kashmir", "Ladakh", "Himachal Pradesh"]   # DEC-147 item 13
   himalayan_min_elevation_m: 350      # IGP-state centres at or above this are foothills/hills (DEC-075)
 
+hierarchical:                         # Phase 8, RQ4 (DEC-162 to DEC-166; fixed before any estimate)
+  chains: 4                           # NUTS (PyMC), DEC-163
+  tune: 2000
+  draws: 2000
+  target_accept: 0.95
+  retry_draws: 4000                   # one re-run if the convergence rule fails (DEC-163)
+  retry_target_accept: 0.99
+  dose_drop_highest: Patna            # DEC-166: per-person allocation about twice the next (allocation table only)
+
 robustness:                           # proposal validation table
   placebo_year: 2016
   placebo_space_permutations: 500

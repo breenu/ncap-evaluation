@@ -222,5 +222,9 @@ def section_exploratory(s: pd.DataFrame, specs: pd.DataFrame) -> str:
              "(log-population SMD 1.44). Variant (i), min–max common support, drops the megacity units and the sub-100,000 towns but "
              "does not improve balance, because the control pool is concentrated at 100,000–200,000. Variant (ii) keeps the overlap of "
              "the 5–95% ranges, which halves the imbalance. Both use the primary design otherwise, with joint-placebo SEs from their "
-             "own pools.", "", md(pd.DataFrame(rows)), ""]  # fmt: skip
+             "own pools.", "",
+             "*Order of events (DEC-161):* variant (ii) was written after seeing variant (i)'s result on size balance (SMD 1.63, "
+             "from 2015 population alone) and before it was run. Both variants were committed together (`a90213d`) before either "
+             "restricted SDID was run. Both are reported; both are exploratory.", "",
+             md(pd.DataFrame(rows)), ""]  # fmt: skip
     return "\n".join(lines)
