@@ -167,7 +167,7 @@ class SdidSpec:
     null_design: str = "random"
     keep_curve: bool = False
     keep_weights: bool = False
-    leakage: bool = False  # add the gained / not-gained fit sets (log annual only), DEC-146
+    leakage: bool = False  # add the gained / not-gained fit sets (headline outcome only), DEC-146
     note: str = ""
     reps: int = 500  # joint-placebo replications (config causal.placebo_reps)
 
@@ -177,8 +177,8 @@ class SdidSpec:
         for g in sorted(self.treated.cohort.unique()):
             rows.append({"fitset": f"all|{g}", "cohort": int(g), "cells": ";".join(cells), "outcomes": ";".join(self.outcomes)})
             if self.leakage:
-                for c in cells:
-                    rows.append({"fitset": f"{c}|{g}", "cohort": int(g), "cells": c, "outcomes": LOG})
+                for c in cells:  # the split uses the headline (first) outcome (DEC-146; Phase 8b reuses it, DEC-179)
+                    rows.append({"fitset": f"{c}|{g}", "cohort": int(g), "cells": c, "outcomes": self.outcomes[0]})
         return pd.DataFrame(rows)
 
     def estimands(self) -> pd.DataFrame:
@@ -198,12 +198,12 @@ class SdidSpec:
             for c in sorted(t.cell.unique()):
                 nc = t[t.cell == c].groupby("cohort").size()
                 for g, k in nc.items():
-                    rows.append({"estimand": c, "outcome": LOG, "fitset": f"{c}|{g}", "weight": k / nc.sum()})
+                    rows.append({"estimand": c, "outcome": self.outcomes[0], "fitset": f"{c}|{g}", "weight": k / nc.sum()})
             a, b = sorted(t.cell.unique())  # gained, notgained
             for c, sign in ((a, 1), (b, -1)):
                 nc = t[t.cell == c].groupby("cohort").size()
                 for g, k in nc.items():
-                    rows.append({"estimand": f"{a}_minus_{b}", "outcome": LOG, "fitset": f"{c}|{g}", "weight": sign * k / nc.sum()})
+                    rows.append({"estimand": f"{a}_minus_{b}", "outcome": self.outcomes[0], "fitset": f"{c}|{g}", "weight": sign * k / nc.sum()})
         return pd.DataFrame(rows)
 
 

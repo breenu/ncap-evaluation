@@ -31,6 +31,7 @@ dependencies:
   # --- acquisition ---
   - cdsapi
   - pdfplumber
+  - earthengine-api   # MAIAC AOD unit-month reduction on Google Earth Engine (Phase 8b; DEC-178)
   # --- audit, modelling, inference ---
   - ruptures
   - lightgbm

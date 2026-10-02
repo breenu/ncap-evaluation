@@ -101,3 +101,57 @@ def layer_category(a: tuple[float, float, float], b: tuple[float, float, float])
 def pct(log_units: float) -> float:
     """A log-scale effect as a signed % change, 100 (e^b - 1)."""
     return 100 * math.expm1(log_units)
+
+
+# ---------------------------------------------------------------- Phase 8b: raw MAIAC AOD (DEC-180)
+# AOD is a column measure, not surface PM2.5: these rules read direction only. The ACAG estimate on the same
+# units enters as a resolution yardstick, as in the registered "uninformative" layer category (DEC-135).
+
+AOD_Q1 = {
+    "not_testable": "not testable on this sample (the ACAG rise is not present on these units)",
+    "uninformative": "uninformative (the AOD interval contains both 0 and the ACAG estimate)",
+    "rise_in_aod": "rise also in AOD",
+    "opposite": "opposite direction in AOD",
+    "not_reproduced": "rise not reproduced in AOD",
+}
+AOD_Q2 = {
+    "not_testable": "not testable on this sample",
+    "uninformative": "uninformative (the AOD interval contains both 0 and the ACAG difference)",
+    "gap_reproduced": "gap reproduced in AOD (against calibration leakage)",
+    "gap_absent": "gap absent from AOD (consistent with calibration leakage)",
+}
+
+
+def aod_q1(aod: tuple[float, float, float], acag: tuple[float, float, float]) -> dict:
+    """Q1 (DEC-180): does the relative rise appear in AOD? Each argument is (estimate, lo95, hi95), same units."""
+    a, a_lo, a_hi = aod
+    p, p_lo, p_hi = acag
+    if not (p > 0 and p_lo > 0):
+        code = "not_testable"
+    elif a_lo <= 0 <= a_hi and a_lo <= p <= a_hi:
+        code = "uninformative"
+    elif a > 0 and a_lo > 0:
+        code = "rise_in_aod"
+    elif a < 0 and a_hi < 0:
+        code = "opposite"
+    else:
+        code = "not_reproduced"
+    return {"code": code, "label": AOD_Q1[code]}
+
+
+def aod_q2(diff_aod: tuple[float, float, float], diff_acag: tuple[float, float, float],
+           n_gained: int, n_notgained: int, min_units: int = 10) -> dict:  # fmt: skip
+    """Q2 (DEC-180): does the gained-minus-not-gained gap appear in AOD? Differences as (estimate, lo95, hi95)."""
+    d, d_lo, d_hi = diff_aod
+    p, _p_lo, p_hi = diff_acag
+    if min(n_gained, n_notgained) < min_units:
+        code, why = "not_testable", f"a group has fewer than {min_units} units"
+    elif not (p < 0 and p_hi < 0):
+        code, why = "not_testable", "the ACAG difference on these units is not negative with a CI excluding 0"
+    elif d_lo <= 0 <= d_hi and d_lo <= p <= d_hi:
+        code, why = "uninformative", ""
+    elif d < 0 and d_hi < 0:
+        code, why = "gap_reproduced", ""
+    else:
+        code, why = "gap_absent", ""
+    return {"code": code, "label": AOD_Q2[code] + (f" ({why})" if why else "")}

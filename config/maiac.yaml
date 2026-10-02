@@ -1,0 +1,35 @@
+# Phase 8b: raw MAIAC AOD through Google Earth Engine (DEC-174 to DEC-181, fixed before any AOD value).
+# Kept apart from params.yaml so that adding it does not mark every earlier output stale (DEC-108).
+
+gee_project: ncap-evaluation                 # Reenu's Cloud project (not a secret; credentials stay in ~/.config/earthengine)
+asset_folder: projects/ncap-evaluation/assets
+collection: MODIS/061/MCD19A2_GRANULES       # MCD19A2 C6.1, one image per tile and overpass (checked by `check`)
+band: Optical_Depth_055                       # 0.55 um
+scale: 0.001                                  # valid range -100..8000 -> AOD -0.1..8.0 (negatives kept, DEC-175)
+qa_band: AOD_QA
+population: JRC/GHSL/P2023A/GHS_POP/2020      # GHS-POP R2023A epoch 2020, 100 m (same release/epoch as ours, DEC-174)
+population_band: population_count
+reduce_max_pixels: 1024                       # reduceResolution: 100 m inputs per 1 km output pixel (about 86-110)
+tile_scale: 4                                 # reduceRegions memory headroom (does not change results)
+years: [2010, 2024]
+
+# QA bit fields (MCD19 C6.1 user guide 5.4): name -> [first bit, number of bits]
+qa_fields:
+  cloud: [0, 3]
+  surface: [3, 2]
+  adjacency: [5, 3]
+  aod_qa: [8, 4]
+filters:                                      # accepted values per field (DEC-175)
+  primary: {cloud: [1], surface: [0], adjacency: [0], aod_qa: [0]}
+  relaxed: {cloud: [1, 2], surface: [0], adjacency: [0, 3], aod_qa: [0, 3, 11]}
+
+pilot_month: [2019, 1]
+eecu_budget_hours: 100                        # stop if the pilot projects more than this for 180 months (DEC-178)
+
+# Local rules (DEC-176/177)
+weight_check_max_median_abs_pct: 10
+month_min_coverage: 0.5                       # share of population (area) under pixels with a value
+month_min_days: 4                             # population- (area-) weighted valid days per pixel
+monsoon_months: [6, 7, 8, 9]
+year_min_nonmonsoon_months: 6                 # of the 8 non-monsoon months
+min_kept_treated_share: 0.5                   # below this every AOD result is labelled "limited coverage"
