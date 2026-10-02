@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-10-02. **Phase 7 (causal analysis) complete, Parts A and B; waiting for Reenu's review** (DEC-138 to DEC-160). START at "Phase 7" below.*
+*Last updated: 2026-10-02. **Phase 8 (heterogeneity and mechanism) in progress; rules DEC-162 to DEC-167 committed before computing.** START at "Phase 8" below.*
 
 ## Status
 
@@ -16,8 +16,9 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 4 Analysis-plan gate | ✅ 2026-09-27: plan `6e24eca` registered at https://osf.io/jksne/; gate opened in `0d9aa42` (DEC-084 to DEC-099) |
 | 5 Deweathering | ✅ approved 2026-09-28; pushed (DEC-100 to DEC-124) |
 | 6 Network composition, H4 | ✅ reviewed and closed 2026-10-01; pushed (DEC-125 to DEC-137) |
-| 7 Causal analysis | ✅ done 2026-10-02 (H1 not identified: rule (b) fails); Part A reviewed by Reenu; **Part B waits for her review** |
-| 8–10 | not started |
+| 7 Causal analysis | ✅ approved 2026-10-02 (H1 not identified: rule (b) fails); pushed (DEC-138 to DEC-161) |
+| 8 Heterogeneity and mechanism | in progress (rules DEC-162 to DEC-167) |
+| 9–10 | not started |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). Phase 7's rules (DEC-138 to DEC-150) were pushed in `eebaecc` before any estimate; the first post-2019 effect estimates are Part A's (DEC-151).
 
@@ -71,7 +72,23 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Phase 7 (causal analysis, RQ3): DONE, waiting for Reenu's review. START HERE in a new chat
+## Phase 8 (heterogeneity and mechanism, RQ4): IN PROGRESS. START HERE in a new chat
+
+Phase 7 approved and pushed by Reenu (2026-10-02). Housekeeping done: `ncap_prev` removed; DEC-155's order of events made explicit (DEC-161).
+
+**Rules:** DEC-162 to DEC-167, committed and pushed before any Phase 8 estimate. H1 is not identified, so every per-unit number is a "city-level relative change", never an effect of NCAP, with the caveat beside it.
+
+**Build plan (files and functions):**
+- `src/hierarchical/unit_sdid.R`: per-unit SDID (113 units) and single-unit placebo fits (every control × each cohort year), V5.GL.06 and V6.GL.03; pre-fit SD per fit (DEC-162).
+- `src/hierarchical/city_estimates.py`: `run()` (calls the R script), `estimates()` (θ̂_i, cohort placebo SE, pre-fit-scaled SE, placebo p, BH count), `moderators()` (DEC-163) → `data/processed/hierarchical/city_estimates.csv`.
+- `src/hierarchical/pooling.py`: `fit(y, s, X, priors)` (PyMC measurement-error model), `converged()`, `summarise()`, the model versions (primary, IGP only, scaled SE, wide priors, V6.GL.03), `h5()` → `posterior_*.csv`, `city_shrunken.csv`.
+- `src/hierarchical/dose.py`: `dose_table()` (XV-FC allocations per person, DEC-166), dose models → `dose_*.csv`.
+- `src/hierarchical/mechanism.py`: H3 conditions (i)–(iii) on Layer B (DEC-165) → `h3_*.csv`.
+- `src/hierarchical/report.py` → `docs/heterogeneity_report.md` (generated).
+- `src/viz/fig5_city_map.py`, `fig6_shrinkage.py`, `fig7_mechanism.py`.
+- `workflow/rules/hierarchical.smk` (real, gated rules); `tests/test_hierarchical.py` (synthetic).
+
+## Phase 7 (causal analysis, RQ3): DONE and approved (2026-10-02)
 
 **Next:** Reenu reviews Part B. Then Phase 8 (heterogeneity and mechanism: hierarchical model of city effects, H5, H3 with DEC-135's readings; H3 (iii) uses the triangulation categories of DEC-150: neither pair may be "conflict", and the ITS pair IS "conflict").
 
