@@ -321,8 +321,9 @@ def _tasks() -> dict:
 
 def cmd_submit() -> None:
     pilot = json.loads((PILOT / "pilot.json").read_text(encoding="utf-8"))
-    if not pilot.get("within_budget"):
-        raise SystemExit("the pilot did not pass the compute budget (DEC-178)")
+    proj_h = pilot.get("projected_eecu_hours")
+    if proj_h is None or proj_h > CFG["eecu_budget_hours"]:  # against the limit in force now (DEC-178, DEC-185)
+        raise SystemExit(f"pilot projects {proj_h} EECU-hours, over the limit of {CFG['eecu_budget_hours']} (DEC-178/185)")
     commit = script_commit()
     ee = init()
     proj = projection(ee).getInfo()

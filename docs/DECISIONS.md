@@ -1507,3 +1507,9 @@ Two questions, each classified by the first rule that applies. The inputs are `a
   - (a) Move the project to the **Contributor tier** (1,000 EECU-hours a month; needs a billing account linked to the Cloud project, which Google says is not charged for noncommercial use). Then run the specification unchanged, with the compute limit raised before the export (a new entry).
   - (b) Stay on the Community tier and **spread the export over two calendar months** (about 120 EECU-hours in each), with the limit restated per month. Results would arrive in November.
   - (c) **Reduce the work:** for example, drop the relaxed-filter sensitivity, or compute the population weights once instead of every month. Each needs its own measured pilot (about 1.4 EECU-hours each), and dropping a sensitivity changes DEC-179, so it would be logged as a change before any AOD value is used.
+
+**DEC-185 (Reenu, 2026-10-03; written before the export is submitted): DEC-184's option (a). The project is on the Contributor tier, and the compute limit is 400 EECU-hours.**
+- Reenu moved the `ncap-evaluation` project to the Contributor tier (1,000 EECU-hours a month; a billing account linked, which Google says is not charged for noncommercial use). The tier change was made by Reenu in the Cloud console; the API offers no way to confirm it, so a quota error during the export would stop the run and be reported.
+- **The new limit is 400 EECU-hours** (`config/maiac.yaml: eecu_budget_hours`), 40% of the monthly tier, leaving room for re-runs. The latest pilot projects ≈ 241 (tile filter, DEC-184), so the export proceeds. `submit` now checks the pilot's projection against the limit in force, not the flag stored under the old limit.
+- **During the export:** `status` sums the tasks' EECU use. If it passes 400 before all 15 years finish, the remaining tasks are cancelled and Reenu is told.
+- Nothing else in DEC-174 to DEC-184 changes.

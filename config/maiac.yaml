@@ -24,7 +24,7 @@ filters:                                      # accepted values per field (DEC-1
   relaxed: {cloud: [1, 2], surface: [0], adjacency: [0, 3], aod_qa: [0, 3, 11]}
 
 pilot_month: [2019, 1]
-eecu_budget_hours: 100                        # stop if the pilot projects more than this for 180 months (DEC-178)
+eecu_budget_hours: 400                        # stop if the pilot projects more than this for 180 months (DEC-178; 100 -> 400 on the Contributor tier, DEC-185)
 
 # Local rules (DEC-176/177)
 weight_check_max_median_abs_pct: 10
