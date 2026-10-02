@@ -1324,3 +1324,36 @@ Numbers from `docs/heterogeneity_report.md` (generated). No rule or specificatio
 - **What ran through Snakemake.** The other eight Phase 8 rules ran through Snakemake (`snakemake --cores 1 hierarchical`; log `data/interim/logs/snakemake_phase8.log`): the city table, pooling, dose, mechanism, figures 5–7, the report and the target.
 - **Result.** All 20 outputs are byte-identical to the hand-built ones, including the seeded PyMC posteriors, and `docs/heterogeneity_report.md` is byte-identical. Afterwards `snakemake -n hierarchical`, `-n causal` and `-n pregate` report nothing to do.
 - **Tests:** 208 passed (`data/interim/logs/pytest_phase8.log`).
+
+## 2026-10-03: Phase 8 approved (Reenu); closing items
+
+**DEC-170 (DEVIATION from DEC-167, dated 2026-10-02, logged 2026-10-03): figure 7 shows the satellite PM2.5 reference (Layer A restricted) in panel (a), not panel (b).**
+- **What DEC-167 said:** panel (b), the PM2.5/PM10 ratio, would show "Layer A restricted (PM2.5) for reference".
+- **What was done:** the reference row sits at the bottom of panel (a), the panel of PM2.5 and PM10 estimates in %, labelled "Satellite PM2.5 (reference)".
+- **Why:** panel (b)'s axis is the change in the PM2.5/PM10 *ratio*. A PM2.5 estimate drawn on that axis would read as a ratio estimate, and Layer A has no PM10. Panel (a)'s axis has the same units as the satellite estimate.
+- **Effect:** layout only. No number, rule or verdict changes. It was decided after looking at the render and before Reenu's review. DEC-168 already mentions it; this entry records it as a deviation.
+
+**DEC-171 (written 2026-10-03, BEFORE any fire-covariate estimate; FIRMS was being downloaded, no FIRMS value had been read): how the registered "VIIRS fire covariate (from 2012)" check is run.**
+- **What is registered.** Plan §4 lists "VIIRS fire radiative power, from 2012, in one sensitivity check (DEC-039)" among the covariates. The §5 table lists "VIIRS fire covariate (from 2012)" under other checks. The proposal's purpose is "add regional fire radiative power as a covariate", against crop-burning shocks confounding IGP cities. DEC-147 item 17 only recorded "not run". Phase 7 never fixed the details, so they are fixed here.
+- **Data.**
+  - VIIRS S-NPP standard-processing yearly country files, 2012–2024 (`data/raw/firms/archive/`, DEC-039). The 2025–March 2026 API files are downloaded by the same script but not used: Layer A ends in 2024.
+  - Detections kept: `type` = 0 (presumed vegetation fire; static land sources, volcanoes and offshore detections dropped) and `confidence` nominal or high (low dropped).
+  - If these columns are absent or coded differently from FIRMS's documentation, the check stops and Reenu is told. Nothing is substituted.
+- **Covariate, per unit-year.**
+  - fire = log(1 + Σ FRP), with FRP in MW, summed over the kept detections of the calendar year that lie within 100 km of the unit polygon, inside it included.
+  - Distances are measured in EPSG:7755, Phase 4's metric CRS for India (`src/causal/pregate.py`).
+  - The same rule applies to treated and control units.
+- **Why 100 km.** Crop-residue smoke reaches cities over hundreds of kilometres, but anything shared by a whole region in a year is already absorbed by the region × year fixed effects. A 100 km neighbourhood gives each unit its own exposure, varying within a region. This is a judgement made before any fire value was looked at, not a tuned value.
+- **Estimator: the event study, as DEC-142, with fire added to the ERA5 covariates.**
+  - The primary SDID has no covariates (DEC-139). Covariates enter the event study (plan §5 item 2), and plan §4 lists FRP with them.
+  - The precedent is DEC-147 item 13 (Himalayan split): a check that SDID cannot express runs in the event study.
+- **Years.** 2012–2024 without 2020, because VIIRS starts in 2012. Reference periods follow DEC-142's rule (each cohort's last observed pre-year). The earliest relative year becomes −7 for cohort 2019 (−8 for cohorts 2020 and 2021, outside the window and given its own indicator).
+- **Comparison number.** The average post-period estimate (l = 0 … +5). As in DEC-147 item 13, it is set against the primary SDID with DEC-135's "agrees" rule: same sign, point estimate inside the primary's 95% CI.
+- **Reported beside it, not deciding:**
+  - the same event study on 2012–2024 without the fire covariate, which separates the effect of adding fire from the effect of the shorter window;
+  - the fire coefficient;
+  - the pre-trend Wald p over the pre-periods available (−7 … −2), for information. Rule (b) belongs to the primary event study and is unchanged.
+- **What changes in Phase 7's outputs:**
+  - the "VIIRS fire covariate (from 2012)" row of the robustness table (`robustness.csv`, `docs/causal_report.md` §9) and its "x of y checks agree" count;
+  - every summary count that quotes it (PROGRESS, the Phase 7 phase note, as a dated addendum).
+  - Nothing else in Phase 7 is re-run or changed. H1's verdict cannot change: this is a robustness check, not a rule.
