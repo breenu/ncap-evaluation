@@ -294,6 +294,43 @@ def summarise() -> None:
     (MOUT / "results.json").write_text(json.dumps(out, indent=2, default=float), encoding="utf-8")
     r = out["specs"]["aod_primary"]
     print("Q1:", r["q1"]["label"], "| Q2:", r["q2"]["label"])
+    x = exploratory_notgained()["groups"]["notgained"]  # DEC-188, exploratory
+    print("Exploratory (not gained):", x["q1"]["label"], "| diverge:", x["diverge"])
+
+
+def exploratory_notgained() -> dict:
+    """DEC-188 (EXPLORATORY, added after seeing Phase 8b's results, Reenu's request): ACAG vs AOD in each monitor-gain
+    group on its own, classified with DEC-180's Q1 rule; the paired ACAG - AOD difference with its SE from the
+    per-replication differences (identical draws: same units, cells, controls and seed, asserted). Direction only."""
+    aod, acag = "aod_primary", "acag_aod_sample"
+    u = pd.read_parquet(MOUT / "specs" / "spec_units.parquet")
+    key = ["unit_id", "role", "cohort", "cell"]
+    ma = u[u.spec_id == aod][key].sort_values("unit_id").reset_index(drop=True)
+    mp = u[u.spec_id == acag][key].sort_values("unit_id").reset_index(drop=True)
+    if not ma.equals(mp):
+        raise ValueError("DEC-188: the AOD and ACAG specifications do not have identical membership; draws are not paired")
+    est = pd.read_csv(MOUT / "specs" / "spec_estimands.csv")
+    s = pd.read_csv(MOUT / "sdid_summary.csv").set_index(["spec_id", "estimand"])
+
+    def draws(sid):
+        d = pd.concat([pd.read_parquet(f) for f in sorted((MOUT / "sdid" / sid).glob("draws_*.parquet"))], ignore_index=True)
+        e = est[est.spec_id == sid].drop(columns="spec_id")
+        return A.combine(d, e, by=["rep"]).pivot(index="rep", columns="estimand", values="value")
+
+    da, dp = draws(aod), draws(acag)
+    out = {"label": "EXPLORATORY, added after seeing Phase 8b's results (DEC-188)", "groups": {}}
+    for g in ("notgained", "gained"):
+        a = tuple(float(s.loc[(aod, g)][k]) for k in ("att", "lo95", "hi95"))
+        p = tuple(float(s.loc[(acag, g)][k]) for k in ("att", "lo95", "hi95"))
+        diff = p[0] - a[0]
+        se = float((dp[g] - da[g]).std(ddof=1))
+        q = D.aod_q1(a, p)
+        out["groups"][g] = {"n_treated": int((ma.role.eq("treated") & ma.cell.eq(g)).sum()), "aod": a, "acag": p, "q1": q,
+                            "diverge": q["code"] in ("not_reproduced", "opposite"),
+                            "paired_diff_acag_minus_aod": diff, "paired_se": se,
+                            "paired_lo95": diff - 1.959964 * se, "paired_hi95": diff + 1.959964 * se}  # fmt: skip
+    (MOUT / "exploratory_notgained.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
+    return out
 
 
 def main(argv: list[str]) -> None:

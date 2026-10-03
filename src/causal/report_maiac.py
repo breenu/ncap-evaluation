@@ -170,5 +170,47 @@ def section() -> str:
           "- Terra's and Aqua's overpass times drifted late in the period. That affects every unit alike unless the daily cycle "
           "of aerosol differs between NCAP and comparison units.",
           f"- {CAVEAT[0].upper() + CAVEAT[1:]}.", ""]  # fmt: skip
+    L += section_exploratory()
     return "\n".join(L)
+
+
+def section_exploratory() -> list[str]:
+    """§12f, DEC-188: EXPLORATORY, added after Phase 8b's results were seen (Reenu's request)."""
+    f = MOUT / "exploratory_notgained.json"
+    if not f.exists():
+        return []
+    X = json.loads(f.read_text(encoding="utf-8"))["groups"]
+    rows = []
+    for g, lab in (("notgained", "did not gain a monitor"), ("gained", "gained a monitor, for comparison")):
+        x = X[g]
+        rows.append({"group": f"{lab} ({x['n_treated']} units)", "AOD": f"{pc(x['aod'][0])} ({ci_pct(*x['aod'][1:])})",
+                     "ACAG, same units": f"{pc(x['acag'][0])} ({ci_pct(*x['acag'][1:])})",
+                     "Q1 rule (DEC-180)": x["q1"]["label"],
+                     "ACAG − AOD, paired (log; information)": f"{x['paired_diff_acag_minus_aod']:+.4f} ({x['paired_lo95']:+.4f} to {x['paired_hi95']:+.4f})"})  # fmt: skip
+    n = X["notgained"]
+    L = ["### 12f. Exploratory, added after seeing the results: ACAG vs AOD where no monitor was added (DEC-188)", "",
+         "*Not a pre-specified rule; it changes no classification above.* Reenu asked for it after reviewing Phase 8b. The two "
+         "group estimates were already in §12b's monitor-gain table; this subsection compares them explicitly, with DEC-180's Q1 "
+         "rule as the definition of \"diverge\". The paired difference uses the two specifications' identical placebo draws (same "
+         "units, cells, controls and seed). It mixes log PM2.5 and log AOD, so it is shown for information; the reading is "
+         f"direction only. **{CAVEAT}.**", "", md(pd.DataFrame(rows)), ""]  # fmt: skip
+    if n["diverge"]:
+        L += [f"**In the {n['n_treated']} units that gained no monitor, ACAG and AOD diverge** ({n['q1']['label']}): ACAG "
+              f"{pc(n['acag'][0])}, AOD {pc(n['aod'][0])}. Those units had no new monitors for ACAG to calibrate to, so **monitor "
+              "leakage cannot explain the overall ACAG–AOD difference**. Another explanation is needed, for example the "
+              "relationship between column AOD and surface PM2.5 differing between NCAP and control units (boundary layer, "
+              "humidity, aerosol mix), or something else in ACAG's processing. This check cannot tell which. Read for direction "
+              "only.", ""]  # fmt: skip
+        gd = X["gained"]
+        if n["paired_diff_acag_minus_aod"] > gd["paired_diff_acag_minus_aod"]:
+            L += [f"Beside it, for information: ACAG sits further above AOD in the units *without* new monitors "
+                  f"({n['paired_diff_acag_minus_aod']:+.4f} in log units) than in those *with* them ({gd['paired_diff_acag_minus_aod']:+.4f}). "
+                  "Calibration leakage as hypothesised would pull ACAG *down* where monitors were added; here the larger ACAG–AOD "
+                  "difference is where none were. So Q2's \"gap absent from AOD\" comes mostly from the not-gained units' ACAG "
+                  "values, which weakens it as evidence for leakage specifically. Q2's pre-specified classification stands as "
+                  "registered.", ""]  # fmt: skip
+    else:
+        L += [f"In the units that gained no monitor, the Q1 rule gives \"{n['q1']['label']}\", so this comparison does not show a "
+              "divergence there, and the statement about leakage is not made.", ""]  # fmt: skip
+    return L
 

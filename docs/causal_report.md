@@ -583,6 +583,19 @@ Sun & Abraham as §4 (unit and region × year effects, ERA5 covariates, SEs clus
 - Terra's and Aqua's overpass times drifted late in the period. That affects every unit alike unless the daily cycle of aerosol differs between NCAP and comparison units.
 - H1 is not identified by this design; not an effect of NCAP.
 
+### 12f. Exploratory, added after seeing the results: ACAG vs AOD where no monitor was added (DEC-188)
+
+*Not a pre-specified rule; it changes no classification above.* Reenu asked for it after reviewing Phase 8b. The two group estimates were already in §12b's monitor-gain table; this subsection compares them explicitly, with DEC-180's Q1 rule as the definition of "diverge". The paired difference uses the two specifications' identical placebo draws (same units, cells, controls and seed). It mixes log PM2.5 and log AOD, so it is shown for information; the reading is direction only. **H1 is not identified by this design; not an effect of NCAP.**
+
+| group | AOD | ACAG, same units | Q1 rule (DEC-180) | ACAG − AOD, paired (log; information) |
+|---|---|---|---|---|
+| did not gain a monitor (31 units) | -0.4% (-2.3% to +1.6%) | +7.1% (+4.7% to +9.6%) | rise not reproduced in AOD | +0.0725 (+0.0448 to +0.1003) |
+| gained a monitor, for comparison (64 units) | +1.2% (-0.2% to +2.7%) | +2.8% (+1.1% to +4.5%) | rise not reproduced in AOD | +0.0152 (-0.0036 to +0.0340) |
+
+**In the 31 units that gained no monitor, ACAG and AOD diverge** (rise not reproduced in AOD): ACAG +7.1%, AOD -0.4%. Those units had no new monitors for ACAG to calibrate to, so **monitor leakage cannot explain the overall ACAG–AOD difference**. Another explanation is needed, for example the relationship between column AOD and surface PM2.5 differing between NCAP and control units (boundary layer, humidity, aerosol mix), or something else in ACAG's processing. This check cannot tell which. Read for direction only.
+
+Beside it, for information: ACAG sits further above AOD in the units *without* new monitors (+0.0725 in log units) than in those *with* them (+0.0152). Calibration leakage as hypothesised would pull ACAG *down* where monitors were added; here the larger ACAG–AOD difference is where none were. So Q2's "gap absent from AOD" comes mostly from the not-gained units' ACAG values, which weakens it as evidence for leakage specifically. Q2's pre-specified classification stands as registered.
+
 ## Caveats that travel with every Layer A number
 
 - The MDE is a best-case lower bound (plan §3); the confidence intervals use the real design's joint-placebo SE.

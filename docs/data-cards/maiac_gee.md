@@ -12,6 +12,7 @@
 | Coverage | January 2010 – December 2024, 1,036 units × 180 months |
 | Raw layout | `data/raw/maiac_gee/maiac_unit_month_<year>.csv` (15 files, 38.2 MB) plus `MANIFEST.csv`. Each row records: the Drive file id and md5 (checked at download), the Earth Engine task id, the commit and sha256 of the script, the sha256 of the request, the compute used, and the full request parameters |
 | Route | `Export.table.toDrive` into a private Drive folder `ncap_maiac_gee`, then a download through the Drive API. The project has no Earth Engine asset area (DEC-183) |
+| Backup | **Reenu keeps the Drive folder `ncap_maiac_gee` until the project ends, as a backup of the raw export** (17 CSVs: the 15 yearly tables and 2 one-month pilots; DEC-189). Each raw file's Drive id and md5 are in `MANIFEST.csv`, so a copy restored from Drive can be checked byte for byte |
 | Compute | 167.9 EECU-hours for the 15 yearly tasks, plus 2.8 for two one-month pilots, on the Contributor tier (DEC-185) |
 | Licence | LP DAAC: no restriction on use or redistribution. GHSL: CC BY 4.0 |
 

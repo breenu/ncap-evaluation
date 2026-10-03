@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-10-03. **Phase 8b (raw MAIAC AOD) is done and awaits Reenu's review (DEC-174 to DEC-187). Next after approval: Phase 9.** START at "Phase 8b" below.*
+*Last updated: 2026-10-03. **Phase 8b approved and closed (DEC-174 to DEC-189). Next: Phase 9, figures and dashboard.** START at "Next: Phase 9" below.*
 
 ## Status
 
@@ -18,8 +18,9 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 6 Network composition, H4 | ✅ reviewed and closed 2026-10-01; pushed (DEC-125 to DEC-137) |
 | 7 Causal analysis | ✅ approved 2026-10-02 (H1 not identified: rule (b) fails); pushed (DEC-138 to DEC-161) |
 | 8 Heterogeneity and mechanism | ✅ approved 2026-10-03 (H5 rule not met; H3 inconclusive; dose: nothing); pushed (DEC-161 to DEC-172) |
-| 8b MAIAC AOD check (Earth Engine) | ✅ done 2026-10-03, awaiting review (Q1 rise not reproduced; Q2 gap absent, consistent with leakage); pushed (DEC-174 to DEC-187) |
-| 9–10 | not started |
+| 8b MAIAC AOD check (Earth Engine) | ✅ approved 2026-10-03 (Q1 rise not reproduced; Q2 gap absent; exploratory: ACAG and AOD also diverge where no monitor was added); pushed (DEC-174 to DEC-189) |
+| 9 Figures and dashboard | **next** |
+| 10 Report and release | not started |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). Phase 7's rules (DEC-138 to DEC-150) were pushed in `eebaecc` before any estimate; the first post-2019 effect estimates are Part A's (DEC-151).
 
@@ -73,9 +74,59 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Phase 8b (raw MAIAC AOD, Earth Engine): DONE (2026-10-03), awaiting Reenu's review
+## Next: Phase 9 (figures and dashboard). START HERE in a new chat
 
-**CI** passed on the final Phase 8b commit (run 37081522142). **Next:** Reenu reviews Phase 8b (`docs/phase-notes/08b-maiac.md`, `docs/causal_report.md` §12). After approval comes Phase 9: figures 1–8 to the style rules, and the read-only dashboard (cut item #3 if time runs short).
+**Per CLAUDE.md:**
+- write a short plan first (files and functions);
+- record any open choice in DECISIONS and push it before building;
+- build;
+- at the end: run the tests, commit and push, update this file and DECISIONS, write `docs/phase-notes/09-figures.md`, and stop.
+- Run everything inside the `ncap` env (DEC-046). In PowerShell: `& "$env:USERPROFILE\miniforge3\Scripts\conda.exe" run -n ncap --no-capture-output <cmd>`.
+
+**Spec:** the proposal's "Visualisation plan" (`docs/proposal.pdf`, pp. 10–11) and PLAN.md §4 Phase 9:
+- **Eight figures, each answering one question:**
+  1. decomposition waterfall (reported → weather → composition → policy step);
+  2. station-entry map;
+  3. raw vs deweathered series for 4–6 cities;
+  4. event study;
+  5. city-level maps;
+  6. before/after shrinkage;
+  7. PM10 vs PM2.5;
+  8. data-quality heatmap.
+  Figure 1 is the one to show in interviews.
+- **Style rules:** units (µg/m³, or % with what it is a % of) on every axis; uncertainty on every estimate; colour-blind-safe palettes; colour never carries meaning alone.
+- **Dashboard (cut item #3 if time runs short):** read-only and precomputed (Streamlit or a static Quarto site). Pick a city and see its raw, deweathered, composition-corrected and counterfactual trends plus its data-quality score. No real-time data, no deployment.
+
+**What exists already** (all generated, PNG + SVG in `reports/figures/`):
+- fig1: `fig1_decomposition`, `_cities`, `_policy` (`src/viz/fig1_decomposition.py`; policy step DEC-150);
+- fig2 and fig8: `src/viz/eda.py`;
+- fig3: `fig3_deweathered`, `_annual`, `_grange_carslaw`;
+- fig4: `fig4_event_study`;
+- fig5–7: `fig5_city_map`, `fig6_shrinkage`, `fig7_mechanism` (DEC-167, DEC-170);
+- `figS1_levels`; four EDA extras.
+- Shared style: `src/viz/style.py`.
+- `workflow/rules/viz.smk` is still a stub; `dashboard/` does not exist yet.
+- So Phase 9 is mostly an audit of each figure against the style rules and its one question, plus the dashboard.
+
+**Binding wording, carried from Phases 7–8b (do not lose it in figure titles, notes or the dashboard):**
+- **H1 is "not identified by this design" (DEC-151).** No figure or dashboard view may call anything an effect of NCAP.
+  - The proposal's question for figure 5 ("Where did NCAP work?") and figure 1's "policy-attributable residual" must be reworded. Use DEC-154's sentence and "city-level relative change" (DEC-162/167).
+  - The "counterfactual trend" in the dashboard is the unit's synthetic comparison, with that caveat beside it.
+- **No per-city ranking or unshrunk city names** (plan §5; DEC-167).
+- **Layer B is secondary, with one pre-year,** and carries a scope line (cities, single-station panels; DEC-136/148).
+- **No claims about individual weather variables** (DEC-136).
+- **Raw AOD (Phase 8b) is not PM2.5:** if it appears in any figure, label it as a relative change in AOD and read it for direction only (DEC-180). It is not one of the eight figures.
+
+**Known items:**
+- SVGs embed a date and random ids, so they are not byte-reproducible (DEC-094). Fixing that (`svg.hashsalt`, no date metadata) fits here or in Phase 10.
+- Figure 7's panel layout departs from DEC-167 (DEC-170).
+- Phase 8b's §12f (exploratory): ACAG and AOD diverge most where no monitor was added. Keep this in mind if any figure discusses calibration leakage.
+
+## Phase 8b (raw MAIAC AOD, Earth Engine): DONE and approved (2026-10-03)
+
+**Approved by Reenu 2026-10-03.**
+- Closing items: the exploratory not-gained comparison (§12f; DEC-188/189), and the Drive folder `ncap_maiac_gee` kept as a backup until the project ends.
+- **CI** passed on the main Phase 8b commit (run 37081522142).
 
 **Rules:**
 - the specification, DEC-174 to DEC-181, pushed in `85acc2a` before any AOD value was pulled;
@@ -122,7 +173,11 @@ snakemake --cores 1 causal                      # causal_maiac_* rules (SDID ~84
 
 **Outputs:** `data/processed/causal/maiac/` (panels, sample, coverage, weight check, specs, `sdid/`, `event_study/`, `sdid_summary.csv`, `results.json`).
 
-**Housekeeping for Reenu:** the Drive folder `ncap_maiac_gee` holds 17 CSVs (15 yearly tables + 2 pilots). The raw copies and their md5s are recorded, so the folder can be deleted.
+**Exploratory, after review (DEC-188/189):**
+- In the 31 units that gained no monitor: AOD −0.4% against ACAG +7.1%, so they diverge.
+- Monitor leakage therefore cannot explain the overall ACAG–AOD difference. The difference is largest where no monitors were added, which weakens Q2 as evidence for leakage specifically (Q2's classification stands).
+
+**Drive:** Reenu keeps `ncap_maiac_gee` (17 CSVs) until the project ends, as a backup of the raw export (data card).
 
 
 ## Phase 8b: the original handoff (2026-10-03; kept for the record)

@@ -201,6 +201,7 @@ rule causal_report:
         "src/causal/report_part_b.py",
         "src/causal/report_maiac.py",
         f"{MAIAC}/results.json",  # Phase 8b, §12 (DEC-181)
+        f"{MAIAC}/exploratory_notgained.json",  # §12f (DEC-188)
         f"{MAIAC}/weight_check.json",
         f"{MAIAC}/coverage_by_month.csv",
         "src/causal/decisions.py",
@@ -379,7 +380,7 @@ rule causal_maiac_summary:
         rules.causal_maiac_event.output,
         "src/causal/maiac.py",
         "src/causal/decisions.py",
-    output: f"{MAIAC}/results.json", f"{MAIAC}/sdid_summary.csv"
+    output: f"{MAIAC}/results.json", f"{MAIAC}/sdid_summary.csv", f"{MAIAC}/exploratory_notgained.json"  # last: DEC-188
     shell: f"{PY} src.causal.maiac summarise"
 
 

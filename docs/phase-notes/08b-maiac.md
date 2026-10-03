@@ -130,3 +130,18 @@ The pre-trend test fails on AOD too (p = 0.005), as it did on PM2.5. The pre-lis
 - **Sample.** The AOD sample drops 18 treated and 182 control units, most of them coastal. The same-units ACAG yardstick handles the comparison, but the result describes those 95 units.
 - **Satellite drift.** Terra's and Aqua's overpass times drifted late in the record. This affects every unit alike unless the daily aerosol cycle differs between groups.
 - **Earth Engine is not byte-reproducible.** A rerun agrees to about 8 significant figures.
+
+## Addendum after review (2026-10-03): where no monitor was added (exploratory; DEC-188/189)
+
+Reenu asked one more question: do ACAG and AOD also disagree in the units that gained **no** monitor? Those units had no new monitors for ACAG to calibrate to. A disagreement there cannot come from monitor leakage.
+
+| group | AOD | ACAG, same units |
+|---|---|---|
+| no monitor added (31 units) | −0.4% (−2.3% to +1.6%) | +7.1% (+4.7% to +9.6%) |
+| monitor added (64 units) | +1.2% (−0.2% to +2.7%) | +2.8% (+1.1% to +4.5%) |
+
+**They disagree, and they disagree most where no monitor was added.** So monitor leakage cannot explain the overall gap between ACAG and AOD. Something else is needed, for example the link between column AOD and surface PM2.5 differing between NCAP and control units, or something in ACAG's processing.
+
+This changes how to read Q2. "Gap absent from AOD" looked like the leakage pattern. But the gap comes mostly from ACAG being high in the units *without* new monitors, which is not the mechanism leakage describes: leakage would push ACAG down where monitors were added. The registered Q2 classification stands, but as evidence for leakage it is weaker than it first looked.
+
+*If asked "so was it leakage or not?":* the evidence no longer points to leakage specifically. The pre-specified Q2 rule says "consistent with leakage". The follow-up, which I labelled exploratory because it came after seeing the results, shows the ACAG–AOD disagreement is largest where leakage is impossible. The honest answer: ACAG and raw AOD disagree about NCAP units in general, and this project cannot say why.
