@@ -2027,3 +2027,34 @@ Phase 10 estimates nothing. It writes the report, the results summary, the polic
 - **Licences:** CC BY 4.0 for the non-ground derived data (satellite and city-level series) is confirmed.
 - **DEC-019:** my message again listed both options (leave unchanged, or replace the tool name with a visible note and a new entry), so the choice is still open and is asked at the Part C checkpoint.
 - **Checks after the edits:** `python -m src.report.check` passes. `snakemake --cores 1 all` and `report_render` ran. Figure 1, S3, S4 and `docs/figures.md` rebuilt byte-identical; only the slide changed. The PDFs are 26, 1 and 2 pages.
+
+## 2026-10-03: Phase 10 Part C (repository clean-up). Rulings and the plan, written BEFORE any file is moved
+
+**DEC-214: My Part C rulings and how they are carried out.**
+- **The keep/remove list is approved.**
+  - **Kept:** README, licences, Snakefile, lock files, `config/`, `src/`, `tests/`, CI, the data manifests and data cards, the registered plan and its summary, the OSF exports and clarification, DECISIONS.md, the report sources and PDFs, the figures, the dashboard sources, and **all 15 generated reports in `docs/`**.
+  - **Why all 15:** `deweathering_pilot.md` is an input of the main deweathering step. The registered plan links `pregate_checks.md` and `audit_report.md`. The report cites the causal, heterogeneity, composition and deweathering reports. The rest are cited by data cards or by other generated reports. All of them are rewritten by the pipeline on every rebuild, so removing them would only bring them back untracked.
+- **Removed from the public tree, in a normal commit (no history rewrite; the OSF registration and clarification cite `6e24eca`, `29874cf` and `ba397a2`):**
+  - `CLAUDE.md`: untracked and gitignored; it stays on my laptop.
+  - `docs/PROGRESS.md`, `docs/PLAN.md`, `docs/phase-notes/`, `reports/report_outline.md`, `docs/maiac_scoping.md` and `docs/osf/test.pdf`: moved to a gitignored local folder, `_working/`.
+  - `notebooks/.gitkeep` and `dashboard/.gitkeep`: deleted.
+- **DEC-019 stays unchanged.**
+- **`docs/proposal.pdf` stays public, with the application-strategy content removed.**
+  - **What is removed:**
+    - R1 (p. 1): the sentence describing the project as one for a student applying to UK MSc programmes.
+    - R2 (p. 3): the paragraph on what "a reviewer should come away seeing".
+    - R3 (p. 10): "The first is the one to show in interviews."
+    - R4 (p. 12): the "Application milestone" paragraph.
+    - R5 (p. 15): the clause "and overlaps your other project".
+    - R6 (p. 16): "Naming them is a strength in an MSc interview."
+    - R7 (pp. 17–19): the sections "MSc application value" and "Final assessment".
+  - **Nothing else changes:** questions, hypotheses, data, methods, robustness checks, figures plan, schedule, contributions, outputs, "what not to do", limitations and references.
+  - **Method:** a true redaction with PyMuPDF (run through `uv`, outside the analysis environment, as a one-off document edit). It removes the text under each area. Each area carries a visible marker, "[application notes removed 3 October 2026]", and page 1 carries a note naming the original's commit and checksum.
+  - **The original is not lost.** It stays public in git history: commit `86c4997`, sha256 `988d2c69e7c2e8a8c9c8d817784489c7ffa7c8fc93ddb5fc3b1481f2ab35d99d`. DEC-092's evidence that H4 and H5 predate the data (the proposal's creation time and its presence in the first commit) therefore still holds.
+- **Also in Part C (DEC-210, DEC-212):**
+  - the dashboard's About page licence text is corrected;
+  - the report, summary and brief HTML are published on the Pages site;
+  - every code comment citing "CLAUDE.md hard rule N" is reworded to state the rule;
+  - the references to removed files in `config/maiac.yaml`, `src/acquire/probe.py` and `src/normalise/pilot.py` are fixed. The pilot report is regenerated, and downstream outputs are marked current, as in DEC-108;
+  - the final README is written;
+  - a closing entry records the cleanup.
