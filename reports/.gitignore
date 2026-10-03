@@ -1,0 +1,5 @@
+/.quarto/
+**/*.quarto_ipynb
+# Rendered HTML is built from these sources by the Pages workflow; the PDFs are committed (DEC-209/210).
+*.html
+*_files/

@@ -1,0 +1,324 @@
+---
+title: "Weather, Monitors, or Policy?"
+subtitle: "A meteorologically normalised, quasi-experimental evaluation of India's National Clean Air Programme, 2015–2025"
+author: "Reenu"
+date: 2026-10-03
+date-format: "D MMMM YYYY"
+callout-icon: false
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    embed-resources: true
+    fig-align: left
+    other-links:
+      - text: OSF registration
+        href: https://osf.io/jksne/
+      - text: Code and data provenance
+        href: https://github.com/breenu/ncap-evaluation
+      - text: City explorer
+        href: https://breenu.github.io/ncap-evaluation/
+  typst:
+    papersize: a4
+    margin:
+      x: 2.2cm
+      y: 2.2cm
+    fontsize: 10pt
+    toc: true
+    toc-depth: 1
+    number-sections: true
+    include-in-header:
+      - file: _typst_style.typ
+---
+
+# Abstract {.unnumbered}
+
+Public progress reports compare a city's raw pollution with a baseline year, and in the cities where I could check this, that comparison overstates the improvement. In the {{< var comp.primary_pm25.cities >}} NCAP cities that had a PM2.5 monitor valid every year from 2018 to 2025 ({{< var comp.primary_pm25.single >}} of them with only one such monitor), the reported fall of {{< var comp.primary_pm25.reported_abs >}} becomes {{< var comp.primary_pm25.corrected_abs >}} once I remove modelled weather and the change in which monitors exist. Most of the difference comes from the changing set of monitors: the stations added since 2018 read cleaner than the ones already there (H4 supported: {{< var comp.primary_pm25.h4 >}} percentage points, 95% CI {{< var comp.primary_pm25.ci >}}). Weather alone moves a typical city's annual PM2.5 by about {{< var dw.weather_pm25 >}} from one year to the next. For the policy question, I compared the {{< var units.treated >}} urban centres containing {{< var units.cities_in_units >}} of NCAP's {{< var units.cities_master >}} cities with {{< var units.controls >}} comparable non-NCAP centres on satellite PM2.5. Satellite PM2.5 fell in both groups after 2018: by {{< var causal.ncap_fall_abs >}} in NCAP units and by {{< var causal.pool_fall_abs >}} in the comparison pool. NCAP units' satellite PM2.5 did not fall relative to comparable units; the estimates point to a relative rise of about {{< var causal.rise_range >}} (primary estimate {{< var causal.att >}}, 95% CI {{< var causal.ci >}}). But the pre-trend test I registered in advance failed (p = {{< var causal.wald_p >}}), so H1 is not identified by this design, and I do not attribute this or any other number to NCAP. Raw aerosol optical depth, which no ground monitor calibrates, shows a smaller relative change than the satellite PM2.5 product on the same units in every specification, for reasons this design cannot separate. The gap seen in satellite PM2.5 between units that gained a monitor and units that did not is absent from raw aerosol optical depth, which is consistent with, but does not prove, the satellite product absorbing the new monitors. City-level differences are too uncertain to rank cities. The registered tests for a smaller change in the Indo-Gangetic Plain (H5) and for dust control (H3) came out "{{< var het.h5_verdict >}}" and "{{< var het.h3_verdict >}}".
+
+The analysis plan was registered on OSF before any post-2019 comparison was made: <https://osf.io/jksne/>. Code, data provenance and every decision log are at <https://github.com/breenu/ncap-evaluation>, and a city-by-city explorer is at <https://breenu.github.io/ncap-evaluation/>.
+
+::: {.callout-note appearance="simple"}
+## What this report does and does not claim
+
+- **H1 is not identified by this design.** My registered pre-trend test failed, so no number in this report is an effect of NCAP. Wherever a satellite estimate appears, the verdict appears with it: {{< var causal.sentence >}}
+- **No city is ranked.** City-level estimates are too uncertain to order, and every named list is alphabetical.
+- **Ground (Layer B) results are secondary.** They rest on one pre-NCAP year and, mostly, on single monitors; each carries its scope.
+- **Raw aerosol optical depth is read for direction only**, because it is not surface PM2.5.
+- **No claim is made about any individual weather variable.**
+:::
+
+# Introduction {#sec-intro}
+
+## NCAP and how its progress is reported
+
+India's National Clean Air Programme (NCAP) began in January 2019. At its widest it covered {{< var units.cities_master >}} cities that had breached the national standard for particulate matter or have a million or more people; the list current in 2026 has {{< var units.cities_latest >}}. Its targets are for PM10: reductions of {{< var set.targets >}} against a baseline, the last by the financial year that ended in March 2026. Cities receive central money through two channels, the Ministry's NCAP budget ({{< var units.ncap_channel >}} cities) and performance-linked grants from the XV Finance Commission to million-plus cities ({{< var units.xvfc >}}).
+
+Official and independent trackers judge progress by comparing a city's measured concentration in a recent year with its baseline. That comparison mixes three things.
+
+- **Weather.** A windy year or an early monsoon lowers pollution without any change in emissions.
+- **Which monitors exist.** NCAP paid for a large expansion of the continuous monitoring network. If new monitors are placed in cleaner neighbourhoods, a city's average falls even if nobody's air changed. The programme changed the thermometer used to judge it.
+- **Policy.** Only what remains after the first two could reflect NCAP, and only if the cities that were listed can be compared with cities that were not.
+
+This report separates the three.
+
+## Research questions and hypotheses
+
+- **RQ1, measurement:** how much of a city's reported change comes from data-quality problems and from changes in which stations exist?
+- **RQ2, weather:** how much of the year-to-year change comes from meteorology?
+- **RQ3, policy:** did PM2.5 change differently in NCAP cities than in comparable non-NCAP cities? This is the confirmatory question.
+- **RQ4, heterogeneity and mechanism:** does any change vary with region and funding, and does the PM10/PM2.5 pattern fit dust control?
+
+**Table 1.** The registered hypotheses and their results. Layer A is satellite PM2.5 over urban centres; Layer B is ground monitors.
+
+{{< include _generated/hypotheses.md >}}
+
+## Pre-registration
+
+I wrote the analysis plan before comparing NCAP with non-NCAP cities after 2018 and registered it on OSF on 27 September 2026 (<https://osf.io/jksne/>; the registered file is the plan at commit `6e24eca`). The pipeline enforced this in code: every step that estimates a post-2019 comparison checks a gate file and refuses to run while it is shut, and the gate was opened in its own commit (`0d9aa42`) citing the registered plan. Before registering I had seen pre-2019 data, post-2019 series for single cities and regions, and data-quality diagnostics, but no comparison of NCAP with non-NCAP units after 2018. On 1 October 2026 I posted a clarification of how I read some registered rules whose sign was ambiguous. Every departure from the plan is listed, dated and justified in [Appendix A](#sec-deviations).
+
+## What is new here
+
+- A station-level audit of India's continuous monitoring network, with a reliability score for every station-year.
+- A systematic measure of network composition: how much the changing set of monitors moves reported city trends.
+- Weather normalisation combined with a long satellite pre-period and a comparison group of non-NCAP cities.
+- A falsifiable mechanism test (PM10 against PM2.5), and a pre-registered design in which a failed identification check is reported as such.
+
+# Data {#sec-data}
+
+**Table 2.** Data sources. Every raw file is stored unchanged with a manifest of its source, download date and checksum.
+
+{{< include sources.md >}}
+
+## Ground monitors
+
+The ground data are CPCB's continuous ambient air quality stations, 2015–2025. CPCB's own data repository stopped answering during this project, and OpenAQ holds almost no CPCB data for 2023 and 2024, so I used a public mirror of CPCB's repository (Vonter, `india-cpcb-aqi`, ODbL). I did not trust it blindly. Every file matches the checksum the mirror publishes, and its values match OpenAQ's independent copy of the same stations value for value where both exist (2019–2021 and 2025). The mirror stores Indian clock times labelled as UTC; I confirmed the correct offset with three independent tests, including the daily peak of solar radiation at each station. January to March 2026 exists only in OpenAQ's unvalidated real-time feed, so it is not used in any primary result.
+
+The network changed under NCAP (Figure 2). Of the {{< var audit.stations >}} stations, {{< var audit.stations_by_2018 >}} first reported by 2018 and {{< var audit.stations_from_2019 >}} from 2019 onward. The ground record before NCAP is therefore thin: PM10 has {{< var audit.pm10_valid_2017 >}} valid station-years in 2017 and {{< var audit.pm10_valid_2018 >}} in 2018.
+
+![**Figure {{< var fig.fig2_station_entry.number >}}.** {{< var fig.fig2_station_entry.caption >}}](figures/fig2_station_entry.png){fig-alt="{{< var fig.fig2_station_entry.alt >}}"}
+
+## Satellite PM2.5
+
+The primary outcome is the Atmospheric Composition Analysis Group's satellite-derived surface PM2.5, version V5.GL.06, which is documented and covers 1998–2024. V6.GL.03 (a different algorithm) and V6.GL.02.04 (an earlier calibration vintage) are sensitivity checks. The product is calibrated against ground monitors, so new monitors could leak into it; I test this in @sec-rq3.
+
+## Units, treatment and the comparison group
+
+The unit is a GHSL urban centre (R2024A). A city's satellite value is the population-weighted mean over its polygon, for every unit alike, so that it measures what residents breathe and needs no arbitrary clipping. NCAP cities that share a polygon form one unit (Delhi, Faridabad, Ghaziabad and Noida share one).
+
+- **Treated:** {{< var units.treated >}} units holding {{< var units.cities_in_units >}} of the {{< var units.cities_master >}} NCAP cities. The {{< var units.towns_no_centre >}} NCAP towns with no GHSL centre enter only a sensitivity check.
+- **Treatment date:** the first official list containing the city, reconstructed from dated versions of CPCB's list and NCAP documents, every row traced to its source page. Listed by {{< var set.listed_by >}} counts from that calendar year. This gives cohorts of {{< var units.cohort_2019 >}} units (2019), {{< var units.cohort_2020 >}} (2020) and {{< var units.cohort_2021 >}} (2021). The year of first central funding is a sensitivity check only, because XV Finance Commission grants reward cities that improved, so the timing of money is partly an outcome.
+- **Comparison pool:** non-NCAP centres with at least {{< var set.min_pop >}} people in 2015, a pre-treatment year: {{< var units.controls >}} units.
+
+NCAP units are much larger than the comparison pool (standardised difference in log population {{< var units.smd_pop >}}) and less often in the Indo-Gangetic Plain ({{< var units.igp_treated >}} against {{< var units.igp_control >}}), but their mean 2010–2018 PM2.5 is similar ({{< var units.pm_treated >}} against {{< var units.pm_control >}} µg/m³).
+
+## Weather, fires and aerosol optical depth
+
+Weather comes from ERA5: hourly series at the grid cell of every station, and monthly means for the satellite units. Fires come from NASA FIRMS (VIIRS, from 2012). For the calibration check I reduced raw MODIS MAIAC aerosol optical depth (AOD), a satellite signal that uses no ground monitor, to the same polygons on Google Earth Engine.
+
+# Methods {#sec-methods}
+
+## Audit and validity rules (RQ1)
+
+Every rule is a pure function with a unit test on synthetic data.
+
+- **Impossible values and ceilings.** Values at or below zero are removed. Instrument ceilings (values pinned at the top of an analyser's range) are detected from the network-wide histogram rather than typed in: a value of at least {{< var set.ceiling_min >}} µg/m³ that is far more frequent than its neighbours at many stations.
+- **Flatlines:** identical hourly means for {{< var set.flatline_hours >}} or more hours.
+- **PM2.5 above PM10** at the same station-hour, beyond the larger of {{< var set.ratio_abs >}} µg/m³ and {{< var set.ratio_rel >}} of PM10.
+- **Level shifts:** changepoints in each station's weekly departure from its neighbours, with the penalty calibrated so that at most {{< var set.cp_false_alarm >}} of shuffled series with no shift show one; only steps of at least {{< var set.cp_min_shift >}} count.
+- **Spatial consistency:** each station-year against its neighbours within {{< var set.neighbour_km >}} km and against its satellite cell.
+- **Completeness:** a valid day needs {{< var set.completeness >}} of its hours and a valid year {{< var set.completeness >}} of its days; {{< var set.completeness_sens >}} are sensitivity checks.
+- **Stuck analysers** (a deviation, A2): a station-year is excluded if its {{< var set.nc_window >}}-day variability stays far below its neighbours' for at least {{< var set.nc_flag_days >}} days.
+- **Reliability score:** completeness × the share of unflagged data, multiplied by {{< var set.check_penalty >}} for each failed consistency check. It describes data quality and excludes nothing.
+- **Missingness:** linear probability models of a station-day being missing, by season and by the pollution level the neighbours recorded that day.
+
+## Deweathering (RQ2)
+
+For each station and pollutant, a model predicts daily log PM from that day's weather, the calendar and a slow trend that stands for emissions (Grange and Carslaw's method). The model then predicts each day {{< var set.draws >}} more times with weather drawn from other days and averages, giving the concentration expected under typical weather. Only weather is resampled; the trend stays.
+
+- **Two model families:** a GAM (R `mgcv`) whose trend has knots exactly one year apart, so that it cannot follow seasons or single weather episodes (deviation A3), and LightGBM.
+- **Resampling scheme:** weather is drawn from ERA5 days within ±{{< var set.window_days >}} days of the same date in any year 2015–2025 (deviation A1). Grange and Carslaw's all-year scheme is a sensitivity check.
+- **Choosing the family:** the registered rule picks the family with the better median out-of-sample R² under blocked, forward-chaining cross-validation by year. Random splits would be dishonest because pollution episodes last several days.
+- **Guards:** I report how often the resampled weather leaves a station's training range, and flag station-years whose deweathered mean is outside {{< var set.guard >}} the raw mean.
+
+## Network composition and H4 (RQ1)
+
+For every city I build three annual trends: all stations as reported; a balanced panel of the stations inside the city's polygon that were valid in 2018 and every year to 2025; and satellite PM2.5 over the same polygon. The reported change from 2018 to 2025 then splits exactly into four parts:
+
+reported = unmodelled change + modelled weather + network composition + corrected change.
+
+The corrected change is the deweathered balanced panel. H4 is the reported fall minus the corrected fall, so a positive value means the reported number overstates the improvement. Uncertainty across cities comes from a cluster bootstrap over cities ({{< var set.bootstrap >}} resamples). H4 describes NCAP cities with a continuous station only; it is descriptive, not causal.
+
+## Layer A: the satellite comparison (RQ3, confirmatory)
+
+- **Primary estimator:** synthetic difference-in-differences (SDID), estimated per listing cohort against never-treated centres, 2010–2024 with 2020 dropped, and combined by the number of treated units. The standard error comes from {{< var set.placebo_reps >}} joint placebo replications in which random control sets of the cohorts' sizes are given the cohorts' adoption years.
+- **Event study:** the Sun and Abraham estimator with unit and region × year effects and ERA5 covariates, relative years {{< var set.event_from >}} to {{< var set.event_to >}}; Callaway and Sant'Anna's estimator as the staggered-adoption check; Rambachan and Roth's HonestDiD bounds on the pre-trends.
+- **Decision rules (registered):** H1 is supported only if (a) the SDID estimate is a reduction with a 95% interval below zero, (b) the pre-period event-study coefficients are jointly zero (Wald p > {{< var set.wald_min >}}), (c) a placebo listing in {{< var set.placebo_year >}} shows nothing, and (d) the sign holds in Callaway and Sant'Anna, the area-weighted outcome and V6.GL.03. **If (b) or (c) fails, the verdict is "not identified by this design", whatever the estimate.** If the interval included zero, an equivalence test against ±{{< var set.equiv >}} would apply.
+- **Minimum detectable effect:** estimated before the gate from placebo listings in {{< var set.fake_years >}} on pre-2019 data only: a {{< var causal.mde >}} fall, read as an optimistic lower bound.
+- **Calibration leakage:** the primary design is re-estimated separately for treated units that gained a monitor inside their polygon in 2019–2024 and for those that did not. A pre-stated rule flags a warning if the difference points to leakage.
+- **Raw AOD:** the same design on log AOD, read only for direction against satellite PM2.5 on exactly the same units, with categories written before any AOD value existed.
+
+## Layer B: the ground comparison, and triangulation
+
+Layer B uses the deweathered balanced panels of H4. The interrupted time series (ITS) is each city's mean log level after listing minus before, which with one pre-year is a before–after contrast. The ground difference-in-differences (DiD) compares NCAP stations with stations in control-pool cities, per cohort. Both are secondary. The two layers are never averaged. Layer A restricted to the cities with ground panels is set against each Layer B estimator and classified in a fixed order: uninformative, conflict, consistent, different magnitude. Any category other than "consistent" triggers a registered four-step investigation (network composition, satellite calibration, spatial coverage, deweathering), reported whether or not it closes the gap.
+
+## Heterogeneity and mechanism (RQ4)
+
+- **City-level estimates:** one SDID per treated unit against all controls. Its standard error is the spread of the same estimate when each control in turn is treated as the listed unit.
+- **Hierarchical model:** a Bayesian measurement-error model (PyMC; {{< var set.chains >}} chains of {{< var set.mcmc_draws >}} draws) pools the city estimates with the five registered moderators: baseline PM2.5, the Indo-Gangetic Plain, log population, coastal location and funding channel. H5 is decided by the IGP coefficient.
+- **H3 (dust control)** needs three conditions: the PM2.5/PM10 ratio rises; PM10 falls, and more than PM2.5, in at least two of three specifications for both ground estimators; and the satellite and ground layers do not conflict.
+- **Funding dose (exploratory):** city-level changes against XV Finance Commission allocations per person. Allocations rather than releases are used, because releases reward improvement.
+
+**Table 3.** The registered decision rules for H1 and their values. The full list of rules as I read them is in DEC-135 and Appendix A (group C).
+
+{{< include _generated/h1_rules.md >}}
+
+# Results {#sec-results}
+
+## The argument in one figure
+
+Figure 1 summarises the report. Panel (a) is RQ1 and RQ2: the reported fall in ground PM2.5 over the H4 cities, and what remains after removing what the model cannot reproduce, modelled weather and the change in which monitors exist. Panel (b) is RQ3, on its own axis because it is a different quantity: how these cities' satellite PM2.5 moved against comparable centres after listing. It is not identified as an effect of NCAP. Panel (c) repeats panel (a) for four cities chosen by a station-count rule that I wrote after seeing every city's result (Appendix A, D5); every city is in Figure S3.
+
+![**Figure {{< var fig.fig1_decomposition.number >}}.** {{< var fig.fig1_decomposition.caption >}}](figures/fig1_decomposition.png){fig-alt="{{< var fig.fig1_decomposition.alt >}}"}
+
+## RQ1: measurement {#sec-rq1}
+
+**The audit.** Ceiling values were found at {{< var audit.ceilings_pm25 >}} µg/m³ for PM2.5 and {{< var audit.ceilings_pm10 >}} µg/m³ for PM10; together with impossible values they remove {{< var audit.removed_pct >}} of quarter-hour values. Flatlined hours are {{< var audit.flat_post_lo >}} to {{< var audit.flat_post_hi >}} of hours a year from 2017. PM2.5 above PM10 affects {{< var audit.ratio_pre_lo >}} to {{< var audit.ratio_pre_hi >}} of hours before 2019 but at most {{< var audit.ratio_post_hi >}} from 2020, a sign that CPCB's own validation tightened. I found {{< var audit.changepoints >}} level shifts at {{< var audit.changepoint_stations >}} stations; the audit cannot tell a recalibration from a real local change beside a monitor. Most stations track their neighbours closely (median correlation {{< var audit.neighbour_corr >}}). The stuck-analyser rule removes {{< var audit.nearconst_years >}} of {{< var audit.valid_station_years >}} valid station-years at {{< var audit.nearconst_stations >}} stations. Figure 8 shows the reliability score of every station-year.
+
+**Missing data are not hiding the dirty days.** A station-day is {{< var audit.miss_winter_abs >}} percentage points less likely to be missing in winter than in the monsoon, and {{< var audit.miss_high_abs >}} points less likely on the most polluted third of days, judged by the neighbours. So naive annual means are biased slightly upward, not downward: a median {{< var audit.miss_bias_pm25 >}} for PM2.5.
+
+![**Figure {{< var fig.fig8_quality_heatmap.number >}}.** {{< var fig.fig8_quality_heatmap.caption >}}](figures/fig8_quality_heatmap.png){fig-alt="{{< var fig.fig8_quality_heatmap.alt >}}"}
+
+**Network composition moves reported trends.** Across the {{< var comp.bias_pm25_cities >}} cities with a 2018 PM2.5 panel, NCAP or not, the changing set of stations makes the average city look {{< var comp.bias_pm25_abs >}} percentage points better by 2025 than its continuous stations (95% CI {{< var comp.bias_pm25_ci >}}). The gap is near zero until 2021 ({{< var comp.bias_pm25_2021 >}}) and appears from 2022 ({{< var comp.bias_pm25_2022 >}}, then {{< var comp.bias_pm25_2023 >}} in 2023), when the network grew fastest; by 2025, {{< var comp.changed_2025 >}} of these cities measured with a different set of stations than their panel. For PM10 the bias is {{< var comp.bias_pm10 >}} points ({{< var comp.bias_pm10_ci >}}).
+
+**New stations read cleaner, and not because of weather.** In the same city and year, PM2.5 at newly opened stations is {{< var comp.entrants_pm25_raw_abs >}} below the existing stations (95% CI {{< var comp.entrants_pm25_raw_ci >}}), and {{< var comp.entrants_pm25_dw_abs >}} below after deweathering ({{< var comp.entrants_pm25_dw_ci >}}); the paired difference is {{< var comp.entrants_pm25_paired >}} points ({{< var comp.entrants_pm25_paired_ci >}}). Weather is shared within a city-year, so it cancels: the gap is about where new monitors stand. PM10 shows no clear gap ({{< var comp.entrants_pm10_raw >}}, {{< var comp.entrants_pm10_raw_ci >}}).
+
+**Ground and satellite agree on average, not city by city.** From 2018 to 2024, the balanced-panel change minus the satellite change averages {{< var comp.gap_panel_sat >}} points over {{< var comp.gs_cities >}} cities ({{< var comp.gap_panel_sat_ci >}}), and the two changes correlate at {{< var comp.corr_changes >}} across cities. Single monitors often fell much more or much less than the satellite says about their whole polygon.
+
+**H4: supported, for both pollutants.** In the {{< var comp.primary_pm25.cities >}} NCAP cities with a PM2.5 station valid every year from 2018 to 2025 ({{< var comp.primary_pm25.single >}} with a single such station), the reported change of {{< var comp.primary_pm25.reported >}} becomes {{< var comp.primary_pm25.corrected >}}: about {{< var comp.primary_pm25.share_removed >}} of the reported fall does not survive correction. Composition is the larger part for PM2.5 ({{< var comp.primary_pm25.composition >}} points of {{< var comp.primary_pm25.h4 >}}); for PM10 it is modelled weather ({{< var comp.primary_pm10.weather >}} of {{< var comp.primary_pm10.h4 >}}). H4 is supported in {{< var comp.supported_pm25 >}} of {{< var comp.versions_pm25 >}} versions for PM2.5 and {{< var comp.supported_pm10 >}} of {{< var comp.versions_pm10 >}} for PM10. The two PM10 versions where it fails are: {{< var comp.failing_pm10 >}}. The second measures composition alone. The weather part compares two single years, 2018 and 2025, because that is how H4 was registered, and 2025's weather was favourable.
+
+**Table 4.** H4 for PM2.5 and PM10, in the primary version, with LightGBM, and as registered with no deviations. Changes are 2018 to 2025 in %; parts are percentage points of the reported change; H4 = reported fall minus corrected fall. Scope: NCAP cities with a station valid every year 2018–2025, mostly single stations; descriptive, not causal.
+
+{{< include _generated/h4.md >}}
+
+## RQ2: weather {#sec-rq2}
+
+The registered rule chose the GAM: its median out-of-sample R² is {{< var dw.r2_gam >}} against LightGBM's {{< var dw.r2_lgbm >}}, and it predicts better in {{< var dw.r2_gam_better >}} of {{< var dw.r2_series >}} series ({{< var dw.series >}} series in all). Under the other cross-validation convention the GAM still wins ({{< var dw.r2_gam_clamp >}} against {{< var dw.r2_lgbm_clamp >}}).
+
+**Weather moves a city's annual PM2.5 by about {{< var dw.weather_pm25 >}} a year.** Across {{< var dw.weather_cities >}} cities, the median year-on-year change in annual PM2.5 is {{< var dw.raw_change_pm25 >}}, and its weather part has a median of {{< var dw.weather_pm25 >}} ({{< var dw.weather_pm25_p90 >}} at the 90th percentile). PM10 is the same ({{< var dw.weather_pm10 >}}), and so is the all-year resampling scheme ({{< var dw.weather_pm25_gc >}}). Network-wide, weather made 2015 a favourable year ({{< var dw.weather_2015 >}} for PM2.5) and 2025 another ({{< var dw.weather_2025 >}}). Weather is roughly half of a typical single-year change, so a one-year improvement says little on its own; over several years its push and pull largely cancel.
+
+The two model families agree on average but not always on a single station's trend: they differ by more than {{< var set.divergence_pct >}} in {{< var dw.diverging >}} of {{< var dw.with_d >}} series. That is why every ground result is shown under both. A pre-set test showed that the 2020 lockdown hardly leaks into neighbouring years under the GAM's trend (median change {{< var dw.lockdown_median >}}, below the {{< var dw.lockdown_threshold >}} threshold), though most of what leaks falls on 2019 ({{< var dw.lockdown_2019 >}}).
+
+![**Figure {{< var fig.fig3_deweathered_annual.number >}}.** {{< var fig.fig3_deweathered_annual.caption >}}](figures/fig3_deweathered_annual.png){fig-alt="{{< var fig.fig3_deweathered_annual.alt >}}"}
+
+## RQ3: did NCAP cities change differently from comparable cities? {#sec-rq3}
+
+**Verdict on H1: {{< var causal.verdict >}}.** {{< var causal.sentence >}}
+
+The primary SDID estimate is {{< var causal.att >}} (95% CI {{< var causal.ci >}}; {{< var causal.att_ug >}} µg/m³, {{< var causal.ci_ug >}}). Rule (b) fails: the pre-listing event-study coefficients are small, but jointly different from zero (χ² = {{< var causal.wald_stat >}}, p = {{< var causal.wald_p >}}). Because the satellite series is smooth, small and irregular pre-period wiggles are measured precisely enough to be "significant"; I checked on synthetic panels that the test rejects at its nominal rate when nothing is planted. Rule (c) holds (the {{< var set.placebo_year >}} placebo is {{< var causal.placebo2016 >}}, {{< var causal.placebo2016_ci >}}). Every other Layer A estimate is also an increase: Callaway and Sant'Anna {{< var causal.cs >}}, area-weighted {{< var causal.area >}}, V6.GL.03 {{< var causal.v6 >}}, and the event study's average after listing {{< var causal.es_avg >}} ({{< var causal.es_ci >}}). The HonestDiD interval stays above zero only if post-listing departures from parallel trends are at most {{< var causal.honest_breakdown >}} times the largest pre-listing one. For information only, since the verdict is already decided: the 90% interval ({{< var causal.ci90 >}}) lies inside ±{{< var set.equiv >}}, and the 95% interval excludes reductions of {{< var causal.targets >}}, NCAP's own targets, although those were set for PM10, not PM2.5.
+
+![**Figure {{< var fig.fig4_event_study.number >}}.** {{< var fig.fig4_event_study.caption >}}](figures/fig4_event_study.png){fig-alt="{{< var fig.fig4_event_study.alt >}}"}
+
+**Why a "relative rise" is not "pollution rose".** Satellite PM2.5 fell in both groups after 2018 (Figure S1): in NCAP units from {{< var causal.ncap_2018 >}} to {{< var causal.ncap_2024 >}} µg/m³ ({{< var causal.ncap_fall >}}), and in the comparison pool from {{< var causal.pool_2018 >}} to {{< var causal.pool_2024 >}} µg/m³ ({{< var causal.pool_fall >}}). NCAP units fell less. The listed cities differ from the pool in ways the design does not fully absorb: they are much larger and less often in the Indo-Gangetic Plain, and excluding that region from both groups lowers the estimate to {{< var causal.rob_no_noigp >}} (@sec-robustness). Restricting both groups to overlapping population ranges, an exploratory check added after seeing H1, leaves the estimate where it was ({{< var causal.size_minmax >}} with {{< var causal.size_minmax_treated >}} treated units; {{< var causal.size_q5_95 >}} with {{< var causal.size_q5_95_treated >}}).
+
+![**Figure {{< var fig.figS1_levels.number >}}.** {{< var fig.figS1_levels.caption >}}](figures/figS1_levels.png){fig-alt="{{< var fig.figS1_levels.alt >}}"}
+
+**Could the satellite be echoing the new monitors?** The pre-specified leakage split shows units that gained a monitor rose less ({{< var causal.leak_gained >}}) than units that did not ({{< var causal.leak_notgained >}}; difference {{< var causal.leak_diff >}}, {{< var causal.leak_diff_ci >}}), so the registered warning fires. This is the direction leakage would produce, because new monitors read cleaner (@sec-rq1). It is a warning, not proof: the two groups also differ in size and pollution. Raw AOD tests it further (Table 5, Figure S2). On {{< var maiac.treated >}} treated and {{< var maiac.controls >}} control units with a complete AOD record, AOD's relative change is {{< var maiac.aod >}} ({{< var maiac.aod_ci >}}) against {{< var maiac.acag >}} for satellite PM2.5 on the same units: "{{< var maiac.q1 >}}". The gained/not-gained gap is absent from AOD: "{{< var maiac.q2 >}}". These readings were written before any AOD value existed, and they have two limits.
+
+- **The rise is not robust in AOD either way.** A non-monsoon version shows a small rise ({{< var maiac.nonmonsoon >}}, {{< var maiac.nonmonsoon_ci >}}). In all {{< var maiac.specs >}} AOD specifications the AOD change is below the PM2.5 change on the same units.
+- **The divergence is largest where leakage cannot act.** In an exploratory comparison added after seeing these results, the units that gained no monitor show the widest gap ({{< var maiac.ng_acag >}} in satellite PM2.5 against {{< var maiac.ng_aod >}} in AOD). Leakage as hypothesised would pull satellite PM2.5 down where monitors were added, so this weakens Q2 as evidence for leakage specifically. Satellite PM2.5 and raw AOD disagree about NCAP units in general, and this design cannot say why: the satellite product, or a changing link between the aerosol column and surface PM2.5.
+
+The event study on AOD also fails its pre-trend test (p = {{< var maiac.es_p >}}), so the pre-trend problem is not only a property of the calibrated product.
+
+**Table 5.** Satellite PM2.5 against raw AOD on the same units. AOD is a column measure, not surface PM2.5, so only its direction is read. Relative changes, not effects of NCAP; H1 is not identified by this design.
+
+{{< include _generated/maiac.md >}}
+
+![**Figure {{< var fig.figS2_aod_acag.number >}}.** {{< var fig.figS2_aod_acag.caption >}}](figures/figS2_aod_acag.png){fig-alt="{{< var fig.figS2_aod_acag.alt >}}"}
+
+**The ground layer (secondary).** In the {{< var causal.lb_pm25.cities >}} PM2.5 cities ({{< var causal.lb_pm25.single >}} single-station) the deweathered before–after change is {{< var causal.lb_pm25.its >}} ({{< var causal.lb_pm25.its_ci >}}), but against {{< var causal.lb_pm25.controls >}} control cities the DiD is {{< var causal.lb_pm25.did >}} ({{< var causal.lb_pm25.did_ci >}}). For PM10 the ITS is {{< var causal.lb_pm10.its >}} and the DiD {{< var causal.lb_pm10.did >}} ({{< var causal.lb_pm10.did_ci >}}). With one pre-year neither can test parallel trends, and the ITS cannot separate national change from anything else.
+
+**Table 6.** Layer B (ground; secondary, one pre-year), deweathered balanced panel, 95% cluster-bootstrap CIs. Not effects of NCAP.
+
+{{< include _generated/layer_b.md >}}
+
+**Triangulation.** Layer A restricted to the same {{< var causal.restricted_units >}} cities gives {{< var causal.restricted >}} ({{< var causal.restricted_ci >}}). Against the ground DiD the pair is "{{< var causal.cat_did >}}"; against the ITS it is "{{< var causal.cat_its >}}". The registered investigation resolves the conflict at its third step: over the same cities and years, the satellite's own before–after change is {{< var causal.inv_sat_cells >}} at the stations' cells and {{< var causal.inv_sat_poly >}} over the polygons, against {{< var causal.inv_ground >}} on the ground. Ground and satellite agree that these cities got cleaner. The conflict is between two questions: whether the cities got cleaner (yes), and whether they got cleaner than comparable cities (no). It is not a disagreement between two measurements.
+
+**H2** (a larger winter change) was not tested, because H1 was not supported. As exploratory numbers, winter and non-winter move alike ({{< var causal.h2_winter >}} and {{< var causal.h2_nonwinter >}}; difference {{< var causal.h2_diff >}}, {{< var causal.h2_ci >}}).
+
+## RQ4: heterogeneity and mechanism {#sec-rq4}
+
+H1 is not identified, so every number in this section is a **city-level relative change**: a unit's satellite PM2.5 after listing against its own synthetic comparison. None is an effect of NCAP.
+
+**Single cities are noisy.** The {{< var het.units >}} unit estimates average {{< var het.mean >}} and range from {{< var het.min >}} to {{< var het.max >}}, but each has a standard error of about {{< var het.se_2019 >}} log units. {{< var het.unadj_p05 >}} have an unadjusted p-value below {{< var set.alpha >}}, and {{< var het.bh_pass >}} of {{< var het.units >}} survive Benjamini–Hochberg at {{< var set.fdr >}}.
+
+**Pooling.** All {{< var het.models >}} hierarchical models converged at the first attempt. The between-city spread is small ({{< var het.tau >}} log units) against each city's noise, so the estimates shrink strongly towards what the moderators predict (Figure 6). The average city-level relative change is {{< var het.avg >}} ({{< var het.avg_ci >}}). Shrunken intervals lie entirely above zero for {{< var het.cri_above >}} units, entirely below for {{< var het.cri_below >}}, and span zero for {{< var het.cri_span >}}. A typical unit's 95% rank interval spans {{< var het.rank_width >}} of the {{< var het.units >}} places, so the data cannot rank cities; the per-city table in the repository (`docs/heterogeneity_report.md`, §4) and the city explorer are alphabetical for that reason.
+
+![**Figure {{< var fig.fig5_city_map.number >}}.** {{< var fig.fig5_city_map.caption >}}](figures/fig5_city_map.png){fig-alt="{{< var fig.fig5_city_map.alt >}}"}
+
+![**Figure {{< var fig.fig6_shrinkage.number >}}.** {{< var fig.fig6_shrinkage.caption >}}](figures/fig6_shrinkage.png){fig-alt="{{< var fig.fig6_shrinkage.alt >}}"}
+
+**H5, the Indo-Gangetic Plain: the registered rule is {{< var het.h5_verdict >}}.** The IGP coefficient is {{< var het.h5 >}} ({{< var het.h5_ci >}}), which spans zero. A model with the IGP alone, shown beside it and not deciding, gives {{< var het.igp_only >}} ({{< var het.igp_only_ci >}}), the opposite direction to H5; the IGP correlates at {{< var het.corr_igp_base >}} with baseline PM2.5, which the full model holds fixed. Among the exploratory moderators, coastal units show a smaller relative change ({{< var het.beta_coastal >}}, {{< var het.beta_coastal_ci >}}) and XV Finance Commission units a larger one ({{< var het.beta_xvfc >}}, {{< var het.beta_xvfc_ci >}}); funding channel and population correlate at {{< var het.corr_xvfc_pop >}}, so those two share information. None of this identifies where the programme had any effect.
+
+**H3, dust control: {{< var het.h3_verdict >}}.** Condition (iii) failed before the H3 rules were written, because the ITS pair is "conflict". Condition (i) fails too: the ratio of PM2.5 to PM10 on co-located stations rises by {{< var het.ratio_its >}} in the before–after comparison ({{< var het.ratio_its_ci >}}, an interval that just reaches zero), and by {{< var het.ratio_did >}} against control cities ({{< var het.ratio_did_ci >}}). Condition (ii) holds for the ITS ({{< var het.h3_ii_its >}} of the three specifications) but not the DiD ({{< var het.h3_ii_did >}} of three). The scope is {{< var het.h3_cities >}} cities with both pollutants, mostly single stations.
+
+![**Figure {{< var fig.fig7_mechanism.number >}}.** {{< var fig.fig7_mechanism.caption >}}](figures/fig7_mechanism.png){fig-alt="{{< var fig.fig7_mechanism.alt >}}"}
+
+**Funding dose (exploratory).** Across {{< var het.dose_units >}} million-plus units, the city-level relative change moves by {{< var het.dose >}} per doubling of the allocation per person ({{< var het.dose_ci >}}); adding the IGP gives {{< var het.dose_igp >}}, and dropping the highest-dose unit {{< var het.dose_notop >}}. The dose is effectively "which state": in the {{< var het.dose_states >}} states with two or more units, allocations per person differ by a median {{< var het.dose_state_spread_median >}} within a state, while state means run from {{< var het.dose_state_min >}} to {{< var het.dose_state_max >}}.
+
+# Robustness {#sec-robustness}
+
+**Layer A.** {{< var causal.rob_agree >}} of {{< var causal.rob_judged >}} registered checks agree with the primary estimate (same sign, inside its 95% interval), and every Layer A estimate is positive, from {{< var causal.rob_min >}} to {{< var causal.rob_max >}}. The two that do not agree are smaller but still positive: the older calibration vintage V6.GL.02.04 ({{< var causal.rob_no_vintage >}}, {{< var causal.rob_no_vintage_ci >}}, data to 2023) and excluding the Indo-Gangetic Plain ({{< var causal.rob_no_noigp >}}, {{< var causal.rob_no_noigp_ci >}}). Dropping any single donor moves the estimate only between {{< var causal.loo_lo >}} and {{< var causal.loo_hi >}} log units. Adding nearby fire activity as a covariate gives {{< var causal.fire >}} ({{< var causal.fire_ci >}}), so crop burning does not explain the relative rise.
+
+**Table 7.** Every registered Layer A check. "Agrees" = same sign as the primary and inside its 95% interval; "—" = not on the same scale or a placebo. Relative changes, not effects of NCAP.
+
+{{< include _generated/robustness_a.md >}}
+
+**Layer B.** {{< var causal.lb_pm25.rob_agree >}} of {{< var causal.lb_pm25.rob_judged >}} checks agree for PM2.5 and {{< var causal.lb_pm10.rob_agree >}} of {{< var causal.lb_pm10.rob_judged >}} for PM10. Those that do not are the 2019-baseline versions, which cover only the few cities listed in 2020–2021, and versions that change the model or the station set: for PM2.5 the DiD under the as-registered model and at the looser completeness rule, for PM10 both estimators under the stricter valid-hour rule. Excluding 2019, an added check, barely moves the PM2.5 ITS ({{< var causal.no2019_its >}}). The full table is in `docs/causal_report.md` §9.
+
+**H4** holds in every PM2.5 version and all but two PM10 versions (@sec-rq1).
+
+**What weakens the results.**
+
+- The registered pre-trend test fails, so the satellite comparison cannot be read as an effect, whatever its sign.
+- The leakage warning fires, and satellite PM2.5 and raw AOD diverge. Part of the relative rise may come from the satellite product or from a changing aerosol–surface link, not from the air people breathe.
+- Most ground results describe one monitor per city, and GAM and LightGBM disagree for some single cities.
+- Several checks were added after I saw results: excluding 2019, dropping one station (Satna), the population-overlap SDIDs and the AOD comparison where no monitor was added. Each is labelled where it appears (Appendix A, group F).
+
+# Limitations {#sec-limitations}
+
+- **Identification.** NCAP cities were chosen because they were polluted or large. They differ from the comparison pool in size and region, and their pre-listing path differs from their synthetic comparison by enough to fail the registered test.
+- **Satellite calibration.** The satellite product is calibrated to ground monitors, and raw AOD, which is not, shows less of the relative rise. AOD is itself a column measure, so neither is a clean reference.
+- **A thin ground record.** Before 2018 the network is tiny, so the ground layer has one pre-NCAP year, cannot test parallel trends, and rests mostly on single stations.
+- **The wrong pollutant for the target.** NCAP's targets are for PM10; the confirmatory layer measures PM2.5. A PM2.5 result says nothing directly about PM10 attainment.
+- **A bundle of actions.** Even an identified estimate would describe being listed, not any particular action.
+- **2020.** The lockdown is dropped from the satellite panel and has its own coefficient on the ground; the GAM's one-year trend partly averages it into 2019.
+- **Weather at grid scale.** ERA5 cells miss street-level and coastal meteorology, and the deweathered trend depends on the model family for some cities.
+- **Provenance.** The ground data come through a mirror of CPCB's repository; I pinned and cross-checked it, but it is one step removed from the source.
+- **Not covered.** NO2 (registered as exploratory and not carried out), January–March 2026, and the NCAP towns without a GHSL centre in the primary estimate.
+
+# Conclusion {#sec-conclusion}
+
+Reported improvements in NCAP cities are partly an artefact of how they are measured. Where I could follow a continuous monitor from 2018 to 2025, a large part of the reported fall in PM2.5 comes from where new monitors were placed, and weather moves any single year by about as much as a typical year's change. On satellite PM2.5, NCAP cities improved, but not by more than comparable cities; my registered design cannot say whether NCAP made any difference, because its own pre-trend test failed, and I report that as the result rather than the estimate.
+
+Five recommendations follow from these findings, each within what the data can support.
+
+1. **Report a fixed panel of stations beside the all-station average,** so that network growth does not show up as improvement.
+2. **Report weather-normalised values beside raw ones,** and judge progress over several years, not one.
+3. **Publish station start dates, moves and instrument changes,** so that composition and level shifts can be checked.
+4. **Report PM2.5 as well as PM10,** since health effects and the satellite record are in PM2.5.
+5. **Evaluate against comparison cities with a long pre-period, with the analysis registered in advance,** so that a null or unidentified result is as informative as a positive one.
+
+{{< include references.md >}}
+
+# Appendices {.unnumbered}
+
+{{< include deviations.md >}}
+
+{{< include appendix_b_c.md >}}
+
+## Appendix D. Supplementary figures {.unnumbered}
+
+![**Figure {{< var fig.figS3_decomposition_cities.number >}}.** {{< var fig.figS3_decomposition_cities.caption >}}](figures/figS3_decomposition_cities.png){width="78%" fig-alt="{{< var fig.figS3_decomposition_cities.alt >}}"}
+
+![**Figure {{< var fig.figS4_decomposition_pm10.number >}}.** {{< var fig.figS4_decomposition_pm10.caption >}}](figures/figS4_decomposition_pm10.png){fig-alt="{{< var fig.figS4_decomposition_pm10.alt >}}"}

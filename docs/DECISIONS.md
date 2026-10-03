@@ -1946,3 +1946,61 @@ Phase 10 estimates nothing. It writes the report, the results summary, the polic
 - **Licences.**
   - Each source's terms are checked against my choices (MIT for code; CC BY 4.0 for text and figures, with the ODbL notice where figures use ground-derived data; ODbL 1.0 for ground-derived data).
   - Licence files are written only where no conflict is found. Any conflict is reported at the Part B checkpoint and is not applied.
+
+## 2026-10-03: Phase 10 Part B (writing) built (rules DEC-206, DEC-209 and DEC-210, pushed in `5aeaaaa` before any report text or code)
+
+**DEC-211: Part B results and implementation notes. No estimate was made or changed.**
+- **What exists.**
+  - The technical report (`reports/report.qmd`): 26 pages as PDF.
+  - The results summary (`reports/summary.qmd`): one page.
+  - The policy brief (`reports/policy_brief.qmd`): two pages.
+  - The figure 1 slide (`reports/figures/fig1_slide`).
+  - All three documents render to HTML and PDF from `reports/_quarto.yml` in `ncap-site`; the PDFs are made with Typst.
+  - Appendix A is `reports/deviations.md`, included verbatim. The data-sources table, references and Appendices B–C are hand-written include files that hold facts about inputs and decisions, not results.
+- **Where the numbers come from.**
+  - `python -m src.report.values` writes `reports/_variables.yml` (537 values) and six tables in `reports/_generated/`.
+  - It reuses the phase reports' loaders and decision functions, and reads method settings from `config/params.yaml`.
+  - Figure captions are each figure's own generated caption (DEC-194).
+  - While building it, three values first differed from the phase reports in definition (missingness in percentage points, the rank-interval width, the within-state dose spread). Each was corrected to the phase report's own definition before any text used it.
+  - Values that a sentence already describes as a fall or as "below" are also stored unsigned (`_abs`), so the text never reads "a fall of −23.6%".
+- **Checks (`src/report/check.py`, `tests/test_report.py`, 15 tests; the `report` rule runs them too).**
+  - No stand-alone number in the prose outside a variable, except years, dates, names, cross-references and the conventional 95%/90% levels.
+  - Every variable used exists.
+  - The wording check runs on the prose with variables filled in, on the generated tables and on the include files.
+  - The include files may hold no signed percentage, percentage point or concentration.
+  - Every DECISIONS entry headed "DEVIATION" is listed in Appendix A.
+  - **What the checks caught while writing:**
+    - typed numbers ("3–5%" twice, now the variable `causal.rise_range`, taken from the same sentence `wording()` builds; "15-minute values");
+    - "best-case" (the ranking pattern);
+    - "says where NCAP worked";
+    - "an effect of NCAP" un-negated in Appendix B.
+    All were reworded.
+- **Two things removed rather than generated:**
+  - I had written that the comparison pool's PM2.5 "fell most" in the Indo-Gangetic Plain. An ad hoc calculation confirms it, but no pipeline output holds that number and Phase 10 computes nothing new. The sentence now cites the registered exclude-IGP check instead.
+  - Two dataset-paper titles and one volume/page reference that I could not verify against DEC-200 were removed from the references; those entries keep authors, journal and DOI only.
+- **Byte-stable PDFs.** With `#set document(date: none)` in `reports/_typst_style.typ`, two renders give byte-identical PDFs (checked twice, with and without `SOURCE_DATE_EPOCH`).
+- **Snakemake.** The `report` stub is replaced by `fig1_slide`, `report_values`, `report` (runs the checks; part of `all`) and `report_render` (calls `ncap-site`; not part of `all`, like `dashboard_render`). Editing `src/viz/fig1_decomposition.py` re-ran `fig1`; every existing figure and `docs/figures.md` came out byte-identical, and `snakemake --cores 1 all` completed.
+- **Not committed:** the rendered HTML (`reports/*.html`, gitignored). The Pages workflow builds it from the committed sources in Part C (DEC-210).
+- **To fill in Part D:** Appendix B's line on the clean-clone rebuild points to this file; its result is recorded there.
+- **Tests:** 270 pass.
+
+**DEC-212: The licence check (DEC-206, DEC-210). No conflict found, so my choices are applied; two points need my review.**
+- **The terms checked, on 2026-10-03.**
+  - The CPCB mirror (ODbL 1.0; README and LICENSE saved at `a58f478`).
+  - ACAG, ERA5, GHSL/GHS-POP, MAIAC, OpenAQ and DataMeet (DEC-200).
+  - GeoNames (CC BY 4.0; `data/raw/geonames/readme.txt`).
+  - Natural Earth (public domain).
+  - NASA FIRMS (open data with the acknowledgement text from the FIRMS FAQ, read 2026-10-03).
+- **Code, MIT.** No source licence constrains the code. The R packages the pipeline calls (some GPL) are installed from conda-forge or CRAN, not distributed here, and MIT is GPL-compatible.
+- **Text and figures, CC BY 4.0.** This is compatible with every CC BY and public-domain source, given the attributions in Appendix C and `LICENSING.md`.
+- **Ground-derived data, ODbL 1.0.** As the mirror requires.
+- **An obligation, not a conflict.** The report, figures and dashboard are works produced from an adapted version of the ODbL database (the cleaned, deweathered station data). ODbL §4.6 then requires offering either the adapted database or "the method of making the alterations". The public repository's code is that method, and the notice says so. This holds only while the code stays public.
+- **Two points for my review.**
+  - **CPCB's own rights:** the mirror says "some individual contents of the database are under copyright by CPCB". The ODbL covers the database, not those contents, and CPCB's own terms could not be checked (its repository pages are offline, DEC-031). The notice keeps "some contents © CPCB".
+  - **Derived data that is not ground data** (the satellite and city-level series among the dashboard CSVs) was not covered by my choices. I applied CC BY 4.0, matching their CC BY sources; to confirm.
+- **Files written:**
+  - `LICENSE` (MIT, © 2026 Reenu);
+  - `LICENSE-CC-BY-4.0.txt` (the legal code from creativecommons.org, sha256 `9ba9550a…`);
+  - `LICENSE-ODbL-1.0.txt` (the full ODbL 1.0 text as shipped by the mirror, sha256 `1d553fee…`);
+  - `LICENSING.md` (which licence covers which part, the ODbL notice, and the attributions).
+- **Still to change in Part C:** the dashboard's About page still says no code licence has been chosen.

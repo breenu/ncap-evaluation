@@ -1,0 +1,6 @@
+project:
+  type: default
+  render:
+    - report.qmd
+    - summary.qmd
+    - policy_brief.qmd

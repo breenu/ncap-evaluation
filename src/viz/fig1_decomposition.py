@@ -20,9 +20,14 @@ Each step removes that part's contribution. Primary: GAM, seasonal resampling, p
                                 illustrative cities chosen by DEC-191's station-count rule, alphabetical
     figS3_decomposition_cities  every H4 city, both pollutants, alphabetical
     figS4_decomposition_pm10    PM10 cross-city summary, with the ground DiD (Layer B, secondary) on its own axis
+    fig1_slide                  Phase 10 (DEC-210): panel (a) alone at 16:9, titled with one takeaway line built from
+                                the same values
 
-    python -m src.viz.fig1_decomposition      (gated: reads Phase 7 and Phase 8 outputs)
+    python -m src.viz.fig1_decomposition           (gated: reads Phase 7 and Phase 8 outputs)
+    python -m src.viz.fig1_decomposition --slide   (the slide only)
 """
+
+import sys
 
 import numpy as np
 import pandas as pd
@@ -302,6 +307,43 @@ def fig_main(D: dict) -> tuple[plt.Figure, S.Meta]:
                        "How much of a city's reported improvement is real?", cap, alt)  # fmt: skip
 
 
+# ------------------------------------------------------------------ the slide (Phase 10)
+
+
+def fig_slide(D: dict) -> tuple[plt.Figure, S.Meta]:
+    """Figure 1 panel (a) alone, 16:9, for a slide (DEC-210). The title is the takeaway line; the same scope
+    and caveats as figure 1 sit in the note."""
+    pol, spec, lg = "pm25", C.PRIMARY.label, C.Spec("lgbm").label
+    n_c, n_single = scope(D["h4"], pol)
+    v, va = summary_values(D["s"], pol, spec), summary_values(D["s"], pol, lg)
+    h = v["h4"]
+    share = 100 * h[0] / -v["reported"][0]
+    take = (f"In {n_c} NCAP cities, about {share:.0f}% of the reported fall in PM2.5 since 2018 does not survive\n"
+            "correction for weather and for changes in which monitors exist")
+    fig = plt.figure(figsize=(13.33, 7.5))
+    ax = fig.add_axes([0.08, 0.2, 0.9, 0.53])
+    waterfall(ax, v, va, LONG)
+    ax.tick_params(axis="x", labelsize=11)
+    ax.set_ylabel(XLAB_CHANGE, fontsize=11)
+    ax.set_title(f"Ground PM2.5, mean over {n_c} NCAP cities ({n_single} with a single continuous station): "
+                 f"reported fall minus corrected fall = {h[0]:+.1f} pp (95% CI {h[1]:+.1f} to {h[2]:+.1f})",
+                 loc="left", fontsize=11, pad=10)  # fmt: skip
+    fig.suptitle(take, x=0.01, y=0.975, ha="left", va="top", fontsize=17, fontweight="bold", color=S.INK)
+    fig.legend(handles=legend_handles(), loc="upper left", bbox_to_anchor=(0.01, 0.875), ncol=3, fontsize=9.5)
+    S.source_note(fig, f"SCOPE: only the {n_c} NCAP cities with a PM2.5 station valid every year 2018–2025; not NCAP cities in "
+                  "general. CPCB ground stations inside each GHSL urban centre (via the Vonter/india-cpcb-aqi mirror, ODbL); weather "
+                  "from ERA5 (Copernicus). Ground data only; " + S.NOT_IDENTIFIED, y=0.045)  # fmt: skip
+    big = largest_part(v)
+    cap = (f"Slide version of Figure 1, panel (a). Mean change in annual ground PM2.5 from 2018 to 2025 over the {n_c} NCAP cities "
+           f"with a station valid every year ({n_single} of them with only one such station): reported {v['reported'][0]:+.1f}%, "
+           f"corrected {v['corrected'][0]:+.1f}%; H4 = {h[0]:+.1f} pp (95% CI {h[1]:+.1f} to {h[2]:+.1f}). Bars: GAM (primary); "
+           "squares: LightGBM; intervals: 95% cluster bootstrap over cities. " + S.NOT_IDENTIFIED)  # fmt: skip
+    alt = (f"Waterfall chart. Across {n_c} NCAP cities, the reported fall in ground PM2.5 from 2018 to 2025 averages "
+           f"{v['reported'][0]:.1f}%; after removing modelled weather and the change in which monitors exist it is "
+           f"{v['corrected'][0]:.1f}%. The largest part removed is {big[0]} ({big[1]:+.1f} pp removed). Not an effect of NCAP.")  # fmt: skip
+    return fig, S.Meta("1 (slide)", take.replace("\n", " "), "How much of a city's reported improvement is real?", cap, alt)
+
+
 # ------------------------------------------------------------------ S4: PM10 summary
 
 
@@ -418,6 +460,11 @@ def main() -> None:
     require_gate("figure 1 and S4 (Phase 7 and Phase 8 outputs)")
     S.apply()
     D = load()
+    if "--slide" in sys.argv[1:]:
+        f, m = fig_slide(D)
+        S.save(f, "fig1_slide", m)
+        print("figure 1 slide written")
+        return
     f, m = fig_main(D)
     S.save(f, "fig1_decomposition", m)
     f, m = fig_cities(D)

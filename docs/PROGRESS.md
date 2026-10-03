@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-10-03. **Phase 10 in progress: Part A (structure) done and pushed, waiting for Reenu's review.** START at "Phase 10: where it stands" below.*
+*Last updated: 2026-10-03. **Phase 10 in progress: Part A approved; Part B (writing) done and pushed, waiting for Reenu's review.** START at "Phase 10: where it stands" below.*
 
 ## Status
 
@@ -20,7 +20,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 8 Heterogeneity and mechanism | ✅ approved 2026-10-03 (H5 rule not met; H3 inconclusive; dose: nothing); pushed (DEC-161 to DEC-172) |
 | 8b MAIAC AOD check (Earth Engine) | ✅ approved 2026-10-03 (Q1 rise not reproduced; Q2 gap absent; exploratory: ACAG and AOD also diverge where no monitor was added); pushed (DEC-174 to DEC-189) |
 | 9 Figures and dashboard | ✅ approved 2026-10-03; pushed; site live at https://breenu.github.io/ncap-evaluation/ (DEC-190 to DEC-205) |
-| 10 Report and release | **in progress:** Part A (outline, deviations list, headline paragraph) at its checkpoint, 2026-10-03 (DEC-206 to DEC-208) |
+| 10 Report and release | **in progress:** Part A approved (DEC-209); Part B (report, summary, brief, slide, licences) at its checkpoint, 2026-10-03 (DEC-210 to DEC-212) |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). Phase 7's rules (DEC-138 to DEC-150) were pushed in `eebaecc` before any estimate; the first post-2019 effect estimates are Part A's (DEC-151).
 
@@ -82,13 +82,42 @@ Reenu's instructions for Phase 10 (2026-10-03), binding on every part:
 - four parts, each ending at a checkpoint that is pushed for Reenu's review: **A** structure, **B** writing, **C** repository clean-up, **D** clean-clone rebuild and the v1.0 tag;
 - run everything inside the `ncap` environment (DEC-046), on mains power.
 
-**Part A (structure): done 2026-10-03, waiting for review.**
+**Part A (structure): approved 2026-10-03 with edits (DEC-209).**
 - `reports/report_outline.md`: the report outline with every figure and table placed, the companion documents, the headline paragraph with the source of each number, and the proposed build (DEC-206).
 - `reports/deviations.md`: the complete deviations list, groups A–F (DEC-207). It becomes Appendix A verbatim and holds no result numbers.
 - DEC-206 (report build: Quarto variables from `src.report.values`, a no-typed-numbers test, the wording check on all report text, HTML + PDF via Typst in `ncap-site`, licences as Reenu chose, to be checked in Part B), DEC-207 (the deviations list), DEC-208 (the registered NO2 exploratory analysis was never run).
 - Checks: the wording check passes on both new documents and the new DECISIONS text; 255 tests pass.
 
-**Questions for Reenu at the Part A checkpoint:**
+**Part B (writing): done 2026-10-03, waiting for review** (DEC-210 to DEC-212).
+- **Documents:**
+  - `reports/report.qmd` (26 pages), `summary.qmd` (one page), `policy_brief.qmd` (two pages);
+  - includes: `deviations.md` (Appendix A), `sources.md`, `references.md`, `appendix_b_c.md`;
+  - the PDFs are committed; the HTML is gitignored and goes on Pages in Part C;
+  - the slide is `reports/figures/fig1_slide`.
+- **Numbers:** `python -m src.report.values` → `reports/_variables.yml` + `reports/_generated/*.md`.
+- **Checks:** `python -m src.report.check`, and `tests/test_report.py` (15 tests).
+- **Rebuild:**
+  ```bash
+  snakemake --cores 1 all                          # in ncap: fig1_slide, report_values, report (the checks)
+  snakemake --cores 1 report_render                # or: conda run -n ncap-site --no-capture-output quarto render reports
+  ```
+  The PDFs are byte-stable (`#set document(date: none)`).
+- **Licences applied:** `LICENSE` (MIT), `LICENSE-CC-BY-4.0.txt`, `LICENSE-ODbL-1.0.txt`, `LICENSING.md`. No conflict was found.
+- **Two points for Reenu (DEC-212):**
+  - CPCB's own content rights are unverifiable (the notice keeps "some contents © CPCB");
+  - CC BY 4.0 was applied to the non-ground derived data, which her choices did not cover.
+- **Tests:** 270 pass.
+
+**Open for Part C:**
+- the dashboard About page still says no licence has been chosen;
+- publish the report HTML on Pages;
+- the DEC-019 decision;
+- the CLAUDE.md references in code;
+- remove `docs/osf/test.pdf`.
+
+**For Part D:** fill in Appendix B's clean-clone line (via DECISIONS), attach the PDF to the v1.0 release.
+
+**Questions for Reenu at the Part A checkpoint (answered 2026-10-03, DEC-209):**
 1. Approve the outline, the deviations list and the headline paragraph (edits welcome).
 2. Report build (DEC-206): PDF through Typst (no lock change) rather than LaTeX?
 3. Where the rendered report lives: commit the PDF in `reports/`, and/or publish the HTML on the Pages site?

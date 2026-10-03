@@ -1,0 +1,8 @@
+{
+  "name": "fig1_slide",
+  "number": "1 (slide)",
+  "title": "In 18 NCAP cities, about 40% of the reported fall in PM2.5 since 2018 does not survive correction for weather and for changes in which monitors exist",
+  "question": "How much of a city's reported improvement is real?",
+  "caption": "Slide version of Figure 1, panel (a). Mean change in annual ground PM2.5 from 2018 to 2025 over the 18 NCAP cities with a station valid every year (16 of them with only one such station): reported -23.6%, corrected -14.1%; H4 = +9.5 pp (95% CI +4.8 to +14.5). Bars: GAM (primary); squares: LightGBM; intervals: 95% cluster bootstrap over cities. H1 is not identified by this design (registered pre-trend test failed): not an effect of NCAP.",
+  "alt": "Waterfall chart. Across 18 NCAP cities, the reported fall in ground PM2.5 from 2018 to 2025 averages -23.6%; after removing modelled weather and the change in which monitors exist it is -14.1%. The largest part removed is network composition (+5.8 pp removed). Not an effect of NCAP."
+}
