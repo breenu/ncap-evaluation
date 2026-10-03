@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-10-03. **Phase 9 approved and closed; the dashboard is live at https://breenu.github.io/ncap-evaluation/. Next: Phase 10, report and release.** START at "Next: Phase 10" below.*
+*Last updated: 2026-10-03. **Phase 10 in progress: Part A (structure) done and pushed, waiting for Reenu's review.** START at "Phase 10: where it stands" below.*
 
 ## Status
 
@@ -20,7 +20,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 8 Heterogeneity and mechanism | ✅ approved 2026-10-03 (H5 rule not met; H3 inconclusive; dose: nothing); pushed (DEC-161 to DEC-172) |
 | 8b MAIAC AOD check (Earth Engine) | ✅ approved 2026-10-03 (Q1 rise not reproduced; Q2 gap absent; exploratory: ACAG and AOD also diverge where no monitor was added); pushed (DEC-174 to DEC-189) |
 | 9 Figures and dashboard | ✅ approved 2026-10-03; pushed; site live at https://breenu.github.io/ncap-evaluation/ (DEC-190 to DEC-205) |
-| 10 Report and release | **next** |
+| 10 Report and release | **in progress:** Part A (outline, deviations list, headline paragraph) at its checkpoint, 2026-10-03 (DEC-206 to DEC-208) |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). Phase 7's rules (DEC-138 to DEC-150) were pushed in `eebaecc` before any estimate; the first post-2019 effect estimates are Part A's (DEC-151).
 
@@ -74,7 +74,42 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Next: Phase 10 (report and release). START HERE in a new chat
+## Phase 10: where it stands (START HERE in a new chat)
+
+Reenu's instructions for Phase 10 (2026-10-03), binding on every part:
+- every written document is in Reenu's first person, as sole author, with no mention of the tools used to write it;
+- the Phase 7 wording rules apply everywhere: nothing is an effect of NCAP, the "H1 not identified" verdict sits beside every causal estimate, no city is ranked;
+- four parts, each ending at a checkpoint that is pushed for Reenu's review: **A** structure, **B** writing, **C** repository clean-up, **D** clean-clone rebuild and the v1.0 tag;
+- run everything inside the `ncap` environment (DEC-046), on mains power.
+
+**Part A (structure): done 2026-10-03, waiting for review.**
+- `reports/report_outline.md`: the report outline with every figure and table placed, the companion documents, the headline paragraph with the source of each number, and the proposed build (DEC-206).
+- `reports/deviations.md`: the complete deviations list, groups A–F (DEC-207). It becomes Appendix A verbatim and holds no result numbers.
+- DEC-206 (report build: Quarto variables from `src.report.values`, a no-typed-numbers test, the wording check on all report text, HTML + PDF via Typst in `ncap-site`, licences as Reenu chose, to be checked in Part B), DEC-207 (the deviations list), DEC-208 (the registered NO2 exploratory analysis was never run).
+- Checks: the wording check passes on both new documents and the new DECISIONS text; 255 tests pass.
+
+**Questions for Reenu at the Part A checkpoint:**
+1. Approve the outline, the deviations list and the headline paragraph (edits welcome).
+2. Report build (DEC-206): PDF through Typst (no lock change) rather than LaTeX?
+3. Where the rendered report lives: commit the PDF in `reports/`, and/or publish the HTML on the Pages site?
+4. NO2 (DEC-208): leave it as a stated omission (B3), or run it now as an exploratory analysis?
+5. The posted OSF clarification: the local draft (`docs/osf/clarification_2026-10-01.md`) names commits but not `docs/DECISIONS.md`. If the posted text differs, the posted version should be saved in `docs/osf/`.
+
+**Found while reading, for Part C (repository clean-up):**
+- `docs/DECISIONS.md` DEC-019 names the assistant used in Phases 0–2. DECISIONS is append-only and stays public, so Reenu decides how to handle it.
+- Code comments and docstrings cite "CLAUDE.md hard rule N" (`config/gate.yaml`, `src/common/*.py`, `src/acquire/era5.py`, `src/causal/pregate_report.py`, `src/clean/audit_report.py`, `src/viz/eda.py`, several tests). These need rewording when CLAUDE.md leaves the repository.
+- `docs/osf/test.pdf` is a second export of the plan, and it differs from the registered `analysis_plan_osf.pdf`; it is a removal candidate.
+- `du.exe.stackdump` in the working tree is untracked and already gitignored.
+
+**Part B plan (after approval):**
+- `src/report/values.py` → `reports/_variables.yml` and `reports/_generated/*.md`;
+- `reports/_quarto.yml`, `report.qmd`, `summary.qmd`, `policy_brief.qmd`;
+- the figure 1 slide (`python -m src.viz.fig1_decomposition --slide`);
+- `tests/test_report.py`;
+- real `report_values` and `report_render` rules in `workflow/rules/report.smk`;
+- licence check against each source's terms, reported to Reenu before any licence file is written.
+
+## Phase 10: the original handoff (written at the end of Phase 9; kept for the record)
 
 **Per CLAUDE.md:**
 - write a short plan first (files and functions);

@@ -1867,3 +1867,41 @@ Phase 9 estimates nothing. It redraws figures from outputs that already exist (P
   - **Deployment matches the commit:** every live chart file is byte-identical to the committed one.
   - **Phone layout:** at a true 390 px viewport (inside an iframe, because headless Edge on Windows will not lay out below 504 px) the pages fit with no sideways scrolling, and phones get the one-column chart with legible text.
 - **Tests:** 7 dashboard tests (one new).
+
+## 2026-10-03: Phase 10 (report and release), Part A. Rules written BEFORE any report text or code
+
+Phase 10 estimates nothing. It writes the report, the results summary, the policy brief and a slide, chooses licences, cleans the public repository and checks that everything rebuilds from raw data. My instructions for it (2026-10-03): every written document is in my first person, as sole author; the wording rules of Phases 7–9 apply everywhere (nothing is an effect of NCAP, the "H1 not identified" verdict sits beside every causal estimate, no city is ranked); there are four checkpoints (A structure, B writing, C repository clean-up, D clean-clone rebuild), each pushed for my review.
+
+**DEC-206: How the report is built (proposed at the Part A checkpoint; Part B builds it only after my approval).**
+- **Sources.** `reports/report.qmd` (technical report), `reports/summary.qmd` (one page), `reports/policy_brief.qmd` (two pages) and a Quarto project file `reports/_quarto.yml`. The outline is `reports/report_outline.md`.
+- **No hand-typed results (hard rule 3).**
+  - The prose is written by hand, but every number in it is a Quarto variable (`{{< var … >}}`) read from `reports/_variables.yml`.
+  - That file is written by `python -m src.report.values` (analysis environment `ncap`, gated) from the processed outputs the phase reports already read.
+  - Tables are generated as Markdown under `reports/_generated/` and included with `{{< include >}}`.
+  - The fixed H1 sentence comes from `src.causal.causal_report.wording()`, as on the dashboard.
+- **Checks (`tests/test_report.py`).**
+  - No result-like number in the prose outside a variable. Years, section, figure, table and DEC numbers, and H1–H5 are allowed.
+  - Every variable the prose uses exists in `_variables.yml`.
+  - Every DECISIONS entry marked "DEVIATION" appears in `reports/deviations.md`.
+  - `src/viz/wording.py` runs on the prose, the variables and the generated tables of every document, and on the slide, as it already does on figures and the dashboard.
+- **Rendering.**
+  - `quarto render reports` in the site environment `ncap-site` (DEC-198) produces HTML and PDF.
+  - The PDF is made with Typst, which ships inside the locked Quarto 1.9.38 (`envs/site-lock.yml`). So neither lock file changes and no LaTeX distribution is installed.
+  - The report needs no Python at render time, as with the dashboard.
+- **Snakemake.** The `report` stub becomes `report_values` (part of `all`) and `report_render` (which calls `ncap-site`, like `dashboard_render`).
+- **Slide.** Figure 1 panel (a) alone, with one takeaway line built from the same values, made by the existing figure module with a slide option, so the style rules and the wording check apply unchanged.
+- **Licences (my choice, to be checked against each source's terms in Part B before anything is applied).** MIT for code. CC BY 4.0 for the report text and figures, with the ODbL attribution notice wherever a figure uses ground-derived data. ODbL 1.0 for ground-derived data (DEC-037, DEC-200). Any conflict is reported to me before a licence file is written.
+
+**DEC-207: The deviations list (`reports/deviations.md`), included verbatim as the report's Appendix A.**
+- **What it covers.** The registration promised to list every deviation, dated and justified. The list goes further than the entries labelled "DEVIATION", so that every judgement call touching a registered rule can be seen with its timing. Six groups:
+  - A, deviations from the registered plan (DEC-109, DEC-110, DEC-116);
+  - B, registered analyses not carried out or not computable;
+  - C, the clarifications posted on OSF on 1 October (DEC-127, DEC-135);
+  - D, departures from rules fixed after registration, and from the proposal;
+  - E, readings of registered text that was incomplete or could not be applied literally;
+  - F, analyses added after registration.
+- **Timing.** Every row states whether the decision came before or after the estimate it affects. The evidence is the commit that first recorded the decision (`git log -S` on `docs/DECISIONS.md`), set against the commit of the first result it governs (for example H4 in `132b788`, the first Phase 7 estimate in `655fb65`). Git shows when a rule was committed, not when a number was first looked at; the appendix says so.
+- **A1 and A3 are listed as deviations although the registered text does not spell out the resampling scheme or the GAM's trend.** The registered plan refers to the proposal's deweathering method (Grange & Carslaw 2019) and fixes only the family-selection rule. Each change alters what the registered analysis would have computed, so I list it. DEC-109's statement that the registered plan "describes the deweathering as following Grange & Carslaw" is looser than the registered text; this entry records the more exact wording, and DEC-109 itself is not edited.
+- **No result numbers.** The list holds dates, DEC numbers and commit hashes only, so it needs no generated values.
+
+**DEC-208 (fact, found while compiling the list): the registered exploratory analysis "NO2 as a secondary pollutant" (plan §5) was never carried out.** NO2 was ingested and cleaned in Phase 3, and its units were checked (DEC-056), but no phase analysed it. It is listed as B3, "not carried out". Whether to run it before the report, as an exploratory analysis carried out after every other result was seen, or to leave it as a stated omission, is my decision at the Part A checkpoint.
