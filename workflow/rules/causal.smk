@@ -84,7 +84,8 @@ SDID_A = ["primary", "v6gl03", "area", "placebo2016", "placebo2016_rm"]  # Part 
 SDID_B = ["v6gl0204", "towns", "towns_nopatancheruvu", "asansol_alone", "treated100k", "spill25", "funded",
           "anticip2018", "incl2020", "noigp", "restricted_pm25", "restricted_pm25_v6gl0204",
           "explore_support_minmax", "explore_support_q5_95"]  # Part B; the last two exploratory (DEC-155)
-ONE_THREAD = "OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1"
+# One BLAS thread per R worker is set inside src.causal.layer_a.run and src.hierarchical.city_estimates (DEC-187, DEC-216):
+# a shell prefix such as OMP_NUM_THREADS=1 does not run under Windows cmd.
 
 
 rule causal_era5_units:
@@ -131,7 +132,7 @@ rule causal_sdid_part_a:
         rules.causal_specs.output,
         "src/causal/sdid.R",
     output: expand(f"{CSL}/sdid/{{s}}/done.txt", s=SDID_A)
-    shell: f"{ONE_THREAD} {PY} src.causal.layer_a run {' '.join(SDID_A)}"
+    shell: f"{PY} src.causal.layer_a run {' '.join(SDID_A)}"
 
 
 rule causal_summary:
@@ -209,13 +210,13 @@ rule causal_sdid_part_b:
         rules.causal_specs.output,
         "src/causal/sdid.R",
     output: expand(f"{CSL}/sdid/{{s}}/done.txt", s=SDID_B)
-    shell: f"{ONE_THREAD} {PY} src.causal.layer_a run {' '.join(SDID_B)}"
+    shell: f"{PY} src.causal.layer_a run {' '.join(SDID_B)}"
 
 
 rule causal_loo:
     input: f"{CSL}/sdid/primary/done.txt"
     output: f"{CSL}/sdid/primary/loo.parquet"
-    shell: f"{ONE_THREAD} {PY} src.causal.layer_a loo primary"
+    shell: f"{PY} src.causal.layer_a loo primary"
 
 
 rule causal_layer_b:

@@ -189,4 +189,4 @@ rule dashboard:
 rule dashboard_render:
     input: rules.dashboard.output
     output: "dashboard/_site/index.html"
-    shell: "conda run -n ncap-site --no-capture-output quarto render dashboard"
+    shell: f"conda run -n {SITE_ENV} --no-capture-output quarto render dashboard"

@@ -19,6 +19,9 @@ os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 configfile: "config/params.yaml"
 
 STUB = "data/interim/_stubs"
+# The Quarto-only site environment that renders the dashboard and the report (DEC-198); a clean-clone rebuild
+# can point it at a freshly created one (DEC-216).
+SITE_ENV = os.environ.get("NCAP_SITE_ENV", "ncap-site")
 
 
 def stub_done(path):

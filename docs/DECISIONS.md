@@ -2083,3 +2083,27 @@ Phase 10 estimates nothing. It writes the report, the results summary, the polic
   - The `report_values` rule writes it as a side effect. README.md is not declared as an output, because the rest of it is hand-written.
 - **References:** the full titles of Hammer et al. (2023), Zhang et al. (2025), the GHSL UCDB and the MAIAC product, verified in DEC-200 and shown on the About page, were restored to the report's references (DEC-211 had removed them as unverified).
 - **Workflow (as DEC-108 and later).** The comment-only code edits and the one regenerated sentence mark 64 jobs stale by modification time. They were marked current with `snakemake --cores 1 --touch all pregate`, and `snakemake -n all pregate` then has nothing to do. Part D's clean-clone rebuild recomputes everything from raw data.
+
+## 2026-10-04: Phase 10 Part D (reproducibility from a clean clone). Rules written BEFORE the rebuild starts
+
+**DEC-216: How the clean-clone rebuild is run and judged.**
+- **Two workflow fixes, committed and pushed before cloning.** Neither changes any computation.
+  - The four SDID rules (`causal_sdid_part_a`, `causal_sdid_part_b`, `causal_loo`, `hier_unit_sdid`) lose their `OMP_NUM_THREADS=1 …` shell prefix. Windows `cmd` cannot run it (DEC-153, DEC-187), and the modules they call (`src.causal.layer_a.run`, `src.hierarchical.city_estimates`) already give each R worker one BLAS thread, as the Phase 8b rule does.
+  - The site environment's name becomes a setting (`NCAP_SITE_ENV`, default `ncap-site`), so the rebuild can render with a freshly created site environment.
+- **Where the rebuild runs.**
+  - A fresh `git clone` of the public repository from GitHub into `C:\dev\ncap-clean`.
+  - New environments created from the lock files: the analysis environment `ncap_clean` (`conda-lock install`, then `workflow/scripts/install_r_extra.R`) and the site environment `ncap-site_clean`. The working environments are not used.
+- **Raw data.**
+  - `data/raw/` is copied from the working folder and every manifest is checked: each listed file must exist with the recorded sha256, and no unlisted file may be present (`src.common.manifest.verify`).
+  - The downloads themselves are not repeated: they need my credentials and network access, and the Earth Engine export about 170 EECU-hours. In their place, each acquisition flag that a downloader would write is written only after its manifest verifies. The downloaders' code is not exercised by this check; the rest of the pipeline is.
+- **The run.**
+  - `snakemake --cores 1 --rerun-incomplete all pregate` in `ncap_clean`, then `report_render` and `dashboard_render` with `NCAP_SITE_ENV=ncap-site_clean`.
+  - It is resumable. Snakemake re-runs only unfinished jobs, and the long steps (deweathering fits, SDID replications, per-unit SDIDs) save their work in chunks and resume.
+  - The launcher unlocks, re-runs the same command, and keeps the machine awake while it runs. It must run on mains power (DEC-168).
+  - Timings are taken from Snakemake's log.
+- **How it is judged.**
+  - **Committed outputs** (generated reports in `docs/`, figures, dashboard sources, report values and tables, the README's generated block, PDFs) are compared through `git status` and `git diff` in the clone, byte for byte. Any difference is reported and explained.
+  - **Untracked outputs** (`data/interim/`, `data/processed/`) are compared with the working folder's copies: CSV, Parquet and JSON tables by content, with numeric values equal to a relative tolerance of 1e-9, and other files by checksum.
+  - Differences already known to be non-deterministic (GeoPackage timestamps, row order of ties, Earth Engine floating-point order, timestamps in `done.txt` files; DEC-094, DEC-160, DEC-187) are listed separately, not counted as failures.
+  - **It passes if** every number in the report, summary and brief (`reports/_variables.yml`) is identical, and every committed output either is byte-identical or differs only in one of those known ways.
+- **The release.** If it passes: the result goes in a DECISIONS entry (Appendix B's clean-clone line points there); the tag is `v1.0`; and a GitHub release carries the three PDFs.

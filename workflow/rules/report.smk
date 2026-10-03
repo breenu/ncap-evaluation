@@ -59,7 +59,7 @@ rule report_render:
         "reports/_typst_style.typ",
     output:
         expand("reports/{d}.{ext}", d=REPORT_DOCS, ext=("pdf", "html")),
-    shell: "conda run -n ncap-site --no-capture-output quarto render reports"
+    shell: f"conda run -n {SITE_ENV} --no-capture-output quarto render reports"
 
 
 rule report:

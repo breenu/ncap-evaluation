@@ -12,7 +12,7 @@ rule hier_unit_sdid:
         f"{CSL}/design_units.csv",
         "src/hierarchical/unit_sdid.R",
     output: expand(f"{HIER}/unit_sdid_{{s}}.parquet", s=["popw_V5GL06", "popw_V6GL03"])
-    shell: f"{ONE_THREAD} {PY} src.hierarchical.city_estimates run"
+    shell: f"{PY} src.hierarchical.city_estimates run"
 
 
 rule hier_city_estimates:
