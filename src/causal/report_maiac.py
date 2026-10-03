@@ -130,6 +130,25 @@ def section() -> str:
           f"> {CAVEAT[0].upper() + CAVEAT[1:]}: the verdict rests on the failed pre-trend test (rule b), which this check does not touch.", ""]  # fmt: skip
     if R["limited_coverage"]:
         L += ["*Limited coverage (DEC-177): fewer than half of the treated units are kept.*", ""]
+    # how far the primary's Q1 reading carries across the sensitivities (reported, not deciding; hard rule 8)
+    sens = {k: v for k, v in R["specs"].items() if k != "aod_primary"}
+    agree = [k for k, v in sens.items() if v["q1"]["code"] == p["q1"]["code"]]
+    differ = [f"{s.loc[(k, 'att')].label} ({pc(v['aod'][0])}, {ci_pct(*v['aod'][1:])}: {v['q1']['label']})"
+              for k, v in sens.items() if v["q1"]["code"] != p["q1"]["code"]]  # fmt: skip
+    line = (f"**How far the Q1 reading carries (information; only the primary decides):** {len(agree)} of {len(sens)} sensitivity "
+            f"specifications give the primary's classification.")
+    if differ:
+        line += " The others: " + "; ".join(differ) + "."
+    es = R.get("event_study")
+    if es:
+        a = es["avg_post"]
+        line += f" The event study's average post-period estimate is {pc(a['coef'])} (95% CI {ci_pct(a['lo95'], a['hi95'])})."
+    allv = R["specs"].values()
+    n_pos = sum(v["aod"][1] > 0 for v in allv)
+    n_below = sum(v["aod"][0] < v["acag"][0] for v in allv)
+    line += (f" Across all {len(R["specs"])} AOD specifications, {n_pos} {"has" if n_pos == 1 else "have"} a 95% CI entirely above 0, and {n_below} {"has" if n_below == 1 else "have"} a "
+             "point estimate below ACAG's on the same units.")  # fmt: skip
+    L += [line, ""]
     # event study
     es = R.get("event_study")
     if es:

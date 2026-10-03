@@ -289,6 +289,7 @@ Layer A restricted to the units with a Layer B PM2.5 panel, against the ground D
 | 1 | DiD, city means: all stations, deweathered | -11.3% (-22.4% to +0.3%) |
 | 2 | Layer A restricted, V5.GL.06 (2019, 2021-2024) | +3.8% (+1.0% to +6.6%) |
 | 2 | Layer A restricted, V6.GL.02.04 vintage (2019, 2021-2023) | +1.8% (-1.2% to +4.9%) |
+| 2 | Layer A restricted, raw MAIAC AOD (log AOD; direction only; 17 units) | -2.0% (-4.5% to +0.6%) |
 | 2 | correlation of log ground panel and log satellite across 18 cities, 2018 | +0.73 |
 | 2 | correlation of log ground panel and log satellite across 18 cities, 2019 | +0.78 |
 | 2 | correlation of log ground panel and log satellite across 18 cities, 2020 | +0.82 |
@@ -334,7 +335,7 @@ Layer A restricted to the units with a Layer B PM2.5 panel, against the ground D
 | Placebo in time 2016 (rule c) | registered | -0.1% (-0.9% to +0.7%) | — | a placebo: expected near 0; 'agrees' not applicable |
 | Placebo in space (500 permutations) | registered | p = 0.004 | — | equal-tailed permutation p of the primary ATT against the joint-placebo null |
 | VIIRS fire covariate (from 2012) | registered | +3.1% (+1.7% to +4.5%) | yes | event study 2012-2024 with fire FRP within 100 km (DEC-171), average post-period estimate; same window without fire +3.1%; fire coefficient -0.0090 (SE 0.0021); pre-trend Wald p = 0.0002 |
-| Raw MAIAC AOD | registered |  | — | not run: registered as 'if time allows'; not downloaded (DEC-147 item 18) |
+| Raw MAIAC AOD | registered | +0.8% (-0.4% to +2.0%) | — | log AOD, not PM2.5: direction only, 'agrees' not applicable (DEC-180/181); 95 treated, 741 controls; Q1: rise not reproduced in AOD; Q2: gap absent from AOD (consistent with calibration leakage); ACAG on the same units +4.2%; H1 is not identified by this design; not an effect of NCAP |
 
 17 of 19 checks agree.
 
@@ -472,6 +473,115 @@ GAM against LightGBM, ITS:
 | Primary: V5.GL.06, population-weighted, listing cohorts, never-treated controls, 2020 dropped | 113 | 923 | 1.44 | +0.0352 | +3.6% | +2.4% to +4.8% |
 | Exploratory: min-max common support of 2015 population | 98 | 923 | 1.63 | +0.0365 | +3.7% | +2.5% to +5.0% |
 | Exploratory: overlap of the 5-95% ranges of 2015 population | 42 | 704 | 0.91 | +0.0298 | +3.0% | +1.2% to +4.9% |
+
+## 12. Raw MAIAC AOD (Phase 8b; registered "if time allows" under calibration leakage)
+
+*Rules: DEC-174 to DEC-183, committed and pushed (`85acc2a`) before any AOD value was pulled.* MODIS MAIAC MCD19A2 C6.1 aerosol optical depth at 0.55 µm, 1 km, best-quality retrievals, reduced on Google Earth Engine to population-weighted unit-month means over the same GHSL polygons as Layer A, then annual means. AOD uses no ground monitor. **AOD is a column measure, not surface PM2.5: this check reads direction, not size (DEC-180).** Every estimate below is a relative change in AOD of listed units against their synthetic comparison. **H1 is not identified by this design; not an effect of NCAP.**
+
+### 12a. Data, weights and coverage
+
+- **Population weights** (GHS-POP R2023A 2020, 100 m, summed onto the MODIS grid in GEE) against Phase 3's 30″ GHS-POP sums over the same 1036 polygons: median difference +3.4%, median absolute 3.4% (90th percentile 9.2%; stop rule > 10%): **passed**.
+- **Valid unit-month:** ≥ 50% of the unit's population under pixels with a value, and ≥ 4 population-weighted valid days. **Valid year:** ≥ 6 of the 8 non-monsoon months (January–May, October–December). **Kept unit:** valid every year 2010–2019 and 2021–2024. Nothing is imputed (DEC-177).
+
+Units kept per AOD series (of 113 treated and 923 controls):
+
+| series | controls (of 923) | treated (of 113) |
+|---|---|---|
+| aod_popw | 741 | 95 |
+| aod_popw_nonmonsoon | 741 | 95 |
+| aod_area | 745 | 95 |
+| aod_relaxed | 763 | 97 |
+
+Kept by region (primary series):
+
+| region | control | treated |
+|---|---|---|
+| coastal | 47 of 128 | 12 of 18 |
+| igp | 391 of 399 | 31 of 32 |
+| north-east | 37 of 41 | 6 of 6 |
+| peninsular/other | 266 of 355 | 46 of 57 |
+
+Kept treated units by monitor-gain group: gained 64 of 74; not gained 31 of 39.
+
+Share of unit-months valid, by calendar month and region (primary filter, all 1,036 units, 2010–2024):
+
+| month | coastal | igp | north-east | peninsular/other |
+|---|---|---|---|---|
+| 1 | 93% | 100% | 100% | 97% |
+| 2 | 97% | 100% | 99% | 98% |
+| 3 | 97% | 100% | 98% | 99% |
+| 4 | 80% | 99% | 92% | 96% |
+| 5 | 63% | 86% | 57% | 85% |
+| 6 | 22% | 48% | 6% | 31% |
+| 7 | 8% | 5% | 4% | 5% |
+| 8 | 8% | 6% | 7% | 6% |
+| 9 | 16% | 34% | 23% | 25% |
+| 10 | 59% | 97% | 88% | 82% |
+| 11 | 71% | 100% | 100% | 85% |
+| 12 | 84% | 100% | 100% | 93% |
+
+### 12b. Estimates (SDID, Layer A's design; 500 joint-placebo replications each)
+
+Listing cohorts, never-treated controls, 2010–2024 without 2020 (DEC-139/179). Each AOD row has beside it ACAG PM2.5 estimated on exactly the same units (the yardstick). **H1 is not identified by this design; not an effect of NCAP.**
+
+| specification | units (treated / controls) | AOD: estimate (95% CI) | ACAG on the same units | Q1 |
+|---|---|---|---|---|
+| Raw MAIAC AOD, population-weighted, best-quality QA, all valid months (log AOD) | 95 / 741 | +0.8% (-0.4% to +2.0%) | +4.2% (+2.7% to +5.6%) | rise not reproduced in AOD |
+| Raw MAIAC AOD, non-monsoon annual mean (Jan-May, Oct-Dec) | 95 / 741 | +1.5% (+0.4% to +2.6%) | +4.2% (+2.7% to +5.6%) | rise also in AOD |
+| Raw MAIAC AOD, area-weighted | 95 / 745 | +0.8% (-0.4% to +2.0%) | +4.2% (+2.8% to +5.5%) | rise not reproduced in AOD |
+| Raw MAIAC AOD, relaxed QA filter | 97 / 763 | +0.4% (-0.8% to +1.6%) | +4.0% (+2.6% to +5.3%) | rise not reproduced in AOD |
+| Raw MAIAC AOD, treated units with a Layer B PM2.5 panel (investigation step 2) | 17 / 741 | -2.0% (-4.5% to +0.6%) | +3.9% (+1.1% to +6.9%) | rise not reproduced in AOD |
+
+Primary in log units: AOD +0.0080 (+0.8%; 95% CI -0.4% to +2.0%), SE 0.0062; 2.8 × SE = 0.0173. ACAG on the same units +0.0409 (+4.2%; 95% CI +2.7% to +5.6%). Layer A's primary on all 113 / 923 units: +3.6% (§1).
+
+**Monitor-gain split (DEC-146 design, on AOD):**
+
+| group | AOD | ACAG, same units |
+|---|---|---|
+| gained a monitor 2019–2024 (64 units) | +1.2% (-0.2% to +2.7%) | +2.8% (+1.1% to +4.5%) |
+| did not (31 units) | -0.4% (-2.3% to +1.6%) | +7.1% (+4.7% to +9.6%) |
+| difference, gained − not gained | +1.6% (-0.8% to +4.0%) | -4.1% (-6.7% to -1.4%) |
+
+AOD difference in log units +0.0157 (+1.6%; 95% CI -0.8% to +4.0%), SE 0.0121 (2.8 × SE = 0.0337). H1 is not identified by this design; not an effect of NCAP.
+
+### 12c. The pre-specified reading (DEC-180)
+
+> **Q1, does the relative rise appear in AOD? Rise not reproduced in AOD.** Raw AOD does not show the rise. Either something in ACAG's processing produced it, or the link between column AOD and surface PM2.5 changed differently in NCAP units (boundary layer, humidity, aerosol mix). This check cannot tell which.
+>
+> **Q2, does the gained/not-gained gap appear in AOD? Gap absent from AOD (consistent with calibration leakage).** The gap is not in the monitor-free signal. That is what calibration leakage would produce. It is consistent with leakage, not proof: a group difference in the AOD–PM link would look the same.
+>
+> H1 is not identified by this design; not an effect of NCAP: the verdict rests on the failed pre-trend test (rule b), which this check does not touch.
+
+**How far the Q1 reading carries (information; only the primary decides):** 3 of 4 sensitivity specifications give the primary's classification. The others: Raw MAIAC AOD, non-monsoon annual mean (Jan-May, Oct-Dec) (+1.5%, +0.4% to +2.6%: rise also in AOD). The event study's average post-period estimate is +1.3% (95% CI +0.1% to +2.6%). Across all 5 AOD specifications, 1 has a 95% CI entirely above 0, and 5 have a point estimate below ACAG's on the same units.
+
+### 12d. Event study on log AOD (information only; decides nothing)
+
+Sun & Abraham as §4 (unit and region × year effects, ERA5 covariates, SEs clustered by unit), 836 units, 11704 unit-years. Pre-trend Wald χ² = 22.08 on 8 df, p = 0.0048; average post-period estimate +1.3% (95% CI +0.1% to +2.6%). Rule (b) belongs to H1 and is unchanged. H1 is not identified by this design; not an effect of NCAP.
+
+| rel | cohorts | AOD % | 95% CI (%) |
+|---|---|---|---|
+| -9 | 2019;2020;2021 | +1.1% | -0.8% to +3.0% |
+| -8 | 2019;2020;2021 | -0.1% | -1.7% to +1.5% |
+| -7 | 2019;2020;2021 | -0.4% | -2.2% to +1.4% |
+| -6 | 2019;2020;2021 | +1.0% | -0.6% to +2.6% |
+| -5 | 2019;2020;2021 | +1.3% | -0.1% to +2.7% |
+| -4 | 2019;2020;2021 | +0.8% | -0.7% to +2.4% |
+| -3 | 2019;2020;2021 | +1.5% | -0.2% to +3.3% |
+| -2 | 2019;2020 | +1.7% | +0.0% to +3.3% |
+| 0 | 2019;2021 | -0.0% | -2.0% to +2.0% |
+| 1 | 2020;2021 | +5.0% | +1.5% to +8.7% |
+| 2 | 2019;2020;2021 | +1.3% | -0.2% to +2.8% |
+| 3 | 2019;2020;2021 | +2.2% | +0.5% to +3.8% |
+| 4 | 2019;2020 | -1.2% | -3.5% to +1.2% |
+| 5 | 2019 | +0.7% | -1.2% to +2.5% |
+
+### 12e. Caveats
+
+- AOD is the whole atmospheric column; surface PM2.5 also depends on boundary-layer height, humidity and aerosol type. A change in that link that differs between NCAP and comparison units would move AOD without moving PM2.5, or the reverse.
+- Best-quality retrievals need clear skies, so AOD describes clear days. MAIAC can flag thick winter haze or smoke as cloud; the relaxed-filter row shows how much that matters.
+- Units without a complete AOD series are dropped; the ACAG yardstick on the same units separates that sample change from a difference between the two products.
+- Terra's and Aqua's overpass times drifted late in the period. That affects every unit alike unless the daily cycle of aerosol differs between NCAP and comparison units.
+- H1 is not identified by this design; not an effect of NCAP.
 
 ## Caveats that travel with every Layer A number
 

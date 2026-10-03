@@ -212,6 +212,9 @@ def specs() -> None:
 def run(ids: list[str]) -> None:
     ids = ids or list(pd.read_csv(MOUT / "specs" / "specs.csv").spec_id)
     A.run(ids, env_extra={"NCAP_CAUSAL_DIR": MOUT.relative_to(A.OUT.parents[2]).as_posix()})
+    specs_t = pd.read_csv(MOUT / "specs" / "specs.csv")
+    if all((MOUT / "sdid" / s / "done.txt").exists() for s in specs_t.spec_id):
+        (MOUT / "sdid" / "all.done").write_text("\n".join(specs_t.spec_id) + "\n", encoding="utf-8")  # Snakemake flag
 
 
 # ---------------------------------------------------------------- event study (information only, DEC-179)

@@ -151,3 +151,15 @@ FIRMS was downloaded once a working network was available: VIIRS S-NPP 2012–20
 Layer A robustness is now **17 of 19** checks agreeing. Nothing else in Phase 7 was re-run or changed, and H1 stays "not identified by this design".
 
 *If asked "could crop burning explain the relative rise?":* not on this evidence. Controlling for each unit's own nearby fire activity, on top of region × year effects, leaves the estimate where it was.
+
+## Addendum, 2026-10-03: the raw MAIAC AOD check (Phase 8b; DEC-174 to DEC-187)
+
+The registered "if time allows" check was run as Phase 8b. Details are in [`08b-maiac.md`](08b-maiac.md) and `causal_report.md` §12. What changed in Phase 7's outputs:
+- The robustness table's "Raw MAIAC AOD" row now shows AOD +0.8% (−0.4% to +2.0%), with "agrees: —". A change in AOD is not on the PM2.5 scale, so **17 of 19** is unchanged.
+- Step 2 of the triangulation investigation has one new row: the 17 Layer B units on AOD, −2.0% (−4.5% to +0.6%).
+
+The two registered pair categories, H1 ("not identified") and every other Phase 7 number are unchanged.
+
+What the check found, in one line each (pre-written reading, DEC-180):
+- ACAG's relative rise is not reproduced in AOD's primary specification, though a non-monsoon version shows a small rise.
+- The gained/not-gained gap that fired the leakage warning is absent from AOD, which is consistent with calibration leakage but not proof of it.

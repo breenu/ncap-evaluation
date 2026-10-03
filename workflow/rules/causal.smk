@@ -353,13 +353,13 @@ rule causal_maiac_specs:
 
 
 # ~2 h on 8 workers, on mains power (DEC-168); resumable. Which yardstick specs exist depends on the sample,
-# so the rule runs every spec in specs.csv and writes one flag.
+# so the rule runs every spec in specs.csv; the module writes one flag when all are done.
 rule causal_maiac_sdid:
     input:
         rules.causal_maiac_specs.output,
         "src/causal/sdid.R",
     output: f"{MAIAC}/sdid/all.done"
-    shell: f"{ONE_THREAD} {PY} src.causal.maiac run && touch {{output}}"
+    shell: f"{PY} src.causal.maiac run"  # one BLAS thread per worker is set inside (layer_a.run); writes the flag
 
 
 rule causal_maiac_event:

@@ -1513,3 +1513,52 @@ Two questions, each classified by the first rule that applies. The inputs are `a
 - **The new limit is 400 EECU-hours** (`config/maiac.yaml: eecu_budget_hours`), 40% of the monthly tier, leaving room for re-runs. The latest pilot projects ≈ 241 (tile filter, DEC-184), so the export proceeds. `submit` now checks the pilot's projection against the limit in force, not the flag stored under the old limit.
 - **During the export:** `status` sums the tasks' EECU use. If it passes 400 before all 15 years finish, the remaining tasks are cancelled and Reenu is told.
 - Nothing else in DEC-174 to DEC-184 changes.
+
+## 2026-10-03: Phase 8b results (rules DEC-174 to DEC-185, all pushed before the values they govern)
+
+Numbers from `docs/causal_report.md` §12 (generated). **H1 is "not identified by this design" (DEC-151) and is unchanged; nothing below is an effect of NCAP.** Every AOD number is a relative change in AOD, not PM2.5, and is read for direction only (DEC-180).
+
+**DEC-186: Q1 "rise not reproduced in AOD"; Q2 "gap absent from AOD (consistent with calibration leakage)".**
+- **Export:** 15 yearly tasks, all completed; 167.9 EECU-hours (the pilot projected ≈ 241). Tables: 15 × 12,432 unit-months, md5-checked against Drive. Total compute including the two pilots: 170.7 EECU-hours, inside the 400 limit.
+- **Weight check (DEC-176): passed.** The GEE population per unit is a median 3.4% above Phase 3's (90th percentile of the absolute difference 9.2%; log correlation 0.9995).
+- **Coverage and sample (DEC-177):**
+  - July and August unit-months are valid 4–8% of the time in every region; October–April mostly above 80%.
+  - **Kept units:** 95 of 113 treated and 741 of 923 controls (primary series), so no "limited coverage" label.
+  - Kept treated by monitor-gain group: gained 64 of 74, not gained 31 of 39 (both ≥ 10).
+  - Retention is lowest on the coast (47 of 128 coastal controls) and highest in the IGP (391 of 399 controls).
+  - ACAG on the kept units gives +4.2% (Layer A's primary on all units: +3.6%), so the sample shift moves the ACAG estimate a little. That is why every AOD result is set against ACAG on the same units.
+- **Primary (`aod_primary`, 95 / 741):** AOD **+0.8% (95% CI −0.4% to +2.0%)**; ACAG on the same units +4.2% (+2.7% to +5.6%). SE 0.0062, so 2.8 × SE = 0.0173 (≈ 1.7%). The AOD interval includes 0 and lies below ACAG's estimate, so **Q1 = "rise not reproduced"**.
+- **Monitor-gain split:**
+  - AOD: gained +1.2% (−0.2% to +2.7%); not gained −0.4% (−2.3% to +1.6%); difference **+1.6% (−0.8% to +4.0%)**.
+  - ACAG on the same units: +2.8%, +7.1%, difference **−4.1% (−6.7% to −1.4%)**. The warning is reproduced on this sample, so Q2 is testable.
+  - The AOD interval lies above −4.1%, so **Q2 = "gap absent (consistent with leakage)"**. The AOD point estimate has the opposite sign.
+- **Sensitivities (Q1 for information, DEC-182):**
+  - non-monsoon **+1.5% (+0.4% to +2.6%): "rise also in AOD"**;
+  - area-weighted +0.8% (−0.4% to +2.0%): not reproduced;
+  - relaxed QA +0.4% (−0.8% to +1.6%): not reproduced;
+  - restricted to 17 Layer B units −2.0% (−4.5% to +0.6%; ACAG on them +3.9%): not reproduced; also the new row in investigation step 2.
+  - So the primary's classification holds in 3 of 4 sensitivities; non-monsoon is the exception. In all 5 AOD specifications the point estimate is below ACAG's on the same units; 1 of the 5 intervals lies entirely above 0.
+- **Event study on log AOD (information):** average post-period +1.3% (95% CI +0.1% to +2.6%); the pre-trend Wald test also fails (χ² = 22.1, 8 df, p = 0.0048).
+- **SDID solver warnings:** 0 in every fit.
+- **How this reads (DEC-180's pre-written meanings, nothing added):**
+  - Q1: raw AOD does not show ACAG's relative rise in the primary. Either something in ACAG's processing produced it, or the AOD–PM2.5 link changed differently in NCAP units; this check cannot tell which. The non-monsoon and event-study numbers say AOD's relative change is small, and whether it is above 0 depends on the specification; it is below ACAG's everywhere.
+  - Q2: the gained/not-gained gap is not in the monitor-free signal. That is what calibration leakage would produce; it is consistent with leakage, not proof, because a group difference in the AOD–PM link would look the same.
+- **Changed elsewhere:**
+  - the "Raw MAIAC AOD" row of the robustness table (estimate shown, "agrees: —", so "17 of 19" is unchanged);
+  - one new row in investigation step 2;
+  - §12 of `causal_report.md`.
+  - The two registered triangulation categories, H1, H2, H3, H4 and H5 are unchanged.
+
+**DEC-187 (workflow): Phase 8b through Snakemake; reproducibility.**
+- **Rules:** `causal_maiac_panels`, `_specs`, `_sdid`, `_event` and `_summary` (`workflow/rules/causal.smk`). Robustness, triangulation and the report now also read the Phase 8b outputs. The export itself is run on request (it needs Reenu's credentials), like FIRMS.
+- **The SDID rule's command was fixed for Windows.** Snakemake runs rule commands in `cmd`, where the `VAR=1` prefix and `touch` do not exist. The module now sets one BLAS thread per worker itself (through `layer_a.run`) and writes the `sdid/all.done` flag. The Phase 7 SDID rules carry the same prefix; they have always been run by hand with their own command (DEC-153), and are left as they are.
+- **Order of events:**
+  1. The SDID specifications were run by hand with the rule's command (84 min, on mains power).
+  2. Phase 7's outputs were marked current with `snakemake --touch causal`. `layer_a.py` had changed, but all 19 Phase 7 spec hashes are identical (DEC-182).
+  3. The whole Phase 8b chain was then forced through Snakemake from `causal_maiac_panels` (logs `data/interim/logs/snakemake_phase8b*.log`).
+- **Result, against copies taken before the rerun:**
+  - The rebuilt specifications have identical hashes, so the SDID engine recomputed nothing.
+  - `causal_report.md`, `heterogeneity_report.md`, `robustness.csv`, `triangulation.csv`, `investigation.csv` and `partA_results.json` are byte-identical.
+  - Within `maiac/`, 120 of 132 files are byte-identical. The 9 `done.txt` files differ by timestamp. The event-study coefficients differ by at most 7 × 10⁻¹⁶, and `results.json` by at most 3 × 10⁻¹³ (the Wald statistic).
+  - `snakemake -n causal`, `-n hierarchical` and `-n pregate` report nothing to do.
+- **Drive:** 17 exported CSVs remain in Reenu's Drive folder `ncap_maiac_gee`: the 15 yearly tables and the 2 one-month pilots (the first pilot attempt, to assets, wrote nothing). Each raw file's Drive id and md5 are in the manifest; Reenu may delete the folder.
