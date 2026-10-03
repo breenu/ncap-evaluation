@@ -1854,3 +1854,16 @@ Phase 9 estimates nothing. It redraws figures from outputs that already exist (P
   - Same data and same numbers; the images add about 17 MB to `dashboard/`.
 - **Test:** every committed city page must serve both images, and both files must exist (`tests/test_dashboard.py`).
 - After redeployment the live checks were repeated (DEC-205).
+
+**DEC-205: The deployed site re-checked after the phone fix (2026-10-03). One further defect was found and fixed; the checks then passed.**
+- **Defect: the phone charts were never published.**
+  - The first redeploy (`a139fe3`) served all 113 phone charts as 404. Quarto copies images it finds in Markdown or in `img src`, but not ones referenced only from a raw-HTML `<source srcset>`.
+  - Fix: `_quarto.yml` declares `cities/img/*-narrow.png` as project resources (`e30a829`). A test now requires that declaration.
+- **Phone chart text was still small** (about 8 px at a 390 px viewport). The phone chart's fonts are now 30% larger at the same width (`dc29306`). The desktop charts are byte-identical to before.
+  - While making this change, a font-scale variable was briefly shadowed by a loop counter. The resulting oversized labels were caught by comparing the desktop charts with their committed bytes, before anything was pushed.
+- **Final live checks** (deploy run 37115838189):
+  - **Links:** 362 internal URLs, including all 226 chart images, return 200. The 14 external links resolve (Wiley and ACS refuse scripted requests after a correct DOI redirect).
+  - **Caveat and content:** all 113 city pages carry the caveat, the chart and the alt text, and the About page carries every DEC-200 attribution.
+  - **Deployment matches the commit:** every live chart file is byte-identical to the committed one.
+  - **Phone layout:** at a true 390 px viewport (inside an iframe, because headless Edge on Windows will not lay out below 504 px) the pages fit with no sideways scrolling, and phones get the one-column chart with legible text.
+- **Tests:** 7 dashboard tests (one new).

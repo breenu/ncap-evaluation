@@ -136,3 +136,18 @@ In the GitHub repository:
 3. Open **Actions → dashboard → Run workflow** (branch `main`), or push any change under `dashboard/`.
 
 The site then appears at https://breenu.github.io/ncap-evaluation/. The first run before step 2 fails at "deploy", which is expected.
+
+## Addendum after approval (2026-10-03): the live site checked (DEC-203 to DEC-205)
+
+Reenu approved Phase 9 and enabled Pages. The synthetic comparison's trajectory stays off the dashboard: a dated deviation from the proposal's dashboard description (DEC-203). The **deployed** site, not the local build, was then checked:
+- **Links:** every internal page and asset returned 200, and every external link resolves.
+- **Caveat and attributions:** the caveat is on all 113 city pages, and the About page carries every attribution.
+
+Three things needed fixing:
+1. **At a true phone width (390 px), the 2 × 2 city chart was unreadable.**
+   - Phones now get a one-column version of the same chart through `<picture>`, with fonts 30% larger.
+   - The desktop chart is unchanged.
+2. **The phone charts were not published at first.** Quarto does not copy images referenced only from raw-HTML `srcset`. They are now declared as site resources, and a test requires that.
+3. **Testing at 390 px needed a workaround.** Headless Edge on Windows will not lay out below 504 px, so the narrow screenshots were taken inside a 390 px iframe. *If asked how the mobile layout was tested:* that is how.
+
+Lesson: the second defect existed only in the deployed output. It was invisible in the source files and in the tests that read them. That is why the check was run against the live site.
