@@ -1562,3 +1562,19 @@ Numbers from `docs/causal_report.md` §12 (generated). **H1 is "not identified b
   - Within `maiac/`, 120 of 132 files are byte-identical. The 9 `done.txt` files differ by timestamp. The event-study coefficients differ by at most 7 × 10⁻¹⁶, and `results.json` by at most 3 × 10⁻¹³ (the Wald statistic).
   - `snakemake -n causal`, `-n hierarchical` and `-n pregate` report nothing to do.
 - **Drive:** 17 exported CSVs remain in Reenu's Drive folder `ncap_maiac_gee`: the 15 yearly tables and the 2 one-month pilots (the first pilot attempt, to assets, wrote nothing). Each raw file's Drive id and md5 are in the manifest; Reenu may delete the folder.
+
+## 2026-10-03: Phase 8b approved (Reenu); closing items
+
+**DEC-188 (EXPLORATORY, added after Phase 8b's results were seen, at Reenu's request): ACAG vs AOD in the units that did not gain a monitor, on their own.**
+- **Question.** If ACAG and AOD also diverge in the 31 kept treated units that gained **no** monitor in 2019–2024, then monitor leakage cannot explain the overall ACAG–AOD difference, because those units had no new monitors to calibrate to. Another explanation would be needed, e.g. the AOD–surface PM2.5 relationship differing between NCAP and control units.
+- **Order of events, stated plainly.** Both group estimates were already printed in §12's monitor-gain table, and I had seen them: not gained, AOD −0.4% and ACAG +7.1%. This entry adds no new estimate. It adds an explicit comparison, a classification and a conditional sentence. That is why it is labelled exploratory and kept out of DEC-180's classifications.
+- **"Diverge" is defined with the existing DEC-180 Q1 rule, nothing new:** apply Q1 to the not-gained group's AOD estimate, with ACAG on the same units as the yardstick.
+  - *Diverge* = "rise not reproduced" or "opposite direction".
+  - "Uninformative" = AOD too noisy to tell; then the conditional sentence is not written.
+  - "Rise also in AOD" = no divergence.
+  - "Not testable" if ACAG's not-gained estimate is not positive with a CI excluding 0.
+- **Shown beside it, for information:**
+  - the same classification for the gained group;
+  - the paired difference ACAG − AOD per group, with its SE from the per-replication differences. The two specifications have the same units, cohorts, cells, controls and seed, so the 500 placebo sets are identical draws. This is checked: the first replication's ATTs differ, but the draw design is identical by construction.
+  - The paired difference mixes two quantities (log PM2.5, log AOD), so it is information only. The reading stays direction only (DEC-180).
+- **Where:** `data/processed/causal/maiac/exploratory_notgained.json` (written by `python -m src.causal.maiac summarise`), and a new subsection §12f, labelled exploratory. Nothing else changes: Q1, Q2, H1–H5 and the robustness count stay as they are.
