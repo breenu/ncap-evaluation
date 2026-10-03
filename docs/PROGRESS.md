@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-10-03. **Phase 9 Part A (figures) built and pushed; waiting for Reenu's review and go-ahead before Part B (dashboard).** START at "Phase 9: Part A done" below.*
+*Last updated: 2026-10-03. **Phase 9 (figures and dashboard) complete and pushed; waiting for Reenu's review. Reenu must enable GitHub Pages once (see below).** START at "Phase 9: DONE" below.*
 
 ## Status
 
@@ -19,7 +19,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 7 Causal analysis | ✅ approved 2026-10-02 (H1 not identified: rule (b) fails); pushed (DEC-138 to DEC-161) |
 | 8 Heterogeneity and mechanism | ✅ approved 2026-10-03 (H5 rule not met; H3 inconclusive; dose: nothing); pushed (DEC-161 to DEC-172) |
 | 8b MAIAC AOD check (Earth Engine) | ✅ approved 2026-10-03 (Q1 rise not reproduced; Q2 gap absent; exploratory: ACAG and AOD also diverge where no monitor was added); pushed (DEC-174 to DEC-189) |
-| 9 Figures and dashboard | **in progress:** Part A (figures) done and pushed, at the checkpoint (DEC-190 to DEC-196); Part B (dashboard) waits for Reenu's go-ahead |
+| 9 Figures and dashboard | **done, awaiting review:** figures (DEC-190 to DEC-197), dashboard (DEC-198 to DEC-202); Pages to be enabled by Reenu |
 | 10 Report and release | not started |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). Phase 7's rules (DEC-138 to DEC-150) were pushed in `eebaecc` before any estimate; the first post-2019 effect estimates are Part A's (DEC-151).
@@ -74,9 +74,56 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Phase 9: Part A done (figures), CHECKPOINT. START HERE in a new chat
+## Phase 9: DONE (figures and dashboard), awaiting review. START HERE in a new chat
 
-**State (2026-10-03):** Part A is built and pushed. **Reenu reviews the figures** (`docs/figures.md` lists them all, with captions and alt text). **Part B (dashboard) starts only after her go-ahead.**
+**State (2026-10-03):** both parts are built and pushed. The phase note is `docs/phase-notes/09-figures-dashboard.md`. **Next: Reenu reviews Phase 9; then Phase 10 (report and release).**
+
+**Reenu, once: enable GitHub Pages.**
+1. In the repository, open **Settings → Pages**.
+2. Under **Build and deployment → Source**, choose **GitHub Actions**.
+3. Open **Actions → dashboard → Run workflow** (branch `main`).
+
+The site then appears at https://breenu.github.io/ncap-evaluation/. The workflow's deploy job fails until step 2 is done, and that is expected.
+
+### Part B (dashboard), DEC-197 to DEC-202
+
+**Review rulings on Part A (DEC-197):**
+- DEC-150 deviation approved and logged;
+- figure 6 kept, unnamed;
+- city rule accepted, with the caption pointing to S3;
+- annual figure 3 is main;
+- fixes made to figures 1, 4 and 6.
+
+**Site environment (DEC-198):** `envs/site.yml` (quarto 1.9.38 only) and `envs/site-lock.yml` (conda-lock, win-64 + linux-64), installed as `ncap-site`:
+```bash
+PYTHONNOUSERSITE=1 uvx conda-lock install -n ncap-site envs/site-lock.yml --conda "$USERPROFILE/miniforge3/Scripts/conda.exe"
+```
+The analysis lock (`conda-lock.yml`, `environment.yml`) is unchanged.
+
+**Content (DEC-199/200):**
+- 113 city pages, A–Z, each with the "not identified" caveat.
+- Each page shows: ground raw, deweathered and composition-corrected series where they exist (85 units have ground data, 20 a balanced panel); satellite PM2.5; the city-level relative change, unshrunk and shrunken; and data quality.
+- An About page with verified attributions, and CSV downloads (ground-derived data under ODbL 1.0).
+
+**Code:**
+- `src/dashboard/build.py` writes `dashboard/` (committed sources: `_quarto.yml`, `index.qmd`, `about.qmd`, `cities/*.qmd`, `cities/img/*.png`, `data/*.csv`). The rendered `dashboard/_site/` is gitignored.
+- Snakemake: rule `dashboard` (part of `viz`) and `dashboard_render` (not in `all`; needs `ncap-site`).
+- Deployment: `.github/workflows/pages.yml`.
+- Tests: `tests/test_dashboard.py` (6). The full suite has 254 tests, all passing.
+
+**How to rebuild:**
+```bash
+python -m src.dashboard.build                                     # in ncap (gated), ~1 min
+conda run -n ncap-site --no-capture-output quarto render dashboard  # ~1.5 min -> dashboard/_site/
+```
+Or `snakemake --cores 1 viz` then `snakemake --cores 1 dashboard_render`.
+
+**Open, for Phase 10:**
+- the README should link the site;
+- the code licence is still unchosen (the About page says so);
+- byte-determinism of tables and GeoPackages (figures are now byte-stable).
+
+### Part A (figures), as built at the checkpoint
 
 **Rules:** DEC-190 to DEC-195, pushed in `09209e7` before any figure changed. Results and workflow: DEC-196.
 - **Figure 1** follows DEC-191, which deviates from DEC-150: no "policy" step and no "remaining change" bar. The satellite relative change sits on its own axis, labelled "not identified as an effect of NCAP".
@@ -114,7 +161,7 @@ python -m src.viz.figS1_levels; python -m src.viz.figS2_aod_acag
 python -m src.viz.catalogue               # -> docs/figures.md
 ```
 
-**Part B plan (after the go-ahead):**
+**Part B plan (as written at the checkpoint; done, see above):**
 - A static Quarto site in `dashboard/`, rendered from precomputed files, deployed to GitHub Pages; Quarto added to the environment lock (ask before changing the lock).
 - One page per city, alphabetical; the "H1 not identified" caveat on every page; an "About the data" page with each source's attribution.
 - Its own DECISIONS entries pushed before building. The dashboard text goes through `wording.py`.

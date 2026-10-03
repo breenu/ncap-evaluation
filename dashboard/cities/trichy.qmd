@@ -1,0 +1,54 @@
+---
+title: "Trichy"
+---
+
+::: {.callout-important}
+## Read this first
+
+NCAP units' satellite PM2.5 did not fall relative to comparable units; the estimates point to a relative rise of about 3–5%. H1 is not identified by this design, so this is not an effect of NCAP.
+
+Nothing on this page is an effect of NCAP. City-level numbers come from a Bayesian model that pulls noisy single-city estimates towards the average; cities cannot be ranked from them.
+:::
+
+| | |
+|---|---|
+| NCAP cities in this urban centre | Trichy |
+| State | Tamil Nadu |
+| Region | Peninsular / other |
+| Listed under NCAP (treated from) | 2020 |
+| Population 2015 (GHSL) | 1,272,419 |
+| New monitor inside the urban centre, 2019–2024 | yes |
+
+![Ground and satellite PM2.5 and the city-level relative change for Trichy.](img/trichy.png){.column-page fig-alt="Four charts for Trichy. Ground data: no ground station with a valid year. Satellite PM2.5 from 29 µg/m³ in 2010 to 26 in 2024. City-level relative change after listing, shrunken: +8.0% (95% credible interval +3.5 to +11.8); not identified as an effect of NCAP."}
+
+## What the charts show
+
+- **Ground PM2.5 and PM10** (top): the annual mean over every CPCB station inside the urban centre that was valid that year, as reported; the same after removing year-to-year weather (deweathered); and, where some stations were valid every year 2018–2025, those stations alone, deweathered (corrected for weather and for the change in which stations exist). The numbers along the bottom are the stations behind each year. **This urban centre has no ground station with a valid year.** No station here was valid every year 2018–2025, so there is no composition-corrected series.
+- **Satellite PM2.5** (bottom left): ACAG V5.GL.06, weighted by where people live. Descriptive.
+- **City-level relative change** (bottom right): how this urban centre's satellite PM2.5 moved after listing, against a synthetic comparison built from non-NCAP centres.
+
+## City-level relative change (satellite PM2.5)
+
+| | estimate | 95% interval |
+|---|---|---|
+| This city, unshrunk (± 1.96 × placebo SE) | +1.4% | -8.5 to +12.4% |
+| This city, shrunken (posterior mean; credible interval) | +8.0% | +3.5 to +11.8% |
+| Average city-level relative change over the 113 NCAP units | +3.5% | +2.6 to +4.4% |
+
+Relative change = the listed unit minus its synthetic comparison, on log satellite PM2.5, averaged over 2021–2024 (2020 excluded), shown as a %. **Not identified as an effect of NCAP.**
+
+## Data quality
+
+Stations with any data inside the urban centre, including stations not valid that year (the charts count valid stations only), and their median reliability score (0–100: completeness × share of unflagged data, × 0.8 for each failed consistency check).
+
+| year | PM2.5 stations with data | PM2.5 median score | PM10 stations with data | PM10 median score |
+|---|---|---|---|---|
+| 2023 | 1 | 1.4 | 1 | 1.4 |
+| 2024 | 1 | 15.8 | 1 | 15.8 |
+| 2025 | 1 | 68.7 | 1 | 68.4 |
+
+Median of the yearly median scores, 2018–2025: PM2.5 15.8, PM10 15.8.
+
+## Downloads
+
+Every number on this page is in the [data downloads](../about.qmd#downloads). [Back to all cities](../index.qmd).

@@ -1,0 +1,1030 @@
+unit_id,name,pollutant,year,series,raw_mean,deweathered_gam,deweathered_lightgbm,n_stations
+u0456,Agra,pm10,2022,all stations,100.751,90.9534,97.0614,5
+u0456,Agra,pm10,2023,all stations,79.4063,81.949,75.1643,6
+u0456,Agra,pm10,2024,all stations,76.5261,79.9394,74.537,6
+u0456,Agra,pm10,2025,all stations,99.2673,109.0783,97.7877,5
+u0456,Agra,pm25,2016,all stations,122.6917,118.6951,116.4432,1
+u0456,Agra,pm25,2017,all stations,103.097,102.9249,101.8651,1
+u0456,Agra,pm25,2018,all stations,101.4546,98.909,98.4234,1
+u0456,Agra,pm25,2019,all stations,73.6223,83.1453,73.5676,1
+u0456,Agra,pm25,2020,all stations,81.4726,78.8232,75.7046,1
+u0456,Agra,pm25,2021,all stations,80.3723,79.4782,73.8803,1
+u0456,Agra,pm25,2022,all stations,43.7567,40.0768,42.3798,5
+u0456,Agra,pm25,2023,all stations,34.1507,36.2186,32.118,6
+u0456,Agra,pm25,2024,all stations,33.7857,34.8104,32.1566,6
+u0456,Agra,pm25,2025,all stations,39.8602,43.8937,38.8437,6
+u0456,Agra,pm25,2018,stations valid every year 2018-2025,101.4546,98.909,98.4234,1
+u0456,Agra,pm25,2019,stations valid every year 2018-2025,73.6223,83.1453,73.5676,1
+u0456,Agra,pm25,2020,stations valid every year 2018-2025,81.4726,78.8232,75.7046,1
+u0456,Agra,pm25,2021,stations valid every year 2018-2025,80.3723,79.4782,73.8803,1
+u0456,Agra,pm25,2022,stations valid every year 2018-2025,57.6892,56.0854,55.7922,1
+u0456,Agra,pm25,2023,stations valid every year 2018-2025,37.3158,39.7652,36.4664,1
+u0456,Agra,pm25,2024,stations valid every year 2018-2025,37.284,37.2089,34.5468,1
+u0456,Agra,pm25,2025,stations valid every year 2018-2025,43.5574,40.559,41.5527,1
+u0129,Ahmedabad,pm10,2019,all stations,138.4564,144.2235,142.014,1
+u0129,Ahmedabad,pm10,2020,all stations,115.0041,120.8239,116.0509,2
+u0129,Ahmedabad,pm10,2021,all stations,147.8834,144.3997,140.6669,2
+u0129,Ahmedabad,pm10,2022,all stations,121.929,122.5941,119.6097,2
+u0129,Ahmedabad,pm10,2023,all stations,111.0403,108.882,106.6383,5
+u0129,Ahmedabad,pm10,2024,all stations,106.1943,109.3051,105.6261,8
+u0129,Ahmedabad,pm10,2025,all stations,99.8928,104.1289,100.7296,8
+u0129,Ahmedabad,pm25,2018,all stations,74.3463,69.6601,67.6384,1
+u0129,Ahmedabad,pm25,2019,all stations,57.174,58.4985,58.0632,2
+u0129,Ahmedabad,pm25,2020,all stations,49.8863,50.942,49.4818,2
+u0129,Ahmedabad,pm25,2021,all stations,59.9012,59.1626,56.4433,2
+u0129,Ahmedabad,pm25,2022,all stations,48.5759,50.8998,47.8329,2
+u0129,Ahmedabad,pm25,2023,all stations,53.0185,52.7908,50.9794,5
+u0129,Ahmedabad,pm25,2024,all stations,55.267,56.5538,54.2251,7
+u0129,Ahmedabad,pm25,2025,all stations,46.0244,47.9144,46.4665,7
+u0129,Ahmedabad,pm25,2018,stations valid every year 2018-2025,74.3463,69.6601,67.6384,1
+u0129,Ahmedabad,pm25,2019,stations valid every year 2018-2025,61.8187,64.3383,62.3427,1
+u0129,Ahmedabad,pm25,2020,stations valid every year 2018-2025,46.0126,46.8836,46.2911,1
+u0129,Ahmedabad,pm25,2021,stations valid every year 2018-2025,52.695,54.3189,49.5678,1
+u0129,Ahmedabad,pm25,2022,stations valid every year 2018-2025,44.7682,44.3781,43.8694,1
+u0129,Ahmedabad,pm25,2023,stations valid every year 2018-2025,49.7154,48.216,46.4071,1
+u0129,Ahmedabad,pm25,2024,stations valid every year 2018-2025,42.6952,44.1797,42.834,1
+u0129,Ahmedabad,pm25,2025,stations valid every year 2018-2025,36.5633,37.6687,36.5086,1
+u0624,Akola,pm10,2024,all stations,93.2434,101.2437,95.4376,1
+u0624,Akola,pm10,2025,all stations,76.3823,79.7606,77.4356,1
+u0624,Akola,pm25,2024,all stations,36.9808,41.0347,37.3718,1
+u0624,Akola,pm25,2025,all stations,32.966,35.203,33.4174,1
+u0976,Allahabad,pm10,2022,all stations,105.3231,97.9072,100.2181,2
+u0976,Allahabad,pm10,2023,all stations,79.0189,85.5763,74.0305,2
+u0976,Allahabad,pm10,2024,all stations,77.0771,71.7831,73.1711,2
+u0976,Allahabad,pm10,2025,all stations,75.4364,78.5938,75.9068,2
+u0976,Allahabad,pm25,2022,all stations,45.196,44.2893,42.8052,2
+u0976,Allahabad,pm25,2023,all stations,41.7057,41.8523,38.4512,2
+u0976,Allahabad,pm25,2024,all stations,33.8439,33.8794,32.0304,2
+u0976,Allahabad,pm25,2025,all stations,37.1758,39.7819,36.466,2
+u0311,Alwar,pm10,2019,all stations,92.402,87.8477,90.1037,1
+u0311,Alwar,pm10,2020,all stations,77.5965,83.2168,78.352,1
+u0311,Alwar,pm10,2021,all stations,88.9086,90.2136,87.2379,1
+u0311,Alwar,pm10,2022,all stations,92.1053,91.4906,90.6298,1
+u0311,Alwar,pm10,2023,all stations,85.7655,90.1746,85.9309,1
+u0311,Alwar,pm10,2024,all stations,87.8742,86.2954,86.7342,1
+u0311,Alwar,pm10,2025,all stations,79.3245,81.4224,81.0929,1
+u0311,Alwar,pm25,2019,all stations,45.567,43.2022,42.9176,1
+u0311,Alwar,pm25,2020,all stations,40.9982,43.7037,40.8907,1
+u0311,Alwar,pm25,2021,all stations,43.1227,44.248,42.1104,1
+u0311,Alwar,pm25,2022,all stations,41.4058,41.9456,41.0983,1
+u0311,Alwar,pm25,2023,all stations,41.8623,43.1086,40.797,1
+u0311,Alwar,pm25,2024,all stations,41.0836,39.311,39.6022,1
+u0311,Alwar,pm25,2025,all stations,34.3572,35.5932,35.3424,1
+u0703,Amravati,pm10,2024,all stations,82.5405,85.3354,86.0196,1
+u0703,Amravati,pm10,2025,all stations,81.3311,86.0344,82.0629,1
+u0703,Amravati,pm25,2024,all stations,35.4276,35.2417,34.6246,1
+u0703,Amravati,pm25,2025,all stations,33.5798,34.6057,33.4039,1
+u0060,Amritsar,pm10,2018,all stations,122.6245,132.481,116.9281,1
+u0060,Amritsar,pm10,2019,all stations,97.1104,96.8348,95.8163,1
+u0060,Amritsar,pm10,2020,all stations,98.0462,100.6009,97.0125,1
+u0060,Amritsar,pm10,2021,all stations,106.5271,106.4756,103.702,1
+u0060,Amritsar,pm10,2022,all stations,108.5189,108.8908,105.5603,1
+u0060,Amritsar,pm10,2023,all stations,103.9265,112.2046,104.9575,1
+u0060,Amritsar,pm10,2024,all stations,122.7457,110.6096,112.6036,1
+u0060,Amritsar,pm10,2025,all stations,88.1004,87.737,86.4184,1
+u0060,Amritsar,pm25,2019,all stations,50.7832,48.9991,49.1505,1
+u0060,Amritsar,pm25,2020,all stations,47.2253,47.6894,46.5812,1
+u0060,Amritsar,pm25,2021,all stations,51.3321,49.2421,48.5325,1
+u0060,Amritsar,pm25,2022,all stations,51.5101,54.3164,50.5372,1
+u0060,Amritsar,pm25,2023,all stations,60.3426,61.3037,58.8375,1
+u0060,Amritsar,pm25,2024,all stations,57.4473,54.4383,52.9976,1
+u0060,Amritsar,pm25,2025,all stations,45.2942,45.416,43.917,1
+u0060,Amritsar,pm10,2018,stations valid every year 2018-2025,122.6245,132.481,116.9281,1
+u0060,Amritsar,pm10,2019,stations valid every year 2018-2025,97.1104,96.8348,95.8163,1
+u0060,Amritsar,pm10,2020,stations valid every year 2018-2025,98.0462,100.6009,97.0125,1
+u0060,Amritsar,pm10,2021,stations valid every year 2018-2025,106.5271,106.4756,103.702,1
+u0060,Amritsar,pm10,2022,stations valid every year 2018-2025,108.5189,108.8908,105.5603,1
+u0060,Amritsar,pm10,2023,stations valid every year 2018-2025,103.9265,112.2046,104.9575,1
+u0060,Amritsar,pm10,2024,stations valid every year 2018-2025,122.7457,110.6096,112.6036,1
+u0060,Amritsar,pm10,2025,stations valid every year 2018-2025,88.1004,87.737,86.4184,1
+u0877,Anantapur,pm10,2023,all stations,55.2456,58.5599,52.4442,1
+u0877,Anantapur,pm10,2025,all stations,64.9784,66.9589,63.0062,1
+u0877,Anantapur,pm25,2023,all stations,23.9427,24.0866,23.7299,1
+u0877,Anantapur,pm25,2025,all stations,39.4102,38.9923,37.7986,1
+u1605,Angul,pm10,2024,all stations,132.722,133.2025,127.8922,1
+u1605,Angul,pm10,2025,all stations,118.9844,124.1734,118.3241,1
+u1605,Angul,pm25,2024,all stations,68.05,70.4466,65.1169,1
+u1605,Angul,pm25,2025,all stations,59.1107,59.2341,55.5688,1
+u0000,Asansol & Raniganj,pm10,2018,all stations,111.8659,111.6794,107.2179,1
+u0000,Asansol & Raniganj,pm10,2019,all stations,104.4197,100.1049,101.1448,1
+u0000,Asansol & Raniganj,pm10,2020,all stations,106.2551,112.1082,109.1842,1
+u0000,Asansol & Raniganj,pm10,2021,all stations,120.3932,111.689,115.7447,1
+u0000,Asansol & Raniganj,pm10,2022,all stations,135.8001,136.8529,133.9202,1
+u0000,Asansol & Raniganj,pm10,2023,all stations,134.4783,131.9123,126.0979,1
+u0000,Asansol & Raniganj,pm10,2024,all stations,130.5327,128.2065,120.7981,1
+u0000,Asansol & Raniganj,pm10,2025,all stations,102.7194,109.7714,103.183,4
+u0000,Asansol & Raniganj,pm25,2019,all stations,62.1937,59.5363,59.542,1
+u0000,Asansol & Raniganj,pm25,2020,all stations,55.2571,57.0852,56.593,1
+u0000,Asansol & Raniganj,pm25,2021,all stations,59.2274,56.1097,57.0782,1
+u0000,Asansol & Raniganj,pm25,2022,all stations,59.1629,59.8838,59.6437,1
+u0000,Asansol & Raniganj,pm25,2023,all stations,63.8392,64.1619,60.0863,1
+u0000,Asansol & Raniganj,pm25,2024,all stations,74.9824,71.8627,68.339,1
+u0000,Asansol & Raniganj,pm25,2025,all stations,53.3236,56.6675,53.8593,4
+u0000,Asansol & Raniganj,pm10,2018,stations valid every year 2018-2025,111.8659,111.6794,107.2179,1
+u0000,Asansol & Raniganj,pm10,2019,stations valid every year 2018-2025,104.4197,100.1049,101.1448,1
+u0000,Asansol & Raniganj,pm10,2020,stations valid every year 2018-2025,106.2551,112.1082,109.1842,1
+u0000,Asansol & Raniganj,pm10,2021,stations valid every year 2018-2025,120.3932,111.689,115.7447,1
+u0000,Asansol & Raniganj,pm10,2022,stations valid every year 2018-2025,135.8001,136.8529,133.9202,1
+u0000,Asansol & Raniganj,pm10,2023,stations valid every year 2018-2025,134.4783,131.9123,126.0979,1
+u0000,Asansol & Raniganj,pm10,2024,stations valid every year 2018-2025,130.5327,128.2065,120.7981,1
+u0000,Asansol & Raniganj,pm10,2025,stations valid every year 2018-2025,106.5273,115.9334,108.7057,1
+u0462,Aurangabad,pm10,2024,all stations,89.9447,93.4575,91.8878,1
+u0462,Aurangabad,pm10,2025,all stations,81.445,88.8807,81.31,2
+u0462,Aurangabad,pm25,2024,all stations,42.9368,43.0284,41.8099,1
+u0462,Aurangabad,pm25,2025,all stations,37.523,41.2692,37.1508,2
+u0258,"Badlapur, Ulhasnagar",pm10,2024,all stations,104.2411,105.8754,102.9221,3
+u0258,"Badlapur, Ulhasnagar",pm10,2025,all stations,97.5828,100.9908,96.5813,2
+u0258,"Badlapur, Ulhasnagar",pm25,2022,all stations,54.5569,59.2734,53.7138,1
+u0258,"Badlapur, Ulhasnagar",pm25,2024,all stations,43.2812,42.6223,41.9449,3
+u0258,"Badlapur, Ulhasnagar",pm25,2025,all stations,42.2806,44.9417,42.0327,2
+u1737,Balasore,pm10,2024,all stations,108.8112,104.5347,102.7489,1
+u1737,Balasore,pm10,2025,all stations,95.2662,97.6197,93.97,1
+u1737,Balasore,pm25,2024,all stations,52.7217,50.1873,48.7691,1
+u1737,Balasore,pm25,2025,all stations,50.3418,51.0571,47.6634,1
+u0899,Bangalore,pm10,2017,all stations,89.4971,93.9803,86.5697,1
+u0899,Bangalore,pm10,2018,all stations,58.85,59.7179,56.9085,1
+u0899,Bangalore,pm10,2019,all stations,74.491,75.9142,73.4323,5
+u0899,Bangalore,pm10,2020,all stations,62.5832,67.0314,63.8096,5
+u0899,Bangalore,pm10,2021,all stations,67.0831,70.5867,68.1692,6
+u0899,Bangalore,pm10,2022,all stations,76.3973,73.9178,73.481,4
+u0899,Bangalore,pm10,2023,all stations,68.4227,68.1562,66.5629,8
+u0899,Bangalore,pm10,2024,all stations,68.083,69.6967,68.2477,10
+u0899,Bangalore,pm10,2025,all stations,72.775,73.426,71.8191,8
+u0899,Bangalore,pm25,2018,all stations,32.8759,32.0121,30.1584,2
+u0899,Bangalore,pm25,2019,all stations,35.526,35.4827,33.9383,8
+u0899,Bangalore,pm25,2020,all stations,29.562,31.5772,29.5832,6
+u0899,Bangalore,pm25,2021,all stations,29.7984,32.2464,30.035,5
+u0899,Bangalore,pm25,2022,all stations,33.4215,31.6678,31.2762,4
+u0899,Bangalore,pm25,2023,all stations,30.7601,30.7719,29.4922,6
+u0899,Bangalore,pm25,2024,all stations,31.0168,31.6588,30.5269,9
+u0899,Bangalore,pm25,2025,all stations,27.7275,29.0455,27.2319,8
+u0555,Bareily,pm10,2023,all stations,81.7827,79.0279,75.6783,1
+u0555,Bareily,pm10,2024,all stations,56.2372,51.0888,53.2486,2
+u0555,Bareily,pm10,2025,all stations,56.3044,58.0374,55.814,2
+u0555,Bareily,pm25,2023,all stations,29.7924,27.1477,27.5407,1
+u0555,Bareily,pm25,2024,all stations,20.7327,20.0757,19.4346,2
+u0555,Bareily,pm25,2025,all stations,35.2343,38.6811,34.397,1
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2018,all stations,128.9165,122.4988,121.6146,1
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2019,all stations,138.2948,137.4708,132.3906,4
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2020,all stations,102.0291,100.0133,100.0311,10
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2021,all stations,112.6622,109.3538,107.6206,10
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2022,all stations,106.8379,105.9818,103.3828,10
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2023,all stations,97.5383,98.4901,93.0689,10
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2024,all stations,97.4231,100.3916,93.6541,11
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2025,all stations,96.5153,102.2809,95.524,13
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2018,all stations,72.3933,67.7337,68.3054,1
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2019,all stations,74.6733,74.947,70.5031,4
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2020,all stations,51.099,49.0198,49.4963,10
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2021,all stations,57.1006,55.1742,54.2463,9
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2022,all stations,52.9146,53.2388,51.0777,10
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2023,all stations,49.2065,49.3983,46.732,10
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2024,all stations,49.3744,50.8565,46.7642,11
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2025,all stations,48.5032,51.7493,47.4525,13
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2018,stations valid every year 2018-2025,128.9165,122.4988,121.6146,1
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2019,stations valid every year 2018-2025,109.4112,109.1702,105.5631,1
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2020,stations valid every year 2018-2025,91.8775,89.0663,90.9591,1
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2021,stations valid every year 2018-2025,95.5519,89.8197,90.712,1
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2022,stations valid every year 2018-2025,82.9335,82.4987,82.7718,1
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2023,stations valid every year 2018-2025,99.3575,98.4371,94.9984,1
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2024,stations valid every year 2018-2025,104.6907,114.2595,102.1011,1
+u1785,"Barrackpore, Howrah, Kolkata",pm10,2025,stations valid every year 2018-2025,108.3183,118.9298,106.1225,1
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2018,stations valid every year 2018-2025,72.3933,67.7337,68.3054,1
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2019,stations valid every year 2018-2025,70.1176,68.3404,66.7645,1
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2020,stations valid every year 2018-2025,56.5588,54.2667,54.9721,1
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2021,stations valid every year 2018-2025,55.8807,51.2315,52.4575,1
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2022,stations valid every year 2018-2025,41.0229,42.683,41.4819,1
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2023,stations valid every year 2018-2025,47.8593,46.7168,45.6844,1
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2024,stations valid every year 2018-2025,57.7367,63.9361,55.1886,1
+u1785,"Barrackpore, Howrah, Kolkata",pm25,2025,stations valid every year 2018-2025,59.0402,66.4247,58.3199,1
+u1116,Bhilai,pm10,2023,all stations,68.8505,67.8154,64.5094,2
+u1116,Bhilai,pm10,2024,all stations,69.5328,70.2334,69.146,3
+u1116,Bhilai,pm10,2025,all stations,56.8372,58.7548,55.6037,3
+u1116,Bhilai,pm25,2023,all stations,32.4144,31.367,29.6756,2
+u1116,Bhilai,pm25,2024,all stations,32.0088,32.403,31.4259,3
+u1116,Bhilai,pm25,2025,all stations,25.3065,26.5842,24.4284,3
+u0567,Bhopal,pm10,2020,all stations,104.6365,107.2364,104.4272,1
+u0567,Bhopal,pm10,2021,all stations,116.9786,118.3645,113.3587,1
+u0567,Bhopal,pm10,2022,all stations,122.5668,117.2696,113.8082,1
+u0567,Bhopal,pm10,2023,all stations,108.4627,115.1842,106.7075,3
+u0567,Bhopal,pm10,2024,all stations,109.352,111.4888,107.4095,3
+u0567,Bhopal,pm10,2025,all stations,102.321,106.8747,103.0628,3
+u0567,Bhopal,pm25,2020,all stations,42.1566,41.9276,40.3573,1
+u0567,Bhopal,pm25,2021,all stations,46.0286,44.3381,42.2483,1
+u0567,Bhopal,pm25,2022,all stations,47.834,47.4162,44.0433,1
+u0567,Bhopal,pm25,2023,all stations,48.9791,49.5243,46.4194,3
+u0567,Bhopal,pm25,2024,all stations,46.0153,44.205,43.8117,3
+u0567,Bhopal,pm25,2025,all stations,39.9533,40.5209,38.7681,3
+u1673,Bhubaneswar,pm10,2024,all stations,94.6827,96.6238,94.6356,2
+u1673,Bhubaneswar,pm10,2025,all stations,88.7842,90.2335,84.9902,2
+u1673,Bhubaneswar,pm25,2024,all stations,46.9518,49.0037,46.5483,2
+u1673,Bhubaneswar,pm25,2025,all stations,44.6182,44.4212,41.4259,2
+u0196,Chandigarh,pm10,2020,all stations,76.3716,82.5505,73.8305,1
+u0196,Chandigarh,pm10,2021,all stations,93.5529,94.3869,92.9694,1
+u0196,Chandigarh,pm10,2022,all stations,113.403,107.7588,107.9705,3
+u0196,Chandigarh,pm10,2023,all stations,117.7937,128.0592,116.8598,3
+u0196,Chandigarh,pm10,2024,all stations,136.4099,129.2922,126.9348,3
+u0196,Chandigarh,pm10,2025,all stations,93.5417,98.2725,93.0495,3
+u0196,Chandigarh,pm25,2017,all stations,53.0487,52.3098,50.2692,1
+u0196,Chandigarh,pm25,2018,all stations,53.7322,57.5755,50.2604,1
+u0196,Chandigarh,pm25,2019,all stations,44.8483,44.1431,43.5,1
+u0196,Chandigarh,pm25,2020,all stations,37.6657,39.5847,35.9048,2
+u0196,Chandigarh,pm25,2021,all stations,43.2964,46.1597,42.6136,2
+u0196,Chandigarh,pm25,2022,all stations,56.7738,54.3763,52.9984,4
+u0196,Chandigarh,pm25,2023,all stations,57.1089,61.0207,56.0933,4
+u0196,Chandigarh,pm25,2024,all stations,67.9306,62.5556,61.7802,4
+u0196,Chandigarh,pm25,2025,all stations,53.46,54.2802,53.1588,3
+u0921,Chandrapur,pm10,2023,all stations,100.1501,100.2227,95.977,1
+u0921,Chandrapur,pm10,2024,all stations,83.026,92.5511,85.8554,1
+u0921,Chandrapur,pm10,2025,all stations,121.0271,120.0908,120.3947,1
+u0921,Chandrapur,pm25,2023,all stations,52.6442,48.1794,49.251,1
+u0921,Chandrapur,pm25,2024,all stations,43.5538,48.8127,44.2585,1
+u0921,Chandrapur,pm25,2025,all stations,37.7743,38.2421,37.6392,1
+u1268,Chennai,pm10,2021,all stations,61.3427,61.24,60.9774,4
+u1268,Chennai,pm10,2022,all stations,59.9416,61.3015,59.0808,7
+u1268,Chennai,pm10,2023,all stations,70.222,69.7361,66.9655,7
+u1268,Chennai,pm10,2024,all stations,61.234,63.4133,62.3259,7
+u1268,Chennai,pm10,2025,all stations,71.7914,68.7264,66.7427,5
+u1268,Chennai,pm25,2016,all stations,57.0784,51.818,50.9571,3
+u1268,Chennai,pm25,2017,all stations,49.4909,51.3108,46.1775,3
+u1268,Chennai,pm25,2018,all stations,50.9542,50.2104,46.7039,2
+u1268,Chennai,pm25,2019,all stations,44.6638,43.6707,40.1175,3
+u1268,Chennai,pm25,2020,all stations,30.1832,32.7833,30.0283,4
+u1268,Chennai,pm25,2021,all stations,26.1198,26.1535,24.9344,7
+u1268,Chennai,pm25,2022,all stations,28.4318,28.6785,26.9322,6
+u1268,Chennai,pm25,2023,all stations,30.1656,30.1733,28.6539,7
+u1268,Chennai,pm25,2024,all stations,27.8951,28.6164,27.5639,7
+u1268,Chennai,pm25,2025,all stations,30.8373,29.5071,27.7987,5
+u1268,Chennai,pm25,2018,stations valid every year 2018-2025,40.1605,40.6073,36.9183,1
+u1268,Chennai,pm25,2019,stations valid every year 2018-2025,34.0232,30.4578,30.1796,1
+u1268,Chennai,pm25,2020,stations valid every year 2018-2025,25.1166,26.3541,24.6141,1
+u1268,Chennai,pm25,2021,stations valid every year 2018-2025,19.4098,17.6092,17.9718,1
+u1268,Chennai,pm25,2022,stations valid every year 2018-2025,26.0413,26.8571,25.4159,1
+u1268,Chennai,pm25,2023,stations valid every year 2018-2025,27.561,30.1831,27.1498,1
+u1268,Chennai,pm25,2024,stations valid every year 2018-2025,27.8947,30.8379,26.5609,1
+u1268,Chennai,pm25,2025,stations valid every year 2018-2025,31.1492,31.5785,29.8814,1
+u1111,Chitoor,pm10,2023,all stations,57.4834,54.0332,55.7726,1
+u1111,Chitoor,pm10,2025,all stations,76.1045,80.8626,74.7487,1
+u1111,Chitoor,pm25,2023,all stations,33.9933,31.1776,32.0538,1
+u1111,Chitoor,pm25,2025,all stations,49.1253,52.2351,48.0493,1
+u1671,Cuttack,pm10,2024,all stations,95.5221,100.0475,94.8352,1
+u1671,Cuttack,pm10,2025,all stations,100.318,101.413,95.2723,1
+u1671,Cuttack,pm25,2024,all stations,46.0336,48.0414,44.8928,1
+u1671,Cuttack,pm25,2025,all stations,47.5782,48.3361,44.1213,1
+u0314,Dehradun,pm10,2023,all stations,75.6653,83.7879,76.9491,1
+u0314,Dehradun,pm10,2024,all stations,83.1416,75.7449,74.8681,1
+u0314,Dehradun,pm10,2025,all stations,62.1281,64.2226,62.0365,1
+u0314,Dehradun,pm25,2023,all stations,34.7204,40.2852,35.1846,1
+u0314,Dehradun,pm25,2024,all stations,46.4902,40.9778,39.8662,1
+u0314,Dehradun,pm25,2025,all stations,37.2238,36.5174,35.2943,1
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2016,all stations,270.474,261.2006,257.2965,1
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2017,all stations,206.727,201.2137,200.6644,2
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2018,all stations,238.4168,236.7922,223.6539,26
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2019,all stations,218.0271,216.3274,209.1457,39
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2020,all stations,181.904,188.779,185.6205,41
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2021,all stations,215.336,214.9089,207.433,46
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2022,all stations,210.5799,205.9309,203.6864,49
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2023,all stations,203.1899,209.2875,197.1996,50
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2024,all stations,203.9844,199.6477,193.1895,50
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2025,all stations,198.1007,213.0481,196.6382,45
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2016,all stations,144.559,148.4906,132.486,1
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2017,all stations,109.3755,104.5019,105.9548,3
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2018,all stations,114.5297,117.0787,107.1674,32
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2019,all stations,107.1781,104.0798,101.4102,41
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2020,all stations,95.3647,97.5602,94.2155,47
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2021,all stations,104.9758,103.1469,98.734,47
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2022,all stations,94.9664,95.5696,92.2928,46
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2023,all stations,96.2616,97.307,91.1667,51
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2024,all stations,97.8954,94.2867,90.7104,49
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2025,all stations,94.9812,98.592,91.7562,44
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2018,stations valid every year 2018-2025,238.2657,236.4257,223.3727,20
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2019,stations valid every year 2018-2025,216.8973,214.574,207.7545,20
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2020,stations valid every year 2018-2025,181.0411,188.2674,186.3351,20
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2021,stations valid every year 2018-2025,211.1601,209.0654,203.3238,20
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2022,stations valid every year 2018-2025,209.7804,205.5185,203.5569,20
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2023,stations valid every year 2018-2025,207.7788,212.8839,202.3661,20
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2024,stations valid every year 2018-2025,212.6131,209.7923,201.4023,20
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm10,2025,stations valid every year 2018-2025,201.5366,216.8791,201.4156,20
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2018,stations valid every year 2018-2025,117.2932,120.0681,109.4324,23
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2019,stations valid every year 2018-2025,111.9308,109.2447,106.4561,23
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2020,stations valid every year 2018-2025,97.8816,101.1629,97.2633,23
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2021,stations valid every year 2018-2025,108.7951,106.2085,102.1183,23
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2022,stations valid every year 2018-2025,101.1434,102.5545,98.7856,23
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2023,stations valid every year 2018-2025,104.7939,104.9733,99.358,23
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2024,stations valid every year 2018-2025,107.0344,102.0559,99.2112,23
+u0290,"Delhi, Faridabad, Ghaziabad, Noida",pm25,2025,stations valid every year 2018-2025,99.5129,102.7822,96.4095,23
+u0689,Devanagere,pm10,2022,all stations,63.1307,58.5182,61.1458,1
+u0689,Devanagere,pm25,2022,all stations,26.5327,25.2282,25.3294,1
+u0433,Dewas,pm10,2018,all stations,122.6811,116.6707,113.9351,1
+u0433,Dewas,pm10,2019,all stations,106.7247,105.9158,106.4317,1
+u0433,Dewas,pm10,2020,all stations,89.2161,94.2607,88.909,1
+u0433,Dewas,pm10,2021,all stations,91.3225,91.7417,90.6716,1
+u0433,Dewas,pm10,2022,all stations,106.2985,104.2565,101.2333,1
+u0433,Dewas,pm10,2023,all stations,107.5693,104.4755,102.0707,1
+u0433,Dewas,pm10,2024,all stations,94.5274,99.0056,92.6942,1
+u0433,Dewas,pm10,2025,all stations,97.4616,105.7902,99.8028,1
+u0433,Dewas,pm25,2018,all stations,46.93,47.0814,46.0697,1
+u0433,Dewas,pm25,2019,all stations,42.4438,42.2746,41.4604,1
+u0433,Dewas,pm25,2020,all stations,39.2344,38.9693,37.8661,1
+u0433,Dewas,pm25,2021,all stations,39.454,39.8276,37.4456,1
+u0433,Dewas,pm25,2022,all stations,44.5797,43.8131,42.6833,1
+u0433,Dewas,pm25,2023,all stations,45.2223,43.3019,43.8265,1
+u0433,Dewas,pm25,2024,all stations,44.7657,44.7301,42.554,1
+u0433,Dewas,pm25,2025,all stations,40.5439,42.3038,40.3656,1
+u0433,Dewas,pm10,2018,stations valid every year 2018-2025,122.6811,116.6707,113.9351,1
+u0433,Dewas,pm10,2019,stations valid every year 2018-2025,106.7247,105.9158,106.4317,1
+u0433,Dewas,pm10,2020,stations valid every year 2018-2025,89.2161,94.2607,88.909,1
+u0433,Dewas,pm10,2021,stations valid every year 2018-2025,91.3225,91.7417,90.6716,1
+u0433,Dewas,pm10,2022,stations valid every year 2018-2025,106.2985,104.2565,101.2333,1
+u0433,Dewas,pm10,2023,stations valid every year 2018-2025,107.5693,104.4755,102.0707,1
+u0433,Dewas,pm10,2024,stations valid every year 2018-2025,94.5274,99.0056,92.6942,1
+u0433,Dewas,pm10,2025,stations valid every year 2018-2025,97.4616,105.7902,99.8028,1
+u0433,Dewas,pm25,2018,stations valid every year 2018-2025,46.93,47.0814,46.0697,1
+u0433,Dewas,pm25,2019,stations valid every year 2018-2025,42.4438,42.2746,41.4604,1
+u0433,Dewas,pm25,2020,stations valid every year 2018-2025,39.2344,38.9693,37.8661,1
+u0433,Dewas,pm25,2021,stations valid every year 2018-2025,39.454,39.8276,37.4456,1
+u0433,Dewas,pm25,2022,stations valid every year 2018-2025,44.5797,43.8131,42.6833,1
+u0433,Dewas,pm25,2023,stations valid every year 2018-2025,45.2223,43.3019,43.8265,1
+u0433,Dewas,pm25,2024,stations valid every year 2018-2025,44.7657,44.7301,42.554,1
+u0433,Dewas,pm25,2025,stations valid every year 2018-2025,40.5439,42.3038,40.3656,1
+u1612,Dhanbad,pm10,2019,all stations,128.5367,148.0061,124.2468,1
+u1698,Durgapur,pm10,2025,all stations,113.3577,116.8769,110.7655,2
+u1698,Durgapur,pm25,2025,all stations,40.0988,42.3265,38.7468,2
+u0509,Firozabad,pm10,2022,all stations,81.2135,78.3218,78.9047,1
+u0509,Firozabad,pm10,2023,all stations,87.3461,78.8936,81.3465,2
+u0509,Firozabad,pm10,2024,all stations,66.5839,74.5832,65.174,1
+u0509,Firozabad,pm10,2025,all stations,65.2934,67.6444,65.7772,2
+u0509,Firozabad,pm25,2022,all stations,51.0437,48.9536,48.8322,1
+u0509,Firozabad,pm25,2023,all stations,39.6873,38.4422,36.718,1
+u0509,Firozabad,pm25,2024,all stations,34.2886,35.4658,33.2176,1
+u0509,Firozabad,pm25,2025,all stations,32.9767,33.757,33.3868,2
+u1437,Gaya,pm10,2020,all stations,63.5054,66.8992,66.6353,1
+u1437,Gaya,pm10,2021,all stations,70.6271,68.7993,70.5314,1
+u1437,Gaya,pm10,2022,all stations,149.9257,151.6003,142.6091,2
+u1437,Gaya,pm10,2023,all stations,120.1699,112.3085,111.5936,2
+u1437,Gaya,pm10,2024,all stations,88.4255,88.9072,84.3386,2
+u1437,Gaya,pm10,2025,all stations,101.2024,107.9392,103.0938,2
+u1437,Gaya,pm25,2018,all stations,94.7452,93.7753,88.8045,1
+u1437,Gaya,pm25,2019,all stations,84.0397,78.8594,77.7894,1
+u1437,Gaya,pm25,2021,all stations,38.3099,37.6016,37.4529,1
+u1437,Gaya,pm25,2022,all stations,70.7103,69.1902,66.3296,3
+u1437,Gaya,pm25,2023,all stations,59.0128,55.5966,55.2227,3
+u1437,Gaya,pm25,2024,all stations,51.4417,51.5702,48.1301,3
+u1437,Gaya,pm25,2025,all stations,39.3131,43.355,39.6633,2
+u0167,Gobindgarh,pm10,2018,all stations,109.5332,123.193,105.5026,1
+u0167,Gobindgarh,pm10,2019,all stations,129.6119,125.4324,127.6255,1
+u0167,Gobindgarh,pm10,2020,all stations,130.1466,131.0091,124.7608,1
+u0167,Gobindgarh,pm10,2021,all stations,126.1748,123.6378,119.4885,1
+u0167,Gobindgarh,pm10,2022,all stations,141.6048,137.116,134.0304,1
+u0167,Gobindgarh,pm10,2023,all stations,129.2592,143.5534,126.0808,1
+u0167,Gobindgarh,pm10,2024,all stations,148.4851,145.8265,140.402,1
+u0167,Gobindgarh,pm10,2025,all stations,119.9501,130.0907,117.575,1
+u0167,Gobindgarh,pm25,2018,all stations,63.4292,63.1898,58.2337,1
+u0167,Gobindgarh,pm25,2019,all stations,57.9611,56.3983,56.5016,1
+u0167,Gobindgarh,pm25,2020,all stations,66.986,67.4315,62.6989,1
+u0167,Gobindgarh,pm25,2021,all stations,62.6732,65.4957,60.1868,1
+u0167,Gobindgarh,pm25,2022,all stations,72.4751,70.7633,67.3168,1
+u0167,Gobindgarh,pm25,2023,all stations,66.3333,74.2055,64.3121,1
+u0167,Gobindgarh,pm25,2024,all stations,79.1969,78.3878,73.8655,1
+u0167,Gobindgarh,pm25,2025,all stations,59.8274,65.7024,58.8823,1
+u0167,Gobindgarh,pm10,2018,stations valid every year 2018-2025,109.5332,123.193,105.5026,1
+u0167,Gobindgarh,pm10,2019,stations valid every year 2018-2025,129.6119,125.4324,127.6255,1
+u0167,Gobindgarh,pm10,2020,stations valid every year 2018-2025,130.1466,131.0091,124.7608,1
+u0167,Gobindgarh,pm10,2021,stations valid every year 2018-2025,126.1748,123.6378,119.4885,1
+u0167,Gobindgarh,pm10,2022,stations valid every year 2018-2025,141.6048,137.116,134.0304,1
+u0167,Gobindgarh,pm10,2023,stations valid every year 2018-2025,129.2592,143.5534,126.0808,1
+u0167,Gobindgarh,pm10,2024,stations valid every year 2018-2025,148.4851,145.8265,140.402,1
+u0167,Gobindgarh,pm10,2025,stations valid every year 2018-2025,119.9501,130.0907,117.575,1
+u0167,Gobindgarh,pm25,2018,stations valid every year 2018-2025,63.4292,63.1898,58.2337,1
+u0167,Gobindgarh,pm25,2019,stations valid every year 2018-2025,57.9611,56.3983,56.5016,1
+u0167,Gobindgarh,pm25,2020,stations valid every year 2018-2025,66.986,67.4315,62.6989,1
+u0167,Gobindgarh,pm25,2021,stations valid every year 2018-2025,62.6732,65.4957,60.1868,1
+u0167,Gobindgarh,pm25,2022,stations valid every year 2018-2025,72.4751,70.7633,67.3168,1
+u0167,Gobindgarh,pm25,2023,stations valid every year 2018-2025,66.3333,74.2055,64.3121,1
+u0167,Gobindgarh,pm25,2024,stations valid every year 2018-2025,79.1969,78.3878,73.8655,1
+u0167,Gobindgarh,pm25,2025,stations valid every year 2018-2025,59.8274,65.7024,58.8823,1
+u1102,Gorakhpur,pm10,2022,all stations,69.2336,72.3792,68.7075,1
+u1102,Gorakhpur,pm10,2023,all stations,97.7487,94.2878,89.6606,1
+u1102,Gorakhpur,pm10,2024,all stations,109.339,116.7771,102.7398,1
+u1102,Gorakhpur,pm10,2025,all stations,95.0688,98.5889,93.3956,1
+u1102,Gorakhpur,pm25,2022,all stations,37.7432,37.6242,36.128,1
+u1102,Gorakhpur,pm25,2023,all stations,49.3438,51.7775,46.1025,1
+u1102,Gorakhpur,pm25,2024,all stations,51.8884,55.6308,49.4032,1
+u1102,Gorakhpur,pm25,2025,all stations,43.0201,43.8811,41.396,1
+u0715,Gulburga,pm10,2019,all stations,84.6076,84.9272,85.0423,1
+u0715,Gulburga,pm10,2024,all stations,38.1621,47.3266,38.9421,1
+u0715,Gulburga,pm10,2025,all stations,47.478,47.1737,48.5942,1
+u0715,Gulburga,pm25,2019,all stations,38.3587,38.3516,38.6307,1
+u0715,Gulburga,pm25,2024,all stations,15.1892,16.2263,15.2961,1
+u0715,Gulburga,pm25,2025,all stations,20.3792,20.8827,20.4674,1
+u1859,Guwahati,pm10,2019,all stations,96.5927,104.3746,96.5989,1
+u1859,Guwahati,pm10,2020,all stations,113.4062,116.1643,108.5326,1
+u1859,Guwahati,pm10,2021,all stations,118.3429,107.9881,107.2256,2
+u1859,Guwahati,pm10,2022,all stations,100.2499,106.7113,100.6726,2
+u1859,Guwahati,pm10,2023,all stations,118.356,112.2957,109.4376,1
+u1859,Guwahati,pm10,2024,all stations,114.9767,117.5862,109.0548,1
+u1859,Guwahati,pm10,2025,all stations,59.6685,52.0937,56.5501,1
+u1859,Guwahati,pm25,2019,all stations,53.959,56.4222,53.0001,1
+u1859,Guwahati,pm25,2020,all stations,62.2257,62.3667,59.0459,1
+u1859,Guwahati,pm25,2021,all stations,61.8242,57.7059,57.0858,2
+u1859,Guwahati,pm25,2022,all stations,54.9736,57.7762,54.9132,2
+u1859,Guwahati,pm25,2023,all stations,64.9632,62.6555,60.2035,2
+u1859,Guwahati,pm25,2024,all stations,48.3622,49.4433,45.6549,1
+u1859,Guwahati,pm25,2025,all stations,52.1442,51.0261,50.5463,2
+u0528,Gwalior,pm10,2020,all stations,117.269,114.0355,111.3434,1
+u0528,Gwalior,pm10,2021,all stations,122.9578,126.3915,121.3304,1
+u0528,Gwalior,pm10,2022,all stations,130.3846,127.7455,125.7274,1
+u0528,Gwalior,pm10,2023,all stations,146.8195,152.7885,140.8641,3
+u0528,Gwalior,pm10,2024,all stations,139.6727,139.9541,133.2269,3
+u0528,Gwalior,pm10,2025,all stations,116.2874,128.2897,117.4469,3
+u0528,Gwalior,pm25,2020,all stations,58.6059,52.7897,53.1171,1
+u0528,Gwalior,pm25,2021,all stations,60.8694,60.6037,59.3437,1
+u0528,Gwalior,pm25,2022,all stations,63.4161,63.9643,61.9774,1
+u0528,Gwalior,pm25,2023,all stations,67.7264,66.8895,62.1645,3
+u0528,Gwalior,pm25,2024,all stations,56.1681,59.8545,52.6336,3
+u0528,Gwalior,pm25,2025,all stations,54.9117,59.9671,53.3735,3
+u1803,Haldia,pm10,2023,all stations,87.2315,82.1623,81.4071,1
+u1803,Haldia,pm10,2024,all stations,81.4624,81.5978,78.1504,1
+u1803,Haldia,pm10,2025,all stations,87.7245,91.023,86.0509,1
+u1803,Haldia,pm25,2023,all stations,32.4551,33.8564,29.4075,1
+u1803,Haldia,pm25,2024,all stations,36.9255,35.9472,34.2559,1
+u1803,Haldia,pm25,2025,all stations,43.2879,42.3991,41.0431,1
+u0001,Hubli-Dharwad,pm10,2021,all stations,74.8602,75.9867,75.1368,1
+u0001,Hubli-Dharwad,pm10,2022,all stations,75.2142,74.6116,73.4228,1
+u0001,Hubli-Dharwad,pm10,2023,all stations,87.8671,82.0549,84.1863,1
+u0001,Hubli-Dharwad,pm10,2024,all stations,75.023,69.9868,74.1034,1
+u0001,Hubli-Dharwad,pm25,2021,all stations,31.586,30.9023,31.2624,1
+u0001,Hubli-Dharwad,pm25,2022,all stations,34.1946,32.823,32.742,1
+u0001,Hubli-Dharwad,pm25,2023,all stations,25.7768,24.7017,26.1656,1
+u0001,Hubli-Dharwad,pm25,2025,all stations,21.3231,23.3679,21.5409,1
+u0882,Hyderabad,pm10,2017,all stations,107.7327,95.7352,96.9787,1
+u0882,Hyderabad,pm10,2018,all stations,98.3021,96.9753,93.0781,4
+u0882,Hyderabad,pm10,2019,all stations,91.4889,91.661,89.9786,4
+u0882,Hyderabad,pm10,2020,all stations,76.6588,84.2106,80.1298,3
+u0882,Hyderabad,pm10,2021,all stations,82.5517,80.801,83.9336,3
+u0882,Hyderabad,pm10,2022,all stations,93.2727,94.6234,91.4997,4
+u0882,Hyderabad,pm10,2023,all stations,91.2422,85.9296,86.208,4
+u0882,Hyderabad,pm10,2024,all stations,78.1919,83.7171,80.0278,6
+u0882,Hyderabad,pm10,2025,all stations,86.0172,92.1383,86.2697,6
+u0882,Hyderabad,pm25,2017,all stations,51.1114,46.6714,46.8161,2
+u0882,Hyderabad,pm25,2018,all stations,44.3395,45.3699,42.9601,5
+u0882,Hyderabad,pm25,2019,all stations,42.3406,43.2919,41.776,5
+u0882,Hyderabad,pm25,2020,all stations,36.8367,40.3974,37.4031,4
+u0882,Hyderabad,pm25,2021,all stations,39.3565,37.2991,38.5817,4
+u0882,Hyderabad,pm25,2022,all stations,39.9967,38.398,38.3378,4
+u0882,Hyderabad,pm25,2023,all stations,37.7502,36.5316,35.8638,6
+u0882,Hyderabad,pm25,2024,all stations,31.7407,33.6673,31.9157,7
+u0882,Hyderabad,pm25,2025,all stations,36.4842,38.5677,35.5948,9
+u0882,Hyderabad,pm10,2018,stations valid every year 2018-2025,93.0913,91.0154,86.7039,1
+u0882,Hyderabad,pm10,2019,stations valid every year 2018-2025,87.018,91.4946,86.9162,1
+u0882,Hyderabad,pm10,2020,stations valid every year 2018-2025,73.7137,81.3591,78.2394,1
+u0882,Hyderabad,pm10,2021,stations valid every year 2018-2025,81.9778,78.6118,82.76,1
+u0882,Hyderabad,pm10,2022,stations valid every year 2018-2025,83.4846,83.1767,82.0733,1
+u0882,Hyderabad,pm10,2023,stations valid every year 2018-2025,88.9009,83.6046,83.7881,1
+u0882,Hyderabad,pm10,2024,stations valid every year 2018-2025,73.9465,84.5029,78.0827,1
+u0882,Hyderabad,pm10,2025,stations valid every year 2018-2025,82.7585,92.9907,84.5226,1
+u0882,Hyderabad,pm25,2018,stations valid every year 2018-2025,39.5429,39.728,37.8181,1
+u0882,Hyderabad,pm25,2019,stations valid every year 2018-2025,37.5152,40.7822,37.3842,1
+u0882,Hyderabad,pm25,2020,stations valid every year 2018-2025,35.1249,38.9918,35.2653,1
+u0882,Hyderabad,pm25,2021,stations valid every year 2018-2025,37.8738,35.4403,37.0813,1
+u0882,Hyderabad,pm25,2022,stations valid every year 2018-2025,37.2178,36.1244,35.9418,1
+u0882,Hyderabad,pm25,2023,stations valid every year 2018-2025,39.4636,36.9425,37.533,1
+u0882,Hyderabad,pm25,2024,stations valid every year 2018-2025,34.2353,37.8093,34.7176,1
+u0882,Hyderabad,pm25,2025,stations valid every year 2018-2025,41.3045,45.1032,39.5019,1
+u0415,Indore,pm10,2020,all stations,99.7279,103.3045,99.8906,1
+u0415,Indore,pm10,2021,all stations,117.6537,118.1421,117.0748,1
+u0415,Indore,pm10,2022,all stations,121.6903,118.1832,115.5747,1
+u0415,Indore,pm10,2023,all stations,110.8364,114.4368,108.0023,1
+u0415,Indore,pm10,2024,all stations,90.0794,97.2903,90.9793,2
+u0415,Indore,pm10,2025,all stations,91.6591,97.9498,94.0345,2
+u0415,Indore,pm25,2020,all stations,39.6705,37.7177,38.2305,1
+u0415,Indore,pm25,2021,all stations,48.3973,48.7296,45.4357,1
+u0415,Indore,pm25,2022,all stations,43.1669,42.9431,41.108,1
+u0415,Indore,pm25,2023,all stations,43.6712,44.8754,42.1978,1
+u0415,Indore,pm25,2024,all stations,40.9072,42.2221,40.0052,2
+u0415,Indore,pm25,2025,all stations,40.8429,42.6313,40.531,2
+u0854,Jabalpur,pm10,2020,all stations,106.981,116.5954,111.1838,1
+u0854,Jabalpur,pm10,2021,all stations,127.8541,130.7544,125.3089,1
+u0854,Jabalpur,pm10,2022,all stations,145.3835,139.8163,134.8732,1
+u0854,Jabalpur,pm10,2023,all stations,119.2531,123.6713,119.1145,1
+u0854,Jabalpur,pm10,2024,all stations,81.7664,83.5433,79.8669,4
+u0854,Jabalpur,pm10,2025,all stations,78.8849,87.1803,80.235,3
+u0854,Jabalpur,pm25,2020,all stations,46.3778,50.1614,47.6187,1
+u0854,Jabalpur,pm25,2021,all stations,49.4954,50.173,48.4182,1
+u0854,Jabalpur,pm25,2022,all stations,53.2835,50.9727,49.3443,1
+u0854,Jabalpur,pm25,2023,all stations,49.0681,48.9476,47.304,1
+u0854,Jabalpur,pm25,2024,all stations,44.0902,41.2283,41.5068,4
+u0854,Jabalpur,pm25,2025,all stations,34.3893,35.7411,33.033,3
+u0251,Jaipur,pm10,2018,all stations,140.8561,137.6404,131.4532,3
+u0251,Jaipur,pm10,2019,all stations,112.6489,114.4189,111.7777,3
+u0251,Jaipur,pm10,2020,all stations,103.1952,106.3023,102.6891,3
+u0251,Jaipur,pm10,2021,all stations,112.9638,116.1326,109.6287,2
+u0251,Jaipur,pm10,2022,all stations,122.5958,115.5454,116.1249,2
+u0251,Jaipur,pm10,2023,all stations,122.9321,123.2184,120.9928,3
+u0251,Jaipur,pm10,2024,all stations,129.4386,133.6238,127.9594,6
+u0251,Jaipur,pm10,2025,all stations,119.9779,127.4225,119.7553,6
+u0251,Jaipur,pm25,2018,all stations,59.3323,60.2267,56.4913,3
+u0251,Jaipur,pm25,2019,all stations,49.1019,50.0612,48.5131,3
+u0251,Jaipur,pm25,2020,all stations,45.3698,47.3724,45.3422,3
+u0251,Jaipur,pm25,2021,all stations,54.5094,53.9723,51.5969,2
+u0251,Jaipur,pm25,2022,all stations,53.3929,51.5377,51.2533,2
+u0251,Jaipur,pm25,2023,all stations,57.2446,56.2371,55.9485,3
+u0251,Jaipur,pm25,2024,all stations,57.0578,56.6107,54.4631,6
+u0251,Jaipur,pm25,2025,all stations,52.7437,54.5624,51.7272,6
+u0251,Jaipur,pm10,2018,stations valid every year 2018-2025,135.8347,131.8794,126.3973,2
+u0251,Jaipur,pm10,2019,stations valid every year 2018-2025,106.0067,105.7705,103.9876,2
+u0251,Jaipur,pm10,2020,stations valid every year 2018-2025,94.8656,98.7241,94.0433,2
+u0251,Jaipur,pm10,2021,stations valid every year 2018-2025,112.9638,116.1326,109.6287,2
+u0251,Jaipur,pm10,2022,stations valid every year 2018-2025,122.5958,115.5454,116.1249,2
+u0251,Jaipur,pm10,2023,stations valid every year 2018-2025,113.7328,114.982,112.6397,2
+u0251,Jaipur,pm10,2024,stations valid every year 2018-2025,111.0696,115.3018,111.0783,2
+u0251,Jaipur,pm10,2025,stations valid every year 2018-2025,107.9758,117.671,110.4943,2
+u0251,Jaipur,pm25,2018,stations valid every year 2018-2025,51.4623,52.4983,49.0832,2
+u0251,Jaipur,pm25,2019,stations valid every year 2018-2025,43.3114,43.3412,42.5782,2
+u0251,Jaipur,pm25,2020,stations valid every year 2018-2025,41.1998,42.1424,40.9953,2
+u0251,Jaipur,pm25,2021,stations valid every year 2018-2025,54.5094,53.9723,51.5969,2
+u0251,Jaipur,pm25,2022,stations valid every year 2018-2025,53.3929,51.5377,51.2533,2
+u0251,Jaipur,pm25,2023,stations valid every year 2018-2025,53.9181,53.2382,52.5515,2
+u0251,Jaipur,pm25,2024,stations valid every year 2018-2025,54.3624,55.6814,53.0061,2
+u0251,Jaipur,pm25,2025,stations valid every year 2018-2025,53.8308,56.5084,54.0972,2
+u0104,Jalandhar,pm10,2019,all stations,124.2467,119.5104,119.3673,1
+u0104,Jalandhar,pm10,2020,all stations,98.5741,101.0516,98.6496,1
+u0104,Jalandhar,pm10,2021,all stations,109.4823,109.4931,105.9088,1
+u0104,Jalandhar,pm10,2022,all stations,116.5114,110.4913,109.1021,1
+u0104,Jalandhar,pm10,2023,all stations,111.0703,113.7071,110.5741,1
+u0104,Jalandhar,pm10,2024,all stations,105.8579,102.2871,100.8411,1
+u0104,Jalandhar,pm10,2025,all stations,98.8749,101.9074,97.3867,1
+u0104,Jalandhar,pm25,2018,all stations,49.7538,51.7016,48.3494,1
+u0104,Jalandhar,pm25,2019,all stations,52.2836,53.7775,51.0607,1
+u0104,Jalandhar,pm25,2020,all stations,51.8612,53.8758,51.031,1
+u0104,Jalandhar,pm25,2021,all stations,54.4083,51.4611,52.2521,1
+u0104,Jalandhar,pm25,2022,all stations,46.7512,47.0383,45.0902,1
+u0104,Jalandhar,pm25,2023,all stations,51.9952,51.0587,50.4546,1
+u0104,Jalandhar,pm25,2024,all stations,48.6756,46.2184,46.1201,1
+u0104,Jalandhar,pm25,2025,all stations,44.9903,45.589,44.1089,1
+u0104,Jalandhar,pm25,2018,stations valid every year 2018-2025,49.7538,51.7016,48.3494,1
+u0104,Jalandhar,pm25,2019,stations valid every year 2018-2025,52.2836,53.7775,51.0607,1
+u0104,Jalandhar,pm25,2020,stations valid every year 2018-2025,51.8612,53.8758,51.031,1
+u0104,Jalandhar,pm25,2021,stations valid every year 2018-2025,54.4083,51.4611,52.2521,1
+u0104,Jalandhar,pm25,2022,stations valid every year 2018-2025,46.7512,47.0383,45.0902,1
+u0104,Jalandhar,pm25,2023,stations valid every year 2018-2025,51.9952,51.0587,50.4546,1
+u0104,Jalandhar,pm25,2024,stations valid every year 2018-2025,48.6756,46.2184,46.1201,1
+u0104,Jalandhar,pm25,2025,stations valid every year 2018-2025,44.9903,45.589,44.1089,1
+u0450,Jalgaon,pm10,2024,all stations,109.5609,114.8206,109.276,1
+u0450,Jalgaon,pm10,2025,all stations,92.3868,96.0497,92.4485,1
+u0450,Jalgaon,pm25,2024,all stations,49.4349,48.6417,47.6589,1
+u0450,Jalgaon,pm25,2025,all stations,43.7318,46.3797,43.0014,1
+u0527,Jalna,pm10,2024,all stations,106.9348,107.8341,106.5771,1
+u0527,Jalna,pm25,2024,all stations,52.0806,53.4458,50.8987,1
+u0604,Jhansi,pm10,2023,all stations,102.3723,100.0498,97.7168,1
+u0604,Jhansi,pm10,2024,all stations,75.3803,81.4138,71.8383,1
+u0604,Jhansi,pm10,2025,all stations,68.2518,74.3898,68.5265,1
+u0604,Jhansi,pm25,2023,all stations,37.4194,37.2083,35.962,1
+u0604,Jhansi,pm25,2024,all stations,36.5805,37.5509,33.7297,1
+u0604,Jhansi,pm25,2025,all stations,31.4602,32.7724,31.065,1
+u0090,Jodhpur,pm10,2018,all stations,230.2678,212.4963,209.951,1
+u0090,Jodhpur,pm10,2019,all stations,171.6804,170.4618,168.2863,1
+u0090,Jodhpur,pm10,2020,all stations,137.6853,150.1109,138.2646,1
+u0090,Jodhpur,pm10,2021,all stations,161.926,161.0335,157.2447,1
+u0090,Jodhpur,pm10,2022,all stations,155.6523,155.8003,150.018,1
+u0090,Jodhpur,pm10,2023,all stations,123.6278,131.2901,118.7791,2
+u0090,Jodhpur,pm10,2024,all stations,124.3794,125.5368,119.9994,4
+u0090,Jodhpur,pm10,2025,all stations,112.143,115.9733,112.5199,4
+u0090,Jodhpur,pm25,2018,all stations,109.334,101.664,97.5821,1
+u0090,Jodhpur,pm25,2019,all stations,83.4379,82.8988,80.236,1
+u0090,Jodhpur,pm25,2020,all stations,66.974,70.9677,66.2695,1
+u0090,Jodhpur,pm25,2021,all stations,74.9682,75.0684,72.0923,1
+u0090,Jodhpur,pm25,2022,all stations,69.8011,71.0844,68.0704,1
+u0090,Jodhpur,pm25,2023,all stations,46.8071,45.5399,44.0108,3
+u0090,Jodhpur,pm25,2024,all stations,42.9965,41.7655,40.2607,4
+u0090,Jodhpur,pm25,2025,all stations,42.0767,42.7481,41.0571,4
+u0090,Jodhpur,pm25,2018,stations valid every year 2018-2025,109.334,101.664,97.5821,1
+u0090,Jodhpur,pm25,2019,stations valid every year 2018-2025,83.4379,82.8988,80.236,1
+u0090,Jodhpur,pm25,2020,stations valid every year 2018-2025,66.974,70.9677,66.2695,1
+u0090,Jodhpur,pm25,2021,stations valid every year 2018-2025,74.9682,75.0684,72.0923,1
+u0090,Jodhpur,pm25,2022,stations valid every year 2018-2025,69.8011,71.0844,68.0704,1
+u0090,Jodhpur,pm25,2023,stations valid every year 2018-2025,72.1677,69.5278,70.7754,1
+u0090,Jodhpur,pm25,2024,stations valid every year 2018-2025,58.3742,57.5482,56.44,1
+u0090,Jodhpur,pm25,2025,stations valid every year 2018-2025,53.9177,55.8034,53.9539,1
+u1050,Kadapa,pm10,2025,all stations,66.5412,69.4445,65.1994,1
+u1050,Kadapa,pm25,2025,all stations,39.8019,41.3202,38.7613,1
+u0745,Kanpur,pm10,2022,all stations,121.3495,113.8079,116.132,3
+u0745,Kanpur,pm10,2023,all stations,106.9218,107.7493,103.4685,3
+u0745,Kanpur,pm10,2024,all stations,99.8049,98.305,93.5592,3
+u0745,Kanpur,pm10,2025,all stations,86.6285,92.1912,87.8554,3
+u0745,Kanpur,pm25,2016,all stations,125.1499,123.4436,115.7023,1
+u0745,Kanpur,pm25,2017,all stations,127.9426,121.081,121.1573,1
+u0745,Kanpur,pm25,2018,all stations,104.6714,99.5971,100.5397,1
+u0745,Kanpur,pm25,2019,all stations,96.947,86.6233,92.7549,1
+u0745,Kanpur,pm25,2020,all stations,89.9624,85.2892,89.2102,1
+u0745,Kanpur,pm25,2021,all stations,73.1805,72.1789,69.8826,2
+u0745,Kanpur,pm25,2022,all stations,58.1308,55.6017,54.5428,3
+u0745,Kanpur,pm25,2023,all stations,48.1416,50.6493,46.1746,3
+u0745,Kanpur,pm25,2024,all stations,47.2795,48.194,45.0989,3
+u0745,Kanpur,pm25,2025,all stations,44.2331,47.0804,43.9723,3
+u0745,Kanpur,pm25,2018,stations valid every year 2018-2025,104.6714,99.5971,100.5397,1
+u0745,Kanpur,pm25,2019,stations valid every year 2018-2025,96.947,86.6233,92.7549,1
+u0745,Kanpur,pm25,2020,stations valid every year 2018-2025,89.9624,85.2892,89.2102,1
+u0745,Kanpur,pm25,2021,stations valid every year 2018-2025,81.4854,75.6249,78.7172,1
+u0745,Kanpur,pm25,2022,stations valid every year 2018-2025,67.7824,68.133,64.0051,1
+u0745,Kanpur,pm25,2023,stations valid every year 2018-2025,59.1957,63.6139,56.5561,1
+u0745,Kanpur,pm25,2024,stations valid every year 2018-2025,52.2191,56.194,50.1988,1
+u0745,Kanpur,pm25,2025,stations valid every year 2018-2025,45.7564,52.2702,46.4126,1
+u0469,Kashipur,pm10,2024,all stations,94.3003,90.4362,88.1831,1
+u0469,Kashipur,pm10,2025,all stations,74.6984,75.2806,71.1131,1
+u0469,Kashipur,pm25,2024,all stations,46.7004,45.0898,43.6696,1
+u0469,Kashipur,pm25,2025,all stations,44.4831,46.9924,42.5393,1
+u0398,Khurja,pm10,2023,all stations,98.2298,97.532,94.352,1
+u0398,Khurja,pm10,2024,all stations,127.5338,125.9683,121.0007,1
+u0398,Khurja,pm10,2025,all stations,144.1891,139.8477,140.3039,1
+u0398,Khurja,pm25,2023,all stations,59.9774,62.5175,57.4834,1
+u0398,Khurja,pm25,2024,all stations,54.054,52.5149,51.1704,1
+u0398,Khurja,pm25,2025,all stations,53.332,48.5892,50.9284,1
+u0434,Kolhapur,pm10,2024,all stations,93.1405,91.5028,91.3721,2
+u0434,Kolhapur,pm10,2025,all stations,69.0647,72.5557,66.0591,2
+u0434,Kolhapur,pm25,2024,all stations,43.2848,41.3961,42.0989,2
+u0434,Kolhapur,pm25,2025,all stations,32.5973,34.6272,31.0243,1
+u1281,Korba,pm10,2023,all stations,58.3639,58.2318,55.81,1
+u1281,Korba,pm25,2023,all stations,24.2716,24.7094,23.1681,1
+u1281,Korba,pm25,2024,all stations,26.4908,26.1635,25.2113,1
+u0333,Kota,pm10,2018,all stations,142.6823,139.2396,136.0918,1
+u0333,Kota,pm10,2019,all stations,106.8273,106.0933,105.3319,1
+u0333,Kota,pm10,2020,all stations,81.1107,85.8151,82.1781,1
+u0333,Kota,pm10,2021,all stations,108.4732,105.9583,107.1784,1
+u0333,Kota,pm10,2022,all stations,122.5171,118.3358,120.4396,1
+u0333,Kota,pm10,2023,all stations,115.8368,117.7307,111.8943,3
+u0333,Kota,pm10,2024,all stations,117.6925,122.347,115.2871,3
+u0333,Kota,pm10,2025,all stations,114.1787,120.7464,113.7319,3
+u0333,Kota,pm25,2018,all stations,58.7631,62.2264,58.2948,1
+u0333,Kota,pm25,2019,all stations,53.0483,49.9573,51.658,1
+u0333,Kota,pm25,2020,all stations,42.3889,44.2174,42.4093,1
+u0333,Kota,pm25,2021,all stations,60.1706,58.3026,58.2228,1
+u0333,Kota,pm25,2022,all stations,59.9845,61.1953,60.2849,1
+u0333,Kota,pm25,2023,all stations,58.0262,56.1705,53.7307,3
+u0333,Kota,pm25,2024,all stations,56.5143,57.6979,53.7523,3
+u0333,Kota,pm25,2025,all stations,52.2359,54.2948,51.1461,3
+u0333,Kota,pm10,2018,stations valid every year 2018-2025,142.6823,139.2396,136.0918,1
+u0333,Kota,pm10,2019,stations valid every year 2018-2025,106.8273,106.0933,105.3319,1
+u0333,Kota,pm10,2020,stations valid every year 2018-2025,81.1107,85.8151,82.1781,1
+u0333,Kota,pm10,2021,stations valid every year 2018-2025,108.4732,105.9583,107.1784,1
+u0333,Kota,pm10,2022,stations valid every year 2018-2025,122.5171,118.3358,120.4396,1
+u0333,Kota,pm10,2023,stations valid every year 2018-2025,113.6477,115.8398,112.1613,1
+u0333,Kota,pm10,2024,stations valid every year 2018-2025,116.7168,123.0455,113.7326,1
+u0333,Kota,pm10,2025,stations valid every year 2018-2025,115.4396,121.547,113.3326,1
+u0333,Kota,pm25,2018,stations valid every year 2018-2025,58.7631,62.2264,58.2948,1
+u0333,Kota,pm25,2019,stations valid every year 2018-2025,53.0483,49.9573,51.658,1
+u0333,Kota,pm25,2020,stations valid every year 2018-2025,42.3889,44.2174,42.4093,1
+u0333,Kota,pm25,2021,stations valid every year 2018-2025,60.1706,58.3026,58.2228,1
+u0333,Kota,pm25,2022,stations valid every year 2018-2025,59.9845,61.1953,60.2849,1
+u0333,Kota,pm25,2023,stations valid every year 2018-2025,69.046,65.7528,65.6263,1
+u0333,Kota,pm25,2024,stations valid every year 2018-2025,63.0317,66.8022,60.9081,1
+u0333,Kota,pm25,2025,stations valid every year 2018-2025,63.3119,65.0319,62.6469,1
+u0645,Latur,pm10,2024,all stations,74.7124,79.601,75.0399,1
+u0645,Latur,pm10,2025,all stations,69.1178,74.4275,70.7224,1
+u0645,Latur,pm25,2024,all stations,39.5148,42.1064,39.3595,1
+u0645,Latur,pm25,2025,all stations,36.8683,40.3808,36.9292,1
+u0795,Lucknow,pm10,2021,all stations,188.6554,195.2479,185.3412,2
+u0795,Lucknow,pm10,2022,all stations,134.4995,130.8944,128.9258,6
+u0795,Lucknow,pm10,2023,all stations,121.364,120.5796,115.3654,6
+u0795,Lucknow,pm10,2024,all stations,118.3,118.7479,112.0734,6
+u0795,Lucknow,pm10,2025,all stations,118.2597,124.3262,117.5787,6
+u0795,Lucknow,pm25,2016,all stations,133.8006,133.6427,125.8376,1
+u0795,Lucknow,pm25,2017,all stations,97.9384,95.5148,95.1281,1
+u0795,Lucknow,pm25,2018,all stations,125.7882,128.1557,120.964,2
+u0795,Lucknow,pm25,2019,all stations,109.5052,109.0233,107.325,2
+u0795,Lucknow,pm25,2020,all stations,95.0889,99.663,93.3954,3
+u0795,Lucknow,pm25,2021,all stations,84.5703,85.5748,82.5212,3
+u0795,Lucknow,pm25,2022,all stations,63.1614,62.5399,59.9756,6
+u0795,Lucknow,pm25,2023,all stations,58.2097,58.5915,54.9328,6
+u0795,Lucknow,pm25,2024,all stations,58.9092,59.7934,55.2963,6
+u0795,Lucknow,pm25,2025,all stations,56.9151,60.9294,56.303,6
+u0795,Lucknow,pm25,2018,stations valid every year 2018-2025,141.8378,139.3435,136.4343,1
+u0795,Lucknow,pm25,2019,stations valid every year 2018-2025,122.6248,120.7544,120.1122,1
+u0795,Lucknow,pm25,2020,stations valid every year 2018-2025,118.7811,124.7349,118.1766,1
+u0795,Lucknow,pm25,2021,stations valid every year 2018-2025,104.83,107.877,102.4012,1
+u0795,Lucknow,pm25,2022,stations valid every year 2018-2025,90.8984,88.1475,84.7466,1
+u0795,Lucknow,pm25,2023,stations valid every year 2018-2025,81.2173,80.7486,75.7161,1
+u0795,Lucknow,pm25,2024,stations valid every year 2018-2025,70.7384,72.1464,66.4539,1
+u0795,Lucknow,pm25,2025,stations valid every year 2018-2025,63.3521,68.4273,63.4332,1
+u0134,Ludhiana,pm10,2018,all stations,110.3863,108.2811,103.6098,1
+u0134,Ludhiana,pm10,2019,all stations,104.3441,103.5949,101.6454,1
+u0134,Ludhiana,pm10,2020,all stations,97.8798,105.2612,100.0695,1
+u0134,Ludhiana,pm10,2021,all stations,117.802,115.5902,113.4826,1
+u0134,Ludhiana,pm10,2022,all stations,135.3744,137.8614,126.2965,1
+u0134,Ludhiana,pm10,2023,all stations,133.7704,138.1627,128.1838,1
+u0134,Ludhiana,pm10,2024,all stations,118.9644,116.4277,113.3611,1
+u0134,Ludhiana,pm10,2025,all stations,104.4821,108.8759,101.6366,1
+u0134,Ludhiana,pm25,2018,all stations,50.6598,49.9584,47.0719,1
+u0134,Ludhiana,pm25,2019,all stations,50.4712,49.4401,49.6913,1
+u0134,Ludhiana,pm25,2020,all stations,45.1624,47.9858,46.1255,1
+u0134,Ludhiana,pm25,2021,all stations,54.6092,53.1612,52.7663,1
+u0134,Ludhiana,pm25,2022,all stations,59.7163,60.9831,55.9636,1
+u0134,Ludhiana,pm25,2023,all stations,61.2125,62.372,58.6821,1
+u0134,Ludhiana,pm25,2024,all stations,60.7579,59.9704,57.449,1
+u0134,Ludhiana,pm25,2025,all stations,52.5453,55.3715,51.2566,1
+u0134,Ludhiana,pm10,2018,stations valid every year 2018-2025,110.3863,108.2811,103.6098,1
+u0134,Ludhiana,pm10,2019,stations valid every year 2018-2025,104.3441,103.5949,101.6454,1
+u0134,Ludhiana,pm10,2020,stations valid every year 2018-2025,97.8798,105.2612,100.0695,1
+u0134,Ludhiana,pm10,2021,stations valid every year 2018-2025,117.802,115.5902,113.4826,1
+u0134,Ludhiana,pm10,2022,stations valid every year 2018-2025,135.3744,137.8614,126.2965,1
+u0134,Ludhiana,pm10,2023,stations valid every year 2018-2025,133.7704,138.1627,128.1838,1
+u0134,Ludhiana,pm10,2024,stations valid every year 2018-2025,118.9644,116.4277,113.3611,1
+u0134,Ludhiana,pm10,2025,stations valid every year 2018-2025,104.4821,108.8759,101.6366,1
+u0134,Ludhiana,pm25,2018,stations valid every year 2018-2025,50.6598,49.9584,47.0719,1
+u0134,Ludhiana,pm25,2019,stations valid every year 2018-2025,50.4712,49.4401,49.6913,1
+u0134,Ludhiana,pm25,2020,stations valid every year 2018-2025,45.1624,47.9858,46.1255,1
+u0134,Ludhiana,pm25,2021,stations valid every year 2018-2025,54.6092,53.1612,52.7663,1
+u0134,Ludhiana,pm25,2022,stations valid every year 2018-2025,59.7163,60.9831,55.9636,1
+u0134,Ludhiana,pm25,2023,stations valid every year 2018-2025,61.2125,62.372,58.6821,1
+u0134,Ludhiana,pm25,2024,stations valid every year 2018-2025,60.7579,59.9704,57.449,1
+u0134,Ludhiana,pm25,2025,stations valid every year 2018-2025,52.5453,55.3715,51.2566,1
+u1058,Madurai,pm10,2025,all stations,50.011,51.1095,48.3678,1
+u0345,Meerut,pm10,2020,all stations,188.8694,200.3233,181.0262,2
+u0345,Meerut,pm10,2021,all stations,197.8417,198.0789,192.2765,1
+u0345,Meerut,pm10,2022,all stations,181.7466,176.3016,171.5379,3
+u0345,Meerut,pm10,2023,all stations,170.7857,168.2022,163.384,3
+u0345,Meerut,pm10,2024,all stations,138.0902,137.7955,131.3641,3
+u0345,Meerut,pm10,2025,all stations,148.4312,165.1976,149.4474,3
+u0345,Meerut,pm25,2020,all stations,87.3346,91.8462,81.6413,2
+u0345,Meerut,pm25,2021,all stations,81.9388,77.7438,76.1917,1
+u0345,Meerut,pm25,2022,all stations,77.0036,76.1191,73.1702,3
+u0345,Meerut,pm25,2023,all stations,82.986,78.0485,76.6938,3
+u0345,Meerut,pm25,2024,all stations,60.6068,61.6873,56.7068,3
+u0345,Meerut,pm25,2025,all stations,62.883,66.621,60.6278,3
+u0459,Moradabad,pm10,2018,all stations,203.3953,214.629,193.9668,1
+u0459,Moradabad,pm10,2022,all stations,107.7097,104.3895,101.7769,4
+u0459,Moradabad,pm10,2023,all stations,105.2102,106.0876,100.4954,6
+u0459,Moradabad,pm10,2024,all stations,94.0019,89.0681,89.9699,6
+u0459,Moradabad,pm10,2025,all stations,92.1325,95.8199,91.0831,6
+u0459,Moradabad,pm25,2018,all stations,103.0866,106.6719,95.9014,1
+u0459,Moradabad,pm25,2022,all stations,54.1102,54.4922,50.9455,4
+u0459,Moradabad,pm25,2023,all stations,50.7507,49.1221,48.4439,6
+u0459,Moradabad,pm25,2024,all stations,42.1545,40.293,40.8669,6
+u0459,Moradabad,pm25,2025,all stations,42.7223,44.3389,41.8051,6
+u0240,"Mumbai, Navi Mumbai, Thane",pm10,2015,all stations,102.1007,104.275,100.8718,2
+u0240,"Mumbai, Navi Mumbai, Thane",pm10,2016,all stations,87.4651,82.6765,82.8076,2
+u0240,"Mumbai, Navi Mumbai, Thane",pm10,2017,all stations,86.0291,82.7414,81.5532,2
+u0240,"Mumbai, Navi Mumbai, Thane",pm10,2018,all stations,94.2245,94.2689,89.721,1
+u0240,"Mumbai, Navi Mumbai, Thane",pm10,2019,all stations,93.4462,95.7256,94.4724,1
+u0240,"Mumbai, Navi Mumbai, Thane",pm10,2020,all stations,101.8613,104.3374,105.4774,8
+u0240,"Mumbai, Navi Mumbai, Thane",pm10,2021,all stations,110.5168,112.4152,108.8224,14
+u0240,"Mumbai, Navi Mumbai, Thane",pm10,2022,all stations,109.7786,104.742,102.897,13
+u0240,"Mumbai, Navi Mumbai, Thane",pm10,2023,all stations,110.8653,104.2688,104.258,15
+u0240,"Mumbai, Navi Mumbai, Thane",pm10,2024,all stations,90.0312,94.6437,87.8425,31
+u0240,"Mumbai, Navi Mumbai, Thane",pm10,2025,all stations,88.335,94.2256,88.1824,24
+u0240,"Mumbai, Navi Mumbai, Thane",pm25,2015,all stations,42.9978,46.303,42.4688,2
+u0240,"Mumbai, Navi Mumbai, Thane",pm25,2016,all stations,39.2812,39.9324,38.2787,2
+u0240,"Mumbai, Navi Mumbai, Thane",pm25,2017,all stations,42.8342,36.8472,39.7909,1
+u0240,"Mumbai, Navi Mumbai, Thane",pm25,2019,all stations,29.8322,30.3891,30.5194,1
+u0240,"Mumbai, Navi Mumbai, Thane",pm25,2020,all stations,42.5744,41.6917,43.8665,7
+u0240,"Mumbai, Navi Mumbai, Thane",pm25,2021,all stations,49.335,50.5604,47.4803,18
+u0240,"Mumbai, Navi Mumbai, Thane",pm25,2022,all stations,50.6011,49.6968,46.9621,15
+u0240,"Mumbai, Navi Mumbai, Thane",pm25,2023,all stations,44.8017,42.0607,41.2429,15
+u0240,"Mumbai, Navi Mumbai, Thane",pm25,2024,all stations,34.8904,36.433,33.907,30
+u0240,"Mumbai, Navi Mumbai, Thane",pm25,2025,all stations,35.9191,39.0551,35.6287,23
+u1404,Muzaffarpur,pm10,2021,all stations,144.9805,134.3502,139.3921,2
+u1404,Muzaffarpur,pm10,2022,all stations,165.3437,170.1235,162.7303,3
+u1404,Muzaffarpur,pm10,2023,all stations,188.2439,179.8982,172.0865,4
+u1404,Muzaffarpur,pm10,2024,all stations,168.1942,156.992,156.8357,2
+u1404,Muzaffarpur,pm10,2025,all stations,110.7566,122.5676,113.6766,2
+u1404,Muzaffarpur,pm25,2018,all stations,109.174,106.2328,103.7938,1
+u1404,Muzaffarpur,pm25,2020,all stations,87.1595,83.8559,85.7865,1
+u1404,Muzaffarpur,pm25,2021,all stations,76.1384,73.8474,72.724,3
+u1404,Muzaffarpur,pm25,2022,all stations,82.0361,85.3331,79.3429,4
+u1404,Muzaffarpur,pm25,2023,all stations,80.7977,77.9317,74.2482,5
+u1404,Muzaffarpur,pm25,2024,all stations,71.8983,69.7076,67.6074,3
+u1404,Muzaffarpur,pm25,2025,all stations,66.9784,72.9785,67.5392,2
+u1871,Nagaon,pm10,2024,all stations,83.7059,81.5505,79.1587,1
+u1871,Nagaon,pm25,2024,all stations,48.6157,49.1713,44.8587,1
+u0827,Nagpur,pm10,2018,all stations,93.0183,92.0866,86.9868,1
+u0827,Nagpur,pm10,2019,all stations,79.8276,76.9243,77.073,1
+u0827,Nagpur,pm10,2022,all stations,90.7785,91.3693,85.9148,1
+u0827,Nagpur,pm10,2023,all stations,97.6478,96.6773,95.8227,1
+u0827,Nagpur,pm10,2024,all stations,94.9983,100.11,96.8632,3
+u0827,Nagpur,pm10,2025,all stations,91.5966,95.8654,93.4855,4
+u0827,Nagpur,pm25,2018,all stations,44.4757,44.7734,43.5545,1
+u0827,Nagpur,pm25,2019,all stations,41.3159,37.781,38.7416,1
+u0827,Nagpur,pm25,2022,all stations,46.0992,44.4517,41.6642,1
+u0827,Nagpur,pm25,2023,all stations,52.6445,52.7436,51.4195,1
+u0827,Nagpur,pm25,2024,all stations,47.5004,48.3217,46.8316,3
+u0827,Nagpur,pm25,2025,all stations,45.4725,47.7415,45.3375,4
+u1853,Nalbari,pm10,2023,all stations,156.6949,150.2948,146.0038,1
+u1853,Nalbari,pm10,2024,all stations,118.301,114.9991,110.2533,1
+u1853,Nalbari,pm25,2023,all stations,69.7047,68.5513,65.0445,1
+u1853,Nalbari,pm25,2024,all stations,62.9834,65.5471,60.2343,1
+u0297,Nashik,pm10,2018,all stations,76.4814,75.1286,72.558,1
+u0297,Nashik,pm10,2019,all stations,72.9324,73.3188,70.6874,1
+u0297,Nashik,pm10,2020,all stations,59.0185,62.1357,59.7125,1
+u0297,Nashik,pm10,2021,all stations,65.2708,66.635,66.3327,1
+u0297,Nashik,pm10,2022,all stations,74.0809,72.128,70.3723,1
+u0297,Nashik,pm10,2023,all stations,71.9565,70.3043,68.8402,1
+u0297,Nashik,pm10,2024,all stations,79.6322,82.4984,77.5585,4
+u0297,Nashik,pm10,2025,all stations,85.2997,89.54,85.6218,4
+u0297,Nashik,pm25,2018,all stations,37.8095,37.7888,36.0144,1
+u0297,Nashik,pm25,2019,all stations,36.501,37.5249,36.5383,1
+u0297,Nashik,pm25,2020,all stations,33.4618,35.1496,34.1056,1
+u0297,Nashik,pm25,2021,all stations,41.5414,40.5099,40.5013,1
+u0297,Nashik,pm25,2022,all stations,38.9959,39.6197,38.3571,1
+u0297,Nashik,pm25,2023,all stations,37.4676,35.2769,35.2266,1
+u0297,Nashik,pm25,2024,all stations,39.3992,40.5569,37.6588,4
+u0297,Nashik,pm25,2025,all stations,38.2703,39.3971,38.0849,4
+u0297,Nashik,pm10,2018,stations valid every year 2018-2025,76.4814,75.1286,72.558,1
+u0297,Nashik,pm10,2019,stations valid every year 2018-2025,72.9324,73.3188,70.6874,1
+u0297,Nashik,pm10,2020,stations valid every year 2018-2025,59.0185,62.1357,59.7125,1
+u0297,Nashik,pm10,2021,stations valid every year 2018-2025,65.2708,66.635,66.3327,1
+u0297,Nashik,pm10,2022,stations valid every year 2018-2025,74.0809,72.128,70.3723,1
+u0297,Nashik,pm10,2023,stations valid every year 2018-2025,71.9565,70.3043,68.8402,1
+u0297,Nashik,pm10,2024,stations valid every year 2018-2025,77.9203,78.5146,77.0798,1
+u0297,Nashik,pm10,2025,stations valid every year 2018-2025,77.9686,80.7307,78.343,1
+u0297,Nashik,pm25,2018,stations valid every year 2018-2025,37.8095,37.7888,36.0144,1
+u0297,Nashik,pm25,2019,stations valid every year 2018-2025,36.501,37.5249,36.5383,1
+u0297,Nashik,pm25,2020,stations valid every year 2018-2025,33.4618,35.1496,34.1056,1
+u0297,Nashik,pm25,2021,stations valid every year 2018-2025,41.5414,40.5099,40.5013,1
+u0297,Nashik,pm25,2022,stations valid every year 2018-2025,38.9959,39.6197,38.3571,1
+u0297,Nashik,pm25,2023,stations valid every year 2018-2025,37.4676,35.2769,35.2266,1
+u0297,Nashik,pm25,2024,stations valid every year 2018-2025,43.3046,42.9894,41.2122,1
+u0297,Nashik,pm25,2025,stations valid every year 2018-2025,37.4725,38.7496,37.8839,1
+u0188,Patiala,pm10,2018,all stations,97.177,102.6674,90.8565,1
+u0188,Patiala,pm10,2019,all stations,116.5399,111.7939,111.7678,1
+u0188,Patiala,pm10,2020,all stations,93.2487,96.165,93.7297,1
+u0188,Patiala,pm10,2021,all stations,114.4687,115.6795,109.4332,1
+u0188,Patiala,pm10,2022,all stations,110.2553,108.3774,105.543,1
+u0188,Patiala,pm10,2023,all stations,95.4278,102.8522,95.7269,1
+u0188,Patiala,pm10,2024,all stations,101.6881,98.2548,95.9005,1
+u0188,Patiala,pm10,2025,all stations,96.0504,100.7322,96.9772,1
+u0188,Patiala,pm25,2018,all stations,41.3185,39.8605,37.6547,1
+u0188,Patiala,pm25,2019,all stations,44.1667,42.0133,42.1227,1
+u0188,Patiala,pm25,2020,all stations,41.2436,43.7335,40.857,1
+u0188,Patiala,pm25,2021,all stations,50.1967,49.657,47.4577,1
+u0188,Patiala,pm25,2022,all stations,48.6721,48.6208,46.8283,1
+u0188,Patiala,pm25,2023,all stations,43.1652,45.7137,42.6562,1
+u0188,Patiala,pm25,2024,all stations,47.9651,47.375,44.4396,1
+u0188,Patiala,pm25,2025,all stations,41.5521,42.2333,41.6067,1
+u0188,Patiala,pm10,2018,stations valid every year 2018-2025,97.177,102.6674,90.8565,1
+u0188,Patiala,pm10,2019,stations valid every year 2018-2025,116.5399,111.7939,111.7678,1
+u0188,Patiala,pm10,2020,stations valid every year 2018-2025,93.2487,96.165,93.7297,1
+u0188,Patiala,pm10,2021,stations valid every year 2018-2025,114.4687,115.6795,109.4332,1
+u0188,Patiala,pm10,2022,stations valid every year 2018-2025,110.2553,108.3774,105.543,1
+u0188,Patiala,pm10,2023,stations valid every year 2018-2025,95.4278,102.8522,95.7269,1
+u0188,Patiala,pm10,2024,stations valid every year 2018-2025,101.6881,98.2548,95.9005,1
+u0188,Patiala,pm10,2025,stations valid every year 2018-2025,96.0504,100.7322,96.9772,1
+u0188,Patiala,pm25,2018,stations valid every year 2018-2025,41.3185,39.8605,37.6547,1
+u0188,Patiala,pm25,2019,stations valid every year 2018-2025,44.1667,42.0133,42.1227,1
+u0188,Patiala,pm25,2020,stations valid every year 2018-2025,41.2436,43.7335,40.857,1
+u0188,Patiala,pm25,2021,stations valid every year 2018-2025,50.1967,49.657,47.4577,1
+u0188,Patiala,pm25,2022,stations valid every year 2018-2025,48.6721,48.6208,46.8283,1
+u0188,Patiala,pm25,2023,stations valid every year 2018-2025,43.1652,45.7137,42.6562,1
+u0188,Patiala,pm25,2024,stations valid every year 2018-2025,47.9651,47.375,44.4396,1
+u0188,Patiala,pm25,2025,stations valid every year 2018-2025,41.5521,42.2333,41.6067,1
+u1409,Patna,pm10,2020,all stations,120.0198,124.2571,122.0034,3
+u1409,Patna,pm10,2021,all stations,154.5174,150.9485,152.9204,5
+u1409,Patna,pm10,2022,all stations,191.7326,195.0218,185.6325,5
+u1409,Patna,pm10,2023,all stations,212.7801,207.7574,197.5651,5
+u1409,Patna,pm10,2024,all stations,189.2618,187.9153,179.8365,5
+u1409,Patna,pm10,2025,all stations,124.2179,132.2588,124.266,4
+u1409,Patna,pm25,2018,all stations,116.8402,117.3634,112.5896,1
+u1409,Patna,pm25,2019,all stations,106.9413,101.8736,102.6276,1
+u1409,Patna,pm25,2020,all stations,61.1982,60.4312,59.78,3
+u1409,Patna,pm25,2021,all stations,68.202,68.1726,66.4564,5
+u1409,Patna,pm25,2022,all stations,90.9164,89.1026,85.8958,6
+u1409,Patna,pm25,2023,all stations,89.8154,88.3473,83.3463,6
+u1409,Patna,pm25,2024,all stations,76.5616,76.6229,72.0015,6
+u1409,Patna,pm25,2025,all stations,56.923,62.4491,56.9856,6
+u0337,Pune,pm10,2016,all stations,83.66,85.0548,81.8087,1
+u0337,Pune,pm10,2017,all stations,63.5078,65.2587,62.5723,1
+u0337,Pune,pm10,2019,all stations,87.9729,87.2541,87.8075,1
+u0337,Pune,pm10,2020,all stations,52.3849,50.3598,54.3923,1
+u0337,Pune,pm10,2021,all stations,83.7293,87.3179,81.8337,1
+u0337,Pune,pm10,2023,all stations,91.9757,84.6875,86.6261,2
+u0337,Pune,pm10,2024,all stations,90.7288,89.9721,89.1672,6
+u0337,Pune,pm10,2025,all stations,91.0741,96.2046,88.5755,10
+u0337,Pune,pm25,2016,all stations,57.4066,57.6023,56.4618,1
+u0337,Pune,pm25,2017,all stations,37.9697,38.1867,35.4716,1
+u0337,Pune,pm25,2019,all stations,48.2341,52.7425,49.693,1
+u0337,Pune,pm25,2020,all stations,32.6654,33.8184,33.7206,1
+u0337,Pune,pm25,2021,all stations,52.5014,53.8262,50.0927,1
+u0337,Pune,pm25,2023,all stations,58.4701,54.6391,54.4826,2
+u0337,Pune,pm25,2024,all stations,46.0329,45.152,44.8104,6
+u0337,Pune,pm25,2025,all stations,39.1455,40.8875,37.4715,10
+u1155,Raipur,pm10,2023,all stations,73.8237,72.3841,70.2465,2
+u1155,Raipur,pm10,2024,all stations,66.9695,73.8583,68.7447,2
+u1155,Raipur,pm10,2025,all stations,62.399,61.6542,62.3258,2
+u1155,Raipur,pm25,2023,all stations,31.1003,31.138,29.2651,2
+u1155,Raipur,pm25,2024,all stations,26.8376,29.1918,27.1253,2
+u1155,Raipur,pm25,2025,all stations,22.0296,21.5698,21.4963,2
+u0354,Rishikesh,pm10,2023,all stations,49.498,55.1483,50.1494,1
+u0354,Rishikesh,pm10,2024,all stations,63.3757,59.3043,58.9999,1
+u0354,Rishikesh,pm10,2025,all stations,60.3501,61.8032,58.877,1
+u0354,Rishikesh,pm25,2023,all stations,24.6927,29.7068,24.9612,1
+u0354,Rishikesh,pm25,2024,all stations,32.1878,29.165,28.5371,1
+u0354,Rishikesh,pm25,2025,all stations,27.7473,27.3975,26.1212,1
+u1534,Rourkela,pm10,2023,all stations,137.2228,139.5373,130.1226,1
+u1534,Rourkela,pm10,2024,all stations,103.3173,102.5865,101.3107,2
+u1534,Rourkela,pm10,2025,all stations,115.3153,115.0506,113.3805,1
+u1534,Rourkela,pm25,2023,all stations,64.6188,65.7121,60.6251,1
+u1534,Rourkela,pm25,2024,all stations,54.6249,55.622,52.398,2
+u1534,Rourkela,pm25,2025,all stations,59.3124,57.4712,55.8949,1
+u0699,Sagar,pm10,2023,all stations,74.8871,78.0242,72.492,1
+u0699,Sagar,pm10,2024,all stations,84.7108,81.6794,80.8659,2
+u0699,Sagar,pm10,2025,all stations,76.7937,86.5386,76.7677,1
+u0699,Sagar,pm25,2020,all stations,32.3534,33.4952,31.5301,1
+u0699,Sagar,pm25,2021,all stations,35.1293,37.1044,32.9577,1
+u0699,Sagar,pm25,2022,all stations,28.3627,23.1708,25.8215,1
+u0699,Sagar,pm25,2023,all stations,36.3525,37.1167,35.0047,1
+u0699,Sagar,pm25,2024,all stations,30.7812,30.8024,28.974,2
+u0699,Sagar,pm25,2025,all stations,41.3184,43.251,39.653,1
+u0473,Sangli,pm10,2024,all stations,73.8201,72.9507,74.356,1
+u0473,Sangli,pm10,2025,all stations,94.3722,98.9632,93.8211,1
+u0473,Sangli,pm25,2024,all stations,33.4598,31.9559,33.2564,1
+u0473,Sangli,pm25,2025,all stations,39.7326,45.7044,40.1027,1
+u1904,Sibsagar,pm10,2023,all stations,36.2548,34.7979,33.8904,1
+u1904,Sibsagar,pm10,2024,all stations,54.4178,52.1418,54.2298,1
+u1904,Sibsagar,pm10,2025,all stations,44.0077,46.6544,43.2084,1
+u1904,Sibsagar,pm25,2023,all stations,15.7261,14.7312,14.9507,1
+u1904,Sibsagar,pm25,2024,all stations,22.6479,20.3986,22.251,1
+u1904,Sibsagar,pm25,2025,all stations,23.6928,26.4001,22.7992,1
+u1887,Silchar,pm10,2023,all stations,28.4264,22.8367,25.54,1
+u1887,Silchar,pm10,2024,all stations,51.5733,62.0592,51.2694,1
+u1887,Silchar,pm25,2024,all stations,22.9756,22.357,22.913,1
+u1887,Silchar,pm25,2025,all stations,26.2866,31.9989,25.9999,1
+u0600,Solapur,pm10,2016,all stations,100.7557,97.8846,98.1684,1
+u0600,Solapur,pm10,2017,all stations,100.7656,95.9375,95.9032,1
+u0600,Solapur,pm10,2018,all stations,100.2843,100.9458,95.9471,1
+u0600,Solapur,pm10,2019,all stations,101.5828,101.1696,100.1785,1
+u0600,Solapur,pm10,2024,all stations,82.6494,92.2193,86.6691,2
+u0600,Solapur,pm10,2025,all stations,79.0877,83.4392,79.7269,2
+u0600,Solapur,pm25,2016,all stations,39.4303,37.4004,38.2526,1
+u0600,Solapur,pm25,2017,all stations,35.7561,35.7016,34.3477,1
+u0600,Solapur,pm25,2019,all stations,34.7541,34.6216,34.5754,1
+u0600,Solapur,pm25,2024,all stations,39.8615,43.2641,40.5531,2
+u0600,Solapur,pm25,2025,all stations,35.2016,37.5519,34.8451,2
+u0179,Surat,pm25,2025,all stations,28.2402,29.3882,25.6919,1
+u1609,Talcher,pm10,2020,all stations,108.7764,124.7046,108.135,1
+u1609,Talcher,pm10,2021,all stations,83.3892,93.7644,81.2783,1
+u1609,Talcher,pm10,2023,all stations,114.5918,107.5218,101.9163,1
+u1609,Talcher,pm10,2024,all stations,120.6894,129.938,122.9288,1
+u1609,Talcher,pm10,2025,all stations,132.0468,144.0185,124.7173,1
+u1609,Talcher,pm25,2020,all stations,48.7715,49.0902,48.0115,1
+u1609,Talcher,pm25,2021,all stations,40.7988,41.9268,40.2057,1
+u1609,Talcher,pm25,2024,all stations,66.5361,67.647,65.007,1
+u0393,Ujjain,pm10,2018,all stations,133.8831,126.8205,122.7367,1
+u0393,Ujjain,pm10,2019,all stations,104.3763,103.3148,104.7261,1
+u0393,Ujjain,pm10,2020,all stations,97.6801,99.3709,97.704,1
+u0393,Ujjain,pm10,2021,all stations,128.3453,139.3564,128.2418,1
+u0393,Ujjain,pm10,2022,all stations,142.7144,137.4488,135.5458,1
+u0393,Ujjain,pm10,2023,all stations,124.0274,120.2803,122.4969,1
+u0393,Ujjain,pm10,2024,all stations,94.3804,101.0905,95.6313,1
+u0393,Ujjain,pm25,2018,all stations,53.6039,53.0224,50.5653,1
+u0393,Ujjain,pm25,2019,all stations,43.8084,45.1438,43.7421,1
+u0393,Ujjain,pm25,2020,all stations,44.5949,44.4309,42.8219,1
+u0393,Ujjain,pm25,2021,all stations,46.8873,48.2961,44.9624,1
+u0393,Ujjain,pm25,2022,all stations,54.7446,51.8314,52.1689,1
+u0393,Ujjain,pm25,2023,all stations,55.0422,56.2367,52.5561,1
+u0393,Ujjain,pm25,2024,all stations,42.741,42.266,40.9198,1
+u1122,Varanasi,pm10,2022,all stations,90.7447,92.8994,87.8887,3
+u1122,Varanasi,pm10,2023,all stations,64.2434,58.9862,60.7838,3
+u1122,Varanasi,pm10,2024,all stations,50.3218,52.0673,47.6794,3
+u1122,Varanasi,pm10,2025,all stations,67.1519,69.8269,67.3405,3
+u1122,Varanasi,pm25,2022,all stations,40.1089,40.9781,38.6496,3
+u1122,Varanasi,pm25,2023,all stations,26.2366,24.8049,24.6544,3
+u1122,Varanasi,pm25,2024,all stations,23.6878,23.7625,22.2074,2
+u1122,Varanasi,pm25,2025,all stations,26.1547,27.3641,25.5434,2
+u0236,Vasai-Virar,pm10,2024,all stations,99.0614,106.2757,97.5984,2
+u0236,Vasai-Virar,pm10,2025,all stations,72.4368,76.3106,72.3974,1
+u0236,Vasai-Virar,pm25,2024,all stations,37.1937,40.8024,36.3994,2
+u0236,Vasai-Virar,pm25,2025,all stations,36.0619,37.2676,35.8046,1
+u1230,Vijayawada,pm10,2024,all stations,60.3491,59.6949,61.201,2
+u1230,Vijayawada,pm10,2025,all stations,63.3741,64.8926,63.2816,3
+u1230,Vijayawada,pm25,2024,all stations,34.1085,34.1263,34.6377,2
+u1230,Vijayawada,pm25,2025,all stations,39.0302,39.941,38.9381,2
+u1512,Vishakhapatnam,pm10,2018,all stations,118.5216,111.5555,109.0953,1
+u1512,Vishakhapatnam,pm10,2019,all stations,116.7056,108.9992,110.8139,1
+u1512,Vishakhapatnam,pm10,2020,all stations,97.1683,103.4057,100.1525,1
+u1512,Vishakhapatnam,pm10,2021,all stations,107.6163,108.7188,109.8401,1
+u1512,Vishakhapatnam,pm10,2022,all stations,113.92,121.2744,115.4748,1
+u1512,Vishakhapatnam,pm10,2023,all stations,136.9384,129.4251,122.2454,1
+u1512,Vishakhapatnam,pm10,2024,all stations,108.3601,119.8181,113.7361,1
+u1512,Vishakhapatnam,pm10,2025,all stations,127.4319,126.4711,121.5918,1
+u1512,Vishakhapatnam,pm25,2018,all stations,51.3972,49.0715,48.0696,1
+u1512,Vishakhapatnam,pm25,2019,all stations,49.33,46.4158,46.7427,1
+u1512,Vishakhapatnam,pm25,2020,all stations,40.4066,42.3832,40.9979,1
+u1512,Vishakhapatnam,pm25,2021,all stations,44.1117,43.9605,44.3452,1
+u1512,Vishakhapatnam,pm25,2022,all stations,45.8685,48.2,45.5736,1
+u1512,Vishakhapatnam,pm25,2023,all stations,52.6315,50.227,47.6548,1
+u1512,Vishakhapatnam,pm25,2024,all stations,45.1377,48.7135,46.4056,1
+u1512,Vishakhapatnam,pm25,2025,all stations,51.6758,52.0693,49.889,1
+u1512,Vishakhapatnam,pm10,2018,stations valid every year 2018-2025,118.5216,111.5555,109.0953,1
+u1512,Vishakhapatnam,pm10,2019,stations valid every year 2018-2025,116.7056,108.9992,110.8139,1
+u1512,Vishakhapatnam,pm10,2020,stations valid every year 2018-2025,97.1683,103.4057,100.1525,1
+u1512,Vishakhapatnam,pm10,2021,stations valid every year 2018-2025,107.6163,108.7188,109.8401,1
+u1512,Vishakhapatnam,pm10,2022,stations valid every year 2018-2025,113.92,121.2744,115.4748,1
+u1512,Vishakhapatnam,pm10,2023,stations valid every year 2018-2025,136.9384,129.4251,122.2454,1
+u1512,Vishakhapatnam,pm10,2024,stations valid every year 2018-2025,108.3601,119.8181,113.7361,1
+u1512,Vishakhapatnam,pm10,2025,stations valid every year 2018-2025,127.4319,126.4711,121.5918,1
+u1512,Vishakhapatnam,pm25,2018,stations valid every year 2018-2025,51.3972,49.0715,48.0696,1
+u1512,Vishakhapatnam,pm25,2019,stations valid every year 2018-2025,49.33,46.4158,46.7427,1
+u1512,Vishakhapatnam,pm25,2020,stations valid every year 2018-2025,40.4066,42.3832,40.9979,1
+u1512,Vishakhapatnam,pm25,2021,stations valid every year 2018-2025,44.1117,43.9605,44.3452,1
+u1512,Vishakhapatnam,pm25,2022,stations valid every year 2018-2025,45.8685,48.2,45.5736,1
+u1512,Vishakhapatnam,pm25,2023,stations valid every year 2018-2025,52.6315,50.227,47.6548,1
+u1512,Vishakhapatnam,pm25,2024,stations valid every year 2018-2025,45.1377,48.7135,46.4056,1
+u1512,Vishakhapatnam,pm25,2025,stations valid every year 2018-2025,51.6758,52.0693,49.889,1

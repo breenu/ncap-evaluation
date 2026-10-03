@@ -1,0 +1,59 @@
+---
+title: "Asansol & Raniganj"
+---
+
+::: {.callout-important}
+## Read this first
+
+NCAP units' satellite PM2.5 did not fall relative to comparable units; the estimates point to a relative rise of about 3–5%. H1 is not identified by this design, so this is not an effect of NCAP.
+
+Nothing on this page is an effect of NCAP. City-level numbers come from a Bayesian model that pulls noisy single-city estimates towards the average; cities cannot be ranked from them.
+:::
+
+| | |
+|---|---|
+| NCAP cities in this urban centre | Asansol & Raniganj |
+| State | West Bengal |
+| Region | Indo-Gangetic Plain |
+| Listed under NCAP (treated from) | 2020 |
+| Population 2015 (GHSL) | 2,918,660 |
+| New monitor inside the urban centre, 2019–2024 | yes |
+
+![Ground and satellite PM2.5 and the city-level relative change for Asansol & Raniganj.](img/asansol-raniganj.png){.column-page fig-alt="Four charts for Asansol & Raniganj. Ground data: PM2.5 raw annual mean 62 µg/m³ in 2019 and 53 in 2025; PM10 raw annual mean 112 µg/m³ in 2018 and 103 in 2025. Satellite PM2.5 from 59 µg/m³ in 2010 to 60 in 2024. City-level relative change after listing, shrunken: +2.9% (95% credible interval -0.9 to +6.7); not identified as an effect of NCAP."}
+
+## What the charts show
+
+- **Ground PM2.5 and PM10** (top): the annual mean over every CPCB station inside the urban centre that was valid that year, as reported; the same after removing year-to-year weather (deweathered); and, where some stations were valid every year 2018–2025, those stations alone, deweathered (corrected for weather and for the change in which stations exist). The numbers along the bottom are the stations behind each year.
+- **Satellite PM2.5** (bottom left): ACAG V5.GL.06, weighted by where people live. Descriptive.
+- **City-level relative change** (bottom right): how this urban centre's satellite PM2.5 moved after listing, against a synthetic comparison built from non-NCAP centres.
+
+## City-level relative change (satellite PM2.5)
+
+| | estimate | 95% interval |
+|---|---|---|
+| This city, unshrunk (± 1.96 × placebo SE) | +2.4% | -7.6 to +13.5% |
+| This city, shrunken (posterior mean; credible interval) | +2.9% | -0.9 to +6.7% |
+| Average city-level relative change over the 113 NCAP units | +3.5% | +2.6 to +4.4% |
+
+Relative change = the listed unit minus its synthetic comparison, on log satellite PM2.5, averaged over 2021–2024 (2020 excluded), shown as a %. **Not identified as an effect of NCAP.**
+
+## Data quality
+
+Stations with any data inside the urban centre, including stations not valid that year (the charts count valid stations only), and their median reliability score (0–100: completeness × share of unflagged data, × 0.8 for each failed consistency check).
+
+| year | PM2.5 stations with data | PM2.5 median score | PM10 stations with data | PM10 median score |
+|---|---|---|---|---|
+| 2018 | 1 | 73.2 | 1 | 74.9 |
+| 2019 | 1 | 97.0 | 1 | 96.7 |
+| 2020 | 1 | 84.3 | 1 | 85.0 |
+| 2021 | 1 | 87.9 | 1 | 88.7 |
+| 2022 | 1 | 95.5 | 1 | 96.1 |
+| 2023 | 1 | 87.9 | 1 | 87.2 |
+| 2024 | 4 | 50.9 | 4 | 51.0 |
+| 2025 | 4 | 92.8 | 4 | 94.9 |
+
+Median of the yearly median scores, 2018–2025: PM2.5 87.9, PM10 88.0.
+
+## Downloads
+
+Every number on this page is in the [data downloads](../about.qmd#downloads). [Back to all cities](../index.qmd).

@@ -1,0 +1,27 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "NCAP city explorer"
+  search: true
+  navbar:
+    left:
+      - href: index.qmd
+        text: Cities
+      - href: about.qmd
+        text: About the data
+    right:
+      - href: https://github.com/breenu/ncap-evaluation
+        text: Repository
+      - href: https://osf.io/jksne/
+        text: Pre-registration
+  page-footer:
+    left: "Precomputed, read-only. Not identified as effects of NCAP (registered pre-trend test failed)."
+    right: "Ground-derived data: ODbL 1.0."
+
+format:
+  html:
+    theme: cosmo
+    toc: false
+    lang: en

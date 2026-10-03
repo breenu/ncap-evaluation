@@ -113,21 +113,24 @@ def source_note(fig: plt.Figure, text: str, y: float = -0.01) -> None:
     fig.text(0.0, y, text, ha="left", va="top", fontsize=NOTE_SIZE, color=INK_2, wrap=True)
 
 
-def save(fig: plt.Figure, name: str, meta: Meta | None = None) -> list[Path]:
-    """Check the wording (DEC-193), then write PNG, SVG and the caption/alt-text sidecar."""
+def save(fig: plt.Figure, name: str, meta: Meta | None = None, directory: Path | None = None,
+         formats: tuple[str, ...] = ("png", "svg"), dpi: int = 300) -> list[Path]:
+    """Check the wording (DEC-193), then write the figure (PNG and SVG by default) and the caption/alt-text sidecar.
+    `directory` defaults to reports/figures/; the dashboard writes its own PNGs elsewhere (DEC-199)."""
     wording.check_figure(fig, name)
     if meta is not None:
         for field in ("title", "question", "caption", "alt"):
             wording.check(getattr(meta, field), f"{name} {field}")
-    FIGURES.mkdir(parents=True, exist_ok=True)
+    out_dir = FIGURES if directory is None else directory
+    out_dir.mkdir(parents=True, exist_ok=True)
     out = []
-    for ext in ("png", "svg"):
-        p = FIGURES / f"{name}.{ext}"
+    for ext in formats:
+        p = out_dir / f"{name}.{ext}"
         md = {"Date": None} if ext == "svg" else {"Software": None}
-        fig.savefig(p, dpi=300 if ext == "png" else None, bbox_inches="tight", metadata=md)
+        fig.savefig(p, dpi=dpi if ext == "png" else None, bbox_inches="tight", metadata=md)
         out.append(p)
     if meta is not None:
-        p = FIGURES / f"{name}.json"
+        p = out_dir / f"{name}.json"
         p.write_text(json.dumps({"name": name, **asdict(meta)}, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         out.append(p)
     plt.close(fig)

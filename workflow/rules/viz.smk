@@ -149,6 +149,7 @@ rule viz:
     input:
         f"{STUB}/hierarchical.done",
         "docs/figures.md",
+        "dashboard/index.qmd",
     output:
         f"{STUB}/viz.done",
     run:
@@ -156,3 +157,36 @@ rule viz:
 
         require_gate("viz: figures 1 and 4-7, S1-S4 (post-2018 NCAP comparisons)")
         stub_done(output[0])
+
+
+# ------------------------------------------------------------------ the read-only dashboard (Part B; DEC-198 to DEC-201)
+
+
+rule dashboard:
+    input:
+        f"{CMP}/trends.parquet",
+        "data/processed/unit_year_sat.parquet",
+        "data/processed/station_year_quality.parquet",
+        f"{INT}/station_regions.csv",
+        f"{INT}/sat_units.gpkg",
+        f"{CSL}/design_units.csv",
+        f"{CSL}/sdid_summary.csv",
+        f"{HIER}/city_estimates.csv",
+        f"{HIER}/city_shrunken.csv",
+        f"{HIER}/pool_coefs.csv",
+        "src/dashboard/build.py",
+        VIZ_CODE,
+    output:
+        "dashboard/index.qmd",
+        "dashboard/about.qmd",
+        "dashboard/_quarto.yml",
+        expand("dashboard/data/{f}.csv", f=["ground", "satellite", "city_estimates", "quality"]),
+    shell: f"{PY} src.dashboard.build"
+
+
+# Rendering needs the separate site environment (envs/site-lock.yml -> ncap-site), so it is not part of `all`;
+# GitHub Actions renders and deploys the committed sources (.github/workflows/pages.yml).
+rule dashboard_render:
+    input: rules.dashboard.output
+    output: "dashboard/_site/index.html"
+    shell: "conda run -n ncap-site --no-capture-output quarto render dashboard"

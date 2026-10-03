@@ -1,0 +1,11 @@
+# Site environment for the read-only dashboard (Phase 9; DEC-198). Kept separate from the analysis environment
+# (environment.yml / conda-lock.yml), which this file never changes. The site is plain Markdown rendered by Quarto:
+# no Python or Jupyter runs at build time; every page is precomputed by `python -m src.dashboard.build` in `ncap`.
+#
+#   Lock:    PYTHONNOUSERSITE=1 uvx conda-lock lock -f envs/site.yml -p win-64 -p linux-64 --lockfile envs/site-lock.yml
+#   Install: conda-lock install -n ncap-site envs/site-lock.yml
+name: ncap-site
+channels:
+  - conda-forge
+dependencies:
+  - quarto=1.9.38

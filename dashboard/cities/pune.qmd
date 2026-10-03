@@ -1,0 +1,62 @@
+---
+title: "Pune"
+---
+
+::: {.callout-important}
+## Read this first
+
+NCAP units' satellite PM2.5 did not fall relative to comparable units; the estimates point to a relative rise of about 3–5%. H1 is not identified by this design, so this is not an effect of NCAP.
+
+Nothing on this page is an effect of NCAP. City-level numbers come from a Bayesian model that pulls noisy single-city estimates towards the average; cities cannot be ranked from them.
+:::
+
+| | |
+|---|---|
+| NCAP cities in this urban centre | Pune |
+| State | Maharashtra |
+| Region | Peninsular / other |
+| Listed under NCAP (treated from) | 2019 |
+| Population 2015 (GHSL) | 6,314,103 |
+| New monitor inside the urban centre, 2019–2024 | yes |
+
+![Ground and satellite PM2.5 and the city-level relative change for Pune.](img/pune.png){.column-page fig-alt="Four charts for Pune. Ground data: PM2.5 raw annual mean 57 µg/m³ in 2016 and 39 in 2025; PM10 raw annual mean 84 µg/m³ in 2016 and 91 in 2025. Satellite PM2.5 from 44 µg/m³ in 2010 to 41 in 2024. City-level relative change after listing, shrunken: +4.1% (95% credible interval +0.5 to +7.7); not identified as an effect of NCAP."}
+
+## What the charts show
+
+- **Ground PM2.5 and PM10** (top): the annual mean over every CPCB station inside the urban centre that was valid that year, as reported; the same after removing year-to-year weather (deweathered); and, where some stations were valid every year 2018–2025, those stations alone, deweathered (corrected for weather and for the change in which stations exist). The numbers along the bottom are the stations behind each year. No station here was valid every year 2018–2025, so there is no composition-corrected series.
+- **Satellite PM2.5** (bottom left): ACAG V5.GL.06, weighted by where people live. Descriptive.
+- **City-level relative change** (bottom right): how this urban centre's satellite PM2.5 moved after listing, against a synthetic comparison built from non-NCAP centres.
+
+## City-level relative change (satellite PM2.5)
+
+| | estimate | 95% interval |
+|---|---|---|
+| This city, unshrunk (± 1.96 × placebo SE) | +3.1% | -6.3 to +13.4% |
+| This city, shrunken (posterior mean; credible interval) | +4.1% | +0.5 to +7.7% |
+| Average city-level relative change over the 113 NCAP units | +3.5% | +2.6 to +4.4% |
+
+Relative change = the listed unit minus its synthetic comparison, on log satellite PM2.5, averaged over 2019 and 2021–2024 (2020 excluded), shown as a %. **Not identified as an effect of NCAP.**
+
+## Data quality
+
+Stations with any data inside the urban centre, including stations not valid that year (the charts count valid stations only), and their median reliability score (0–100: completeness × share of unflagged data, × 0.8 for each failed consistency check).
+
+| year | PM2.5 stations with data | PM2.5 median score | PM10 stations with data | PM10 median score |
+|---|---|---|---|---|
+| 2015 | 1 | 50.0 | 1 | 49.8 |
+| 2016 | 1 | 83.4 | 1 | 82.7 |
+| 2017 | 1 | 86.5 | 1 | 85.8 |
+| 2018 | 1 | 51.1 | 1 | 50.3 |
+| 2019 | 1 | 95.0 | 1 | 96.0 |
+| 2020 | 5 | 7.1 | 5 | 7.1 |
+| 2021 | 7 | 57.6 | 7 | 48.2 |
+| 2022 | 7 | 26.8 | 7 | 27.1 |
+| 2023 | 11 | 52.5 | 11 | 53.4 |
+| 2024 | 14 | 70.6 | 14 | 68.8 |
+| 2025 | 15 | 80.3 | 15 | 74.3 |
+
+Median of the yearly median scores, 2018–2025: PM2.5 55.0, PM10 51.8.
+
+## Downloads
+
+Every number on this page is in the [data downloads](../about.qmd#downloads). [Back to all cities](../index.qmd).

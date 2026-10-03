@@ -1,0 +1,60 @@
+---
+title: "Kota"
+---
+
+::: {.callout-important}
+## Read this first
+
+NCAP units' satellite PM2.5 did not fall relative to comparable units; the estimates point to a relative rise of about 3–5%. H1 is not identified by this design, so this is not an effect of NCAP.
+
+Nothing on this page is an effect of NCAP. City-level numbers come from a Bayesian model that pulls noisy single-city estimates towards the average; cities cannot be ranked from them.
+:::
+
+| | |
+|---|---|
+| NCAP cities in this urban centre | Kota |
+| State | Rajasthan |
+| Region | Peninsular / other |
+| Listed under NCAP (treated from) | 2019 |
+| Population 2015 (GHSL) | 1,095,454 |
+| New monitor inside the urban centre, 2019–2024 | yes |
+
+![Ground and satellite PM2.5 and the city-level relative change for Kota.](img/kota.png){.column-page fig-alt="Four charts for Kota. Ground data: PM2.5 raw annual mean 59 µg/m³ in 2018 and 52 in 2025; PM10 raw annual mean 143 µg/m³ in 2018 and 114 in 2025. Satellite PM2.5 from 52 µg/m³ in 2010 to 55 in 2024. City-level relative change after listing, shrunken: +5.4% (95% credible interval +2.0 to +9.5); not identified as an effect of NCAP."}
+
+## What the charts show
+
+- **Ground PM2.5 and PM10** (top): the annual mean over every CPCB station inside the urban centre that was valid that year, as reported; the same after removing year-to-year weather (deweathered); and, where some stations were valid every year 2018–2025, those stations alone, deweathered (corrected for weather and for the change in which stations exist). The numbers along the bottom are the stations behind each year.
+- **Satellite PM2.5** (bottom left): ACAG V5.GL.06, weighted by where people live. Descriptive.
+- **City-level relative change** (bottom right): how this urban centre's satellite PM2.5 moved after listing, against a synthetic comparison built from non-NCAP centres.
+
+## City-level relative change (satellite PM2.5)
+
+| | estimate | 95% interval |
+|---|---|---|
+| This city, unshrunk (± 1.96 × placebo SE) | +9.2% | -0.8 to +20.1% |
+| This city, shrunken (posterior mean; credible interval) | +5.4% | +2.0 to +9.5% |
+| Average city-level relative change over the 113 NCAP units | +3.5% | +2.6 to +4.4% |
+
+Relative change = the listed unit minus its synthetic comparison, on log satellite PM2.5, averaged over 2019 and 2021–2024 (2020 excluded), shown as a %. **Not identified as an effect of NCAP.**
+
+## Data quality
+
+Stations with any data inside the urban centre, including stations not valid that year (the charts count valid stations only), and their median reliability score (0–100: completeness × share of unflagged data, × 0.8 for each failed consistency check).
+
+| year | PM2.5 stations with data | PM2.5 median score | PM10 stations with data | PM10 median score |
+|---|---|---|---|---|
+| 2017 | 1 | 7.9 | 1 | 7.9 |
+| 2018 | 1 | 85.0 | 1 | 85.7 |
+| 2019 | 1 | 99.8 | 1 | 99.7 |
+| 2020 | 1 | 95.7 | 1 | 98.9 |
+| 2021 | 1 | 96.3 | 1 | 98.0 |
+| 2022 | 1 | 95.6 | 1 | 95.9 |
+| 2023 | 3 | 90.3 | 3 | 87.9 |
+| 2024 | 3 | 97.8 | 3 | 98.6 |
+| 2025 | 3 | 98.4 | 3 | 98.1 |
+
+Median of the yearly median scores, 2018–2025: PM2.5 96.0, PM10 98.0.
+
+## Downloads
+
+Every number on this page is in the [data downloads](../about.qmd#downloads). [Back to all cities](../index.qmd).

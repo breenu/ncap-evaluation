@@ -1,0 +1,37 @@
+---
+title: "About the data"
+---
+
+Everything on this site is precomputed by the project's pipeline and published as static pages. There is no server and no live data.
+
+## Sources and attributions
+
+**Ground air quality: CPCB, via the india-cpcb-aqi mirror.** Contains information from [india-cpcb-aqi](https://github.com/Vonter/india-cpcb-aqi), a mirror of the Central Pollution Control Board's data repository, made available under the [Open Database License (ODbL) 1.0](https://opendatacommons.org/licenses/odbl/1-0/); some individual contents © CPCB. **The ground-derived data on this site (station annual means, deweathered and composition-corrected series, station counts and reliability scores) are an adapted database and are made available under the ODbL 1.0.**
+
+**Weather: ERA5 (Copernicus Climate Change Service, ECMWF).** Contains modified Copernicus Climate Change Service information (2026), used under CC BY 4.0. ERA5 hourly time series on single levels (doi:[10.24381/1cf1ad76](https://doi.org/10.24381/1cf1ad76)) and monthly means (doi:[10.24381/cds.f17050d7](https://doi.org/10.24381/cds.f17050d7)). Hersbach, H. et al. (2020), The ERA5 global reanalysis, *Q. J. R. Meteorol. Soc.* 146, 1999–2049, doi:[10.1002/qj.3803](https://doi.org/10.1002/qj.3803). Neither the European Commission nor ECMWF is responsible for any use of this information.
+
+**Satellite PM2.5: ACAG SatPM V5.GL.06 (Atmospheric Composition Analysis Group, Washington University in St. Louis), CC BY 4.0.** van Donkelaar, A. et al. (2021), Monthly global estimates of fine particulate matter and their uncertainty, *Environ. Sci. Technol.*, doi:[10.1021/acs.est.1c05309](https://doi.org/10.1021/acs.est.1c05309); Hammer, M. S. et al. (2023), Assessment of the impact of discontinuity in satellite instruments and retrievals on global PM2.5 estimates, *Remote Sens. Environ.* 294, 113624, doi:[10.1016/j.rse.2023.113624](https://doi.org/10.1016/j.rse.2023.113624); Zhang, D. et al. (2025), Improving annual fine mineral dust representation from the surface to the column in GEOS-Chem 14.4.1, *Geosci. Model Dev.* 18, 6767–6803, doi:[10.5194/gmd-18-6767-2025](https://doi.org/10.5194/gmd-18-6767-2025).
+
+**Urban centres and population: GHSL (European Commission, Joint Research Centre), CC BY 4.0, © European Union 1995–2026.** Mari Rivero, I. et al. (2026), GHS-UCDB R2024A, GHS Urban Centre Database 2025, doi:[10.2905/JRC.05RDPR0](https://doi.org/10.2905/JRC.05RDPR0); GHS-POP R2023A (2020 epoch) population grid. Changes made: urban-centre polygons joined into study units, and satellite values averaged over them weighted by population.
+
+**Aerosol optical depth: MODIS MAIAC (NASA).** Lyapustin, A. & Wang, Y. (2022), MODIS/Terra+Aqua Land Aerosol Optical Depth Daily L2G Global 1km SIN Grid V061, NASA Land Processes DAAC, doi:[10.5067/MODIS/MCD19A2.061](https://doi.org/10.5067/MODIS/MCD19A2.061); openly shared without restriction under NASA's EOSDIS data use policy. Used in the project's report as a check on the satellite PM2.5 product; it is not shown on the city pages.
+
+**OpenAQ.** Station coordinates and the January–March 2026 ground data (not shown here) were accessed through [OpenAQ](https://openaq.org); the original providers are CPCB and the state pollution control boards.
+
+**Boundaries.** India boundaries by the DataMeet India community (CC BY 4.0), used in the project's maps.
+
+## Downloads
+
+Every number shown on the city pages, as CSV:
+
+- [ground.csv](data/ground.csv): annual ground PM2.5 and PM10 per urban centre (raw, deweathered with both model families, composition-corrected) and station counts. ODbL 1.0.
+- [quality.csv](data/quality.csv): stations reporting and median reliability score per year. ODbL 1.0.
+- [satellite.csv](data/satellite.csv): annual population-weighted ACAG V5.GL.06 PM2.5 per urban centre. CC BY 4.0 (ACAG, GHSL).
+- [city_estimates.csv](data/city_estimates.csv): city-level relative changes, unshrunk and shrunken. Not effects of NCAP.
+
+## The study
+
+- Pre-registered analysis plan: [OSF](https://osf.io/jksne/).
+- Code, generated reports and figures: [GitHub repository](https://github.com/breenu/ncap-evaluation).
+- The code licence has not been chosen yet; until it is, the code is published for reading and checking only. The data licences above apply to the data.
+

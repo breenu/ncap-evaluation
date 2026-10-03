@@ -1799,3 +1799,30 @@ Phase 9 estimates nothing. It redraws figures from outputs that already exist (P
   - Nothing is pushed to a `gh-pages` branch.
   - It deploys only after Reenu sets the repository's Pages source to "GitHub Actions"; until then the deploy job fails, and that is expected.
 - **Static only:** no server, no live data, no analytics, no external scripts beyond what Quarto bundles.
+
+## 2026-10-03: Phase 9 Part B (dashboard) built (rules DEC-197 to DEC-201, pushed in `406f544` before any dashboard code)
+
+**DEC-202: Part B results, implementation notes and workflow. No estimate was made or changed.**
+- **Site environment (DEC-198).** `envs/site.yml` holds `quarto=1.9.38`. `envs/site-lock.yml` (conda-lock, win-64 and linux-64) locks 23 packages: Quarto with its bundled pandoc 3.8.3, deno, dart-sass, esbuild and typst, plus the platform runtime libraries. It installs as `ncap-site` with `conda-lock install -n ncap-site envs/site-lock.yml`. `conda-lock.yml` and `environment.yml` are unchanged (`git diff` empty).
+- **What was built (DEC-199).** `python -m src.dashboard.build` writes:
+  - 113 city pages (one per NCAP unit, A–Z) with a four-panel PNG each (120 dpi) and generated alt text;
+  - the index (a select box and an A–Z list; the 10 towns without a GHSL centre listed as not covered);
+  - "About the data";
+  - four CSV downloads.
+  - The sources are 17 MB in `dashboard/`; the rendered site is 21 MB.
+- **Coverage, generated on the index:** ground data exist for 85 of the 113 units, and a station valid every year 2018–2025 for 20.
+- **The caveat on every page** is DEC-154's sentence produced by `src.causal.causal_report.wording()` (the range "about 3–5%" is computed from the estimates, not typed), plus a fixed line that nothing on the page is an effect of NCAP. A test checks it is on all 113 pages.
+- **Precision fixes made while checking the pages** (before the first commit of the site):
+  - **Averaging years.** A city's relative change averages its own cohort's post-years: "2019 and 2021–2024" for the 89 units listed in 2019, "2021–2024" for the 24 listed in 2020–2021. The first draft printed the 2019 cohort's years on every page.
+  - **Station counts.** The quality table counts stations with *any* data that year, while the charts count *valid* stations. The table heading now says so. In Kolkata in 2018, for example, the table shows 4 stations with data and the chart 1 valid station.
+  - **Score summary.** The summary score is labelled as the median of the yearly medians.
+- **Wording.** Every generated page and every city figure passed `src/viz/wording.py`. The tests re-check the committed pages:
+  - the wording check;
+  - the caveat on every page;
+  - the A–Z order in both the list and the select box;
+  - no rank wording, except the page's own "cities cannot be ranked";
+  - every attribution and DOI that DEC-200 requires.
+- **Rendering.** `quarto render dashboard` in `ncap-site` produced 115 pages with no Quarto warnings. A link check over the rendered HTML found 0 broken internal links. Headless-browser screenshots of the index, a city page and the About page were inspected; the city chart was then widened to the page column.
+- **Reproducibility.** A second build gives 230 of 230 site source files byte-identical. All figure rules ran again through Snakemake (`style.save` gained an output-directory argument), and every figure came out byte-identical to the committed files. Afterwards `snakemake -n viz` and `-n pregate` have nothing to do, and `snakemake -n all` lists only the Phase 10 `report` stub (log `data/interim/logs/snakemake_phase9_partB.log`).
+- **Tests:** `tests/test_dashboard.py`, with 6 tests. The full suite has 254 tests, all passing (`data/interim/logs/pytest_phase9_final.log`).
+- **Deployment (DEC-201).** `.github/workflows/pages.yml` renders the committed sources with the site lock and deploys through GitHub's Pages actions. It needs Reenu to set the repository's Pages source to "GitHub Actions"; until then the deploy job fails.

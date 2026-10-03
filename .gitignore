@@ -54,3 +54,7 @@ desktop.ini
 
 # Cygwin/MSYS crash dumps (e.g. du.exe.stackdump)
 *.stackdump
+
+# Phase 9 dashboard: rendered site and Quarto cache (sources in dashboard/ are committed; DEC-201)
+dashboard/_site/
+dashboard/.quarto/

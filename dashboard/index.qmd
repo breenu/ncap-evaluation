@@ -1,0 +1,263 @@
+---
+title: "NCAP city explorer"
+---
+
+A read-only companion to *Weather, Monitors, or Policy? A meteorologically normalised, quasi-experimental evaluation of India's National Clean Air Programme, 2015–2025*. Every page is precomputed from the project's pipeline; nothing here is live data.
+
+::: {.callout-important}
+## Read this first
+
+NCAP units' satellite PM2.5 did not fall relative to comparable units; the estimates point to a relative rise of about 3–5%. H1 is not identified by this design, so this is not an effect of NCAP.
+
+The registered test of whether NCAP listing reduced PM2.5 (H1) could not be decided by this design, because its pre-trend check failed. So no page here shows an effect of NCAP. Cities are listed alphabetically and are never ranked: the data cannot rank them.
+:::
+
+## Pick a city
+
+```{=html}
+<label for="city">Urban centre (NCAP cities, A–Z): </label>
+<select id="city" onchange="if (this.value) window.location.href = this.value;">
+<option value="">Choose…</option>
+<option value="cities/agra.html">Agra</option>
+<option value="cities/ahmedabad.html">Ahmedabad</option>
+<option value="cities/akola.html">Akola</option>
+<option value="cities/allahabad.html">Allahabad</option>
+<option value="cities/alwar.html">Alwar</option>
+<option value="cities/amravati.html">Amravati</option>
+<option value="cities/amritsar.html">Amritsar</option>
+<option value="cities/anantapur.html">Anantapur</option>
+<option value="cities/angul.html">Angul</option>
+<option value="cities/anpara.html">Anpara</option>
+<option value="cities/asansol-raniganj.html">Asansol & Raniganj</option>
+<option value="cities/aurangabad.html">Aurangabad</option>
+<option value="cities/badlapur-ulhasnagar.html">Badlapur, Ulhasnagar</option>
+<option value="cities/balasore.html">Balasore</option>
+<option value="cities/bangalore.html">Bangalore</option>
+<option value="cities/bareily.html">Bareily</option>
+<option value="cities/barrackpore-howrah-kolkata.html">Barrackpore, Howrah, Kolkata</option>
+<option value="cities/bhilai.html">Bhilai</option>
+<option value="cities/bhopal.html">Bhopal</option>
+<option value="cities/bhubaneswar.html">Bhubaneswar</option>
+<option value="cities/chandigarh.html">Chandigarh</option>
+<option value="cities/chandrapur.html">Chandrapur</option>
+<option value="cities/chennai.html">Chennai</option>
+<option value="cities/chitoor.html">Chitoor</option>
+<option value="cities/cuttack.html">Cuttack</option>
+<option value="cities/dehradun.html">Dehradun</option>
+<option value="cities/delhi-faridabad-ghaziabad-noida.html">Delhi, Faridabad, Ghaziabad, Noida</option>
+<option value="cities/devanagere.html">Devanagere</option>
+<option value="cities/dewas.html">Dewas</option>
+<option value="cities/dhanbad.html">Dhanbad</option>
+<option value="cities/dimapur.html">Dimapur</option>
+<option value="cities/durgapur.html">Durgapur</option>
+<option value="cities/eluru.html">Eluru</option>
+<option value="cities/firozabad.html">Firozabad</option>
+<option value="cities/gajraula.html">Gajraula</option>
+<option value="cities/gaya.html">Gaya</option>
+<option value="cities/gobindgarh.html">Gobindgarh</option>
+<option value="cities/gorakhpur.html">Gorakhpur</option>
+<option value="cities/gulburga.html">Gulburga</option>
+<option value="cities/guntur.html">Guntur</option>
+<option value="cities/guwahati.html">Guwahati</option>
+<option value="cities/gwalior.html">Gwalior</option>
+<option value="cities/haldia.html">Haldia</option>
+<option value="cities/hubli-dharwad.html">Hubli-Dharwad</option>
+<option value="cities/hyderabad.html">Hyderabad</option>
+<option value="cities/indore.html">Indore</option>
+<option value="cities/jabalpur.html">Jabalpur</option>
+<option value="cities/jaipur.html">Jaipur</option>
+<option value="cities/jalandhar.html">Jalandhar</option>
+<option value="cities/jalgaon.html">Jalgaon</option>
+<option value="cities/jalna.html">Jalna</option>
+<option value="cities/jammu.html">Jammu</option>
+<option value="cities/jamshedpur.html">Jamshedpur</option>
+<option value="cities/jhansi.html">Jhansi</option>
+<option value="cities/jodhpur.html">Jodhpur</option>
+<option value="cities/kadapa.html">Kadapa</option>
+<option value="cities/kanpur.html">Kanpur</option>
+<option value="cities/kashipur.html">Kashipur</option>
+<option value="cities/khanna.html">Khanna</option>
+<option value="cities/khurja.html">Khurja</option>
+<option value="cities/kolhapur.html">Kolhapur</option>
+<option value="cities/korba.html">Korba</option>
+<option value="cities/kota.html">Kota</option>
+<option value="cities/kurnool.html">Kurnool</option>
+<option value="cities/latur.html">Latur</option>
+<option value="cities/lucknow.html">Lucknow</option>
+<option value="cities/ludhiana.html">Ludhiana</option>
+<option value="cities/madurai.html">Madurai</option>
+<option value="cities/meerut.html">Meerut</option>
+<option value="cities/moradabad.html">Moradabad</option>
+<option value="cities/mumbai-navi-mumbai-thane.html">Mumbai, Navi Mumbai, Thane</option>
+<option value="cities/muzaffarpur.html">Muzaffarpur</option>
+<option value="cities/nagaon.html">Nagaon</option>
+<option value="cities/nagpur.html">Nagpur</option>
+<option value="cities/nalagarh.html">Nalagarh</option>
+<option value="cities/nalbari.html">Nalbari</option>
+<option value="cities/nalgonda.html">Nalgonda</option>
+<option value="cities/nashik.html">Nashik</option>
+<option value="cities/nellore.html">Nellore</option>
+<option value="cities/ongole.html">Ongole</option>
+<option value="cities/paonta-sahib.html">Paonta Sahib</option>
+<option value="cities/pathankot-dera-baba.html">Pathankot/Dera Baba</option>
+<option value="cities/patiala.html">Patiala</option>
+<option value="cities/patna.html">Patna</option>
+<option value="cities/pune.html">Pune</option>
+<option value="cities/raebareli.html">Raebareli</option>
+<option value="cities/raipur.html">Raipur</option>
+<option value="cities/rajahmundry.html">Rajahmundry</option>
+<option value="cities/rajkot.html">Rajkot</option>
+<option value="cities/ranchi.html">Ranchi</option>
+<option value="cities/rishikesh.html">Rishikesh</option>
+<option value="cities/rourkela.html">Rourkela</option>
+<option value="cities/sagar.html">Sagar</option>
+<option value="cities/sangareddy.html">Sangareddy</option>
+<option value="cities/sangli.html">Sangli</option>
+<option value="cities/sibsagar.html">Sibsagar</option>
+<option value="cities/silchar.html">Silchar</option>
+<option value="cities/solapur.html">Solapur</option>
+<option value="cities/srikakulam.html">Srikakulam</option>
+<option value="cities/srinagar.html">Srinagar</option>
+<option value="cities/sunder-nagar.html">Sunder Nagar</option>
+<option value="cities/surat.html">Surat</option>
+<option value="cities/talcher.html">Talcher</option>
+<option value="cities/thoothukudi.html">Thoothukudi</option>
+<option value="cities/trichy.html">Trichy</option>
+<option value="cities/udaipur.html">Udaipur</option>
+<option value="cities/ujjain.html">Ujjain</option>
+<option value="cities/vadodara.html">Vadodara</option>
+<option value="cities/varanasi.html">Varanasi</option>
+<option value="cities/vasai-virar.html">Vasai-Virar</option>
+<option value="cities/vijayawada.html">Vijayawada</option>
+<option value="cities/vishakhapatnam.html">Vishakhapatnam</option>
+<option value="cities/vizianagaram.html">Vizianagaram</option>
+</select>
+```
+
+113 urban centres hold an NCAP city. Ground monitoring data exist for 85 of them, and a station valid every year 2018–2025 (needed for the composition-corrected series) for 20.
+
+## All cities, A–Z
+
+- [Agra](cities/agra.qmd)
+- [Ahmedabad](cities/ahmedabad.qmd)
+- [Akola](cities/akola.qmd)
+- [Allahabad](cities/allahabad.qmd)
+- [Alwar](cities/alwar.qmd)
+- [Amravati](cities/amravati.qmd)
+- [Amritsar](cities/amritsar.qmd)
+- [Anantapur](cities/anantapur.qmd)
+- [Angul](cities/angul.qmd)
+- [Anpara](cities/anpara.qmd)
+- [Asansol & Raniganj](cities/asansol-raniganj.qmd)
+- [Aurangabad](cities/aurangabad.qmd)
+- [Badlapur, Ulhasnagar](cities/badlapur-ulhasnagar.qmd)
+- [Balasore](cities/balasore.qmd)
+- [Bangalore](cities/bangalore.qmd)
+- [Bareily](cities/bareily.qmd)
+- [Barrackpore, Howrah, Kolkata](cities/barrackpore-howrah-kolkata.qmd)
+- [Bhilai](cities/bhilai.qmd)
+- [Bhopal](cities/bhopal.qmd)
+- [Bhubaneswar](cities/bhubaneswar.qmd)
+- [Chandigarh](cities/chandigarh.qmd)
+- [Chandrapur](cities/chandrapur.qmd)
+- [Chennai](cities/chennai.qmd)
+- [Chitoor](cities/chitoor.qmd)
+- [Cuttack](cities/cuttack.qmd)
+- [Dehradun](cities/dehradun.qmd)
+- [Delhi, Faridabad, Ghaziabad, Noida](cities/delhi-faridabad-ghaziabad-noida.qmd)
+- [Devanagere](cities/devanagere.qmd)
+- [Dewas](cities/dewas.qmd)
+- [Dhanbad](cities/dhanbad.qmd)
+- [Dimapur](cities/dimapur.qmd)
+- [Durgapur](cities/durgapur.qmd)
+- [Eluru](cities/eluru.qmd)
+- [Firozabad](cities/firozabad.qmd)
+- [Gajraula](cities/gajraula.qmd)
+- [Gaya](cities/gaya.qmd)
+- [Gobindgarh](cities/gobindgarh.qmd)
+- [Gorakhpur](cities/gorakhpur.qmd)
+- [Gulburga](cities/gulburga.qmd)
+- [Guntur](cities/guntur.qmd)
+- [Guwahati](cities/guwahati.qmd)
+- [Gwalior](cities/gwalior.qmd)
+- [Haldia](cities/haldia.qmd)
+- [Hubli-Dharwad](cities/hubli-dharwad.qmd)
+- [Hyderabad](cities/hyderabad.qmd)
+- [Indore](cities/indore.qmd)
+- [Jabalpur](cities/jabalpur.qmd)
+- [Jaipur](cities/jaipur.qmd)
+- [Jalandhar](cities/jalandhar.qmd)
+- [Jalgaon](cities/jalgaon.qmd)
+- [Jalna](cities/jalna.qmd)
+- [Jammu](cities/jammu.qmd)
+- [Jamshedpur](cities/jamshedpur.qmd)
+- [Jhansi](cities/jhansi.qmd)
+- [Jodhpur](cities/jodhpur.qmd)
+- [Kadapa](cities/kadapa.qmd)
+- [Kanpur](cities/kanpur.qmd)
+- [Kashipur](cities/kashipur.qmd)
+- [Khanna](cities/khanna.qmd)
+- [Khurja](cities/khurja.qmd)
+- [Kolhapur](cities/kolhapur.qmd)
+- [Korba](cities/korba.qmd)
+- [Kota](cities/kota.qmd)
+- [Kurnool](cities/kurnool.qmd)
+- [Latur](cities/latur.qmd)
+- [Lucknow](cities/lucknow.qmd)
+- [Ludhiana](cities/ludhiana.qmd)
+- [Madurai](cities/madurai.qmd)
+- [Meerut](cities/meerut.qmd)
+- [Moradabad](cities/moradabad.qmd)
+- [Mumbai, Navi Mumbai, Thane](cities/mumbai-navi-mumbai-thane.qmd)
+- [Muzaffarpur](cities/muzaffarpur.qmd)
+- [Nagaon](cities/nagaon.qmd)
+- [Nagpur](cities/nagpur.qmd)
+- [Nalagarh](cities/nalagarh.qmd)
+- [Nalbari](cities/nalbari.qmd)
+- [Nalgonda](cities/nalgonda.qmd)
+- [Nashik](cities/nashik.qmd)
+- [Nellore](cities/nellore.qmd)
+- [Ongole](cities/ongole.qmd)
+- [Paonta Sahib](cities/paonta-sahib.qmd)
+- [Pathankot/Dera Baba](cities/pathankot-dera-baba.qmd)
+- [Patiala](cities/patiala.qmd)
+- [Patna](cities/patna.qmd)
+- [Pune](cities/pune.qmd)
+- [Raebareli](cities/raebareli.qmd)
+- [Raipur](cities/raipur.qmd)
+- [Rajahmundry](cities/rajahmundry.qmd)
+- [Rajkot](cities/rajkot.qmd)
+- [Ranchi](cities/ranchi.qmd)
+- [Rishikesh](cities/rishikesh.qmd)
+- [Rourkela](cities/rourkela.qmd)
+- [Sagar](cities/sagar.qmd)
+- [Sangareddy](cities/sangareddy.qmd)
+- [Sangli](cities/sangli.qmd)
+- [Sibsagar](cities/sibsagar.qmd)
+- [Silchar](cities/silchar.qmd)
+- [Solapur](cities/solapur.qmd)
+- [Srikakulam](cities/srikakulam.qmd)
+- [Srinagar](cities/srinagar.qmd)
+- [Sunder Nagar](cities/sunder-nagar.qmd)
+- [Surat](cities/surat.qmd)
+- [Talcher](cities/talcher.qmd)
+- [Thoothukudi](cities/thoothukudi.qmd)
+- [Trichy](cities/trichy.qmd)
+- [Udaipur](cities/udaipur.qmd)
+- [Ujjain](cities/ujjain.qmd)
+- [Vadodara](cities/vadodara.qmd)
+- [Varanasi](cities/varanasi.qmd)
+- [Vasai-Virar](cities/vasai-virar.qmd)
+- [Vijayawada](cities/vijayawada.qmd)
+- [Vishakhapatnam](cities/vishakhapatnam.qmd)
+- [Vizianagaram](cities/vizianagaram.qmd)
+
+## Not covered
+
+10 NCAP towns have no GHSL urban centre, so they have no satellite unit and no page here: Baddi, Byrnihat, Damtal, Dera Bassi, Kala Amb, Kalinga Nagar, Kohima, Naya Nangal, Parwanoo, Patancheruvu. They enter the study only in one sensitivity check (as small circles around the town point).
+
+## More
+
+- [About the data](about.qmd): sources, licences and attributions.
+- The pre-registered analysis plan: [OSF](https://osf.io/jksne/).
+- Code, reports and every figure: [GitHub repository](https://github.com/breenu/ncap-evaluation); the figures with their captions: [docs/figures.md](https://github.com/breenu/ncap-evaluation/blob/main/docs/figures.md).
