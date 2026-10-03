@@ -1,4 +1,4 @@
-"""Flag rules (src/clean/flags.py). All data here are SYNTHETIC (CLAUDE.md hard rule 1)."""
+"""Flag rules (src/clean/flags.py). All data here are SYNTHETIC (project rule: synthetic data only in tests, never in the pipeline)."""
 
 import numpy as np
 import pandas as pd

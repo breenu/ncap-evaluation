@@ -1,4 +1,4 @@
-"""Pre-registration gate (CLAUDE.md hard rule 4, DECISIONS DEC-012).
+"""Pre-registration gate: no post-2019 treatment-effect estimate runs before the analysis plan is registered (DECISIONS DEC-012).
 
 Any code that estimates post-2019 NCAP treatment effects must call
 `require_gate()` before touching the data. The gate opens only when

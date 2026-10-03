@@ -1,6 +1,6 @@
 """Exploratory analysis (proposal stage 4): the Phase 3 EDA tables.
 
-BLINDING (CLAUDE.md, until the analysis plan is approved): nothing here compares NCAP with non-NCAP
+BLINDING (pre-registration rule, until the analysis plan is approved): nothing here compares NCAP with non-NCAP
 units.
 
 Tables -> data/interim/eda/*.csv (read by src/clean/audit_report.py and the figure modules);

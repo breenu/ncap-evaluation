@@ -2,6 +2,8 @@
 # (Phase 9 Part B; DEC-198 to DEC-201). Quarto comes from the separate site lock (envs/site-lock.yml), never from
 # the analysis lock. No code runs at render time and no data is fetched: every page is plain Markdown.
 # Needs Settings -> Pages -> Source: "GitHub Actions" (until then the deploy job fails, which is expected).
+# Phase 10 (DEC-210, DEC-214): it also renders the committed report sources (reports/*.qmd, every number already in
+# reports/_variables.yml) to HTML and publishes them, with the committed PDFs, under /report/.
 name: dashboard
 
 on:
@@ -9,6 +11,7 @@ on:
     branches: [main]
     paths:
       - "dashboard/**"
+      - "reports/**"
       - "envs/site*"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
@@ -41,6 +44,13 @@ jobs:
         run: |
           quarto --version
           quarto render dashboard
+
+      - name: Render the report, summary and brief, and add them under /report/
+        run: |
+          quarto render reports --to html
+          mkdir -p dashboard/_site/report
+          cp reports/report.html reports/summary.html reports/policy_brief.html dashboard/_site/report/
+          cp reports/report.pdf reports/summary.pdf reports/policy_brief.pdf dashboard/_site/report/
 
       - uses: actions/upload-pages-artifact@v3
         with:

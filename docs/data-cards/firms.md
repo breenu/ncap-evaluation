@@ -12,7 +12,11 @@
 
 ## Status
 
-**Not downloaded yet.** `firms.modaps.eosdis.nasa.gov` is unreachable from the current network (connect timeout, IPv4 and IPv6, 2026-09-26), though it answered from the phone hotspot earlier that day. `python -m src.acquire.firms` runs as soon as the host is reachable.
+**2012–2024 downloaded on 2026-10-03 and used** (DEC-172): the 13 yearly VIIRS S-NPP India files (566 MB), checksum-verified and recorded in `data/raw/firms/MANIFEST.csv`. They feed the registered fire-covariate check (DEC-171).
+
+**January 2025 – March 2026 not downloaded** (DEC-172, DEC-173): FIRMS's country API returned HTTP 400 for every request, and no analysis needs those months, because the satellite layer ends in 2024.
+
+*(Status updated 2026-10-03, Phase 10. Until then this card recorded the earlier status, "not downloaded yet", from 2026-09-26, when the FIRMS host was unreachable.)*
 
 ## Why not MODIS
 

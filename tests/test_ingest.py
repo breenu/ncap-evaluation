@@ -1,6 +1,6 @@
 """Ingest rules: clock correction, padded rows, duplicates, OpenAQ zip reading.
 
-All data here are SYNTHETIC, written to pytest's tmp_path (CLAUDE.md hard rule 1).
+All data here are SYNTHETIC, written to pytest's tmp_path (project rule: synthetic data only in tests, never in the pipeline).
 """
 
 import gzip

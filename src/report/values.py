@@ -647,7 +647,13 @@ def main() -> None:
         if k == "deviations":
             continue
         (GEN / f"{k}.md").write_text(t, encoding="utf-8")
-    print(f"wrote {VARS} ({len(strings(V))} values) and {len(T) - 1} tables in {GEN}")
+    from src.report import readme
+
+    for line in readme.block(V).split("\n"):
+        wording.check(line, "README.md headline findings")
+    rd = REPORTS.parent / "README.md"
+    rd.write_text(readme.sync(rd.read_text(encoding="utf-8"), V), encoding="utf-8")
+    print(f"wrote {VARS} ({len(strings(V))} values), {len(T) - 1} tables in {GEN}, and the README's headline findings")
 
 
 if __name__ == "__main__":

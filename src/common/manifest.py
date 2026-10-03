@@ -1,4 +1,4 @@
-"""Raw-data manifest and idempotent, resumable downloads (CLAUDE.md hard rule 7).
+"""Raw-data manifest and idempotent, resumable downloads (project rule: raw data are immutable, each file recorded in a manifest).
 
 Each source folder under data/raw/ has a MANIFEST.csv with one row per file:
 where it came from, when, the upstream version id (e.g. S3 ETag) and a sha256.

@@ -1,6 +1,6 @@
 """Audit rules: neighbour reference, spatial outliers, changepoints, completeness, reliability score.
 
-All data here are SYNTHETIC, generated in the test (CLAUDE.md hard rule 1).
+All data here are SYNTHETIC, generated in the test (project rule: synthetic data only in tests, never in the pipeline).
 """
 
 import numpy as np

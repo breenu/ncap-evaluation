@@ -10,7 +10,7 @@
    the satellite download years, for the satellite layer.
    -> data/raw/era5_monthly/era5_monthly_india_<y0>_<y1>.zip
 
-Never downloads hourly ERA5 for all of India (CLAUDE.md hard rule 6).
+Never downloads hourly ERA5 for all of India (project rule: request station grid cells only).
 
     python -m src.acquire.era5 [--points-only | --monthly-only | --located]
 """

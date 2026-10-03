@@ -407,7 +407,7 @@ Share of pilot station-months (≥ 75% valid days) whose deweathered mean after 
 
 {md_table(conv_s, {k: "{:.3f}" for k in conv_s.columns if k != "N"})}
 
-**Result: N = {n_chosen}.** The binding cell is {FAM[cs.family]} {POL[cs.pollutant]}: {cs.share_within_tol:.4f} of station-months within {100 * c['convergence_tol']:.1f}% at N = {n_chosen} (95th-percentile deviation {cs.p95_dev_pct:.2f}%), so the rule is met {"only narrowly" if cs.share_within_tol < c['convergence_share'] + 0.01 else "with margin"}. The proposal says 500–1,000 draws; PLAN.md's default is 300. {"N is below the proposal's range: the rule shows fewer draws already reach the stated precision at the station-month level." if n_chosen < 500 else "N is within the proposal's range."} Median Monte-Carlo standard error of a single *daily* deweathered value at N = {n_chosen}:
+**Result: N = {n_chosen}.** The binding cell is {FAM[cs.family]} {POL[cs.pollutant]}: {cs.share_within_tol:.4f} of station-months within {100 * c['convergence_tol']:.1f}% at N = {n_chosen} (95th-percentile deviation {cs.p95_dev_pct:.2f}%), so the rule is met {"only narrowly" if cs.share_within_tol < c['convergence_share'] + 0.01 else "with margin"}. The proposal says 500–1,000 draws; the planning default was 300. {"N is below the proposal's range: the rule shows fewer draws already reach the stated precision at the station-month level." if n_chosen < 500 else "N is within the proposal's range."} Median Monte-Carlo standard error of a single *daily* deweathered value at N = {n_chosen}:
 
 {md_table(lab(mcse), {"median_daily_mc_se_pct": "{:.2f}%"})}
 

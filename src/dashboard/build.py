@@ -36,6 +36,7 @@ YEARS_GROUND = (2015, 2025)
 YEARS_SAT = (2010, 2024)
 REPO = "https://github.com/breenu/ncap-evaluation"
 OSF = "https://osf.io/jksne/"
+REPORT = "https://breenu.github.io/ncap-evaluation/report"  # report, summary and brief HTML (Phase 10, DEC-214)
 DPI = 120
 NARROW_FONT = 1.3
 DPI_NARROW = 130  # the narrow chart is ~4 in wide, so a 390 px phone shows its text near full size; the extra pixels keep it sharp
@@ -309,6 +310,8 @@ def index_page(D: dict) -> str:
           "town point).", "",
           "## More", "",
           "- [About the data](about.qmd): sources, licences and attributions.",
+          f"- The technical report: [HTML]({REPORT}/report.html) or [PDF]({REPO}/blob/main/reports/report.pdf); the "
+          f"[one-page results summary]({REPORT}/summary.html) and the [two-page policy brief]({REPORT}/policy_brief.html).",
           f"- The pre-registered analysis plan: [OSF]({OSF}).",
           f"- Code, reports and every figure: [GitHub repository]({REPO}); the figures with their captions: "
           f"[docs/figures.md]({REPO}/blob/main/docs/figures.md)."]  # fmt: skip
@@ -361,12 +364,14 @@ def about_page() -> str:
          "- [satellite.csv](data/satellite.csv): annual population-weighted ACAG V5.GL.06 PM2.5 per urban centre. CC BY 4.0 "
          "(ACAG, GHSL).",
          "- [city_estimates.csv](data/city_estimates.csv): city-level relative changes, unshrunk and shrunken. Not effects "
-         "of NCAP.", "",
+         "of NCAP. CC BY 4.0.", "",
          "## The study", "",
+         f"- The technical report: [HTML]({REPORT}/report.html) or [PDF]({REPO}/blob/main/reports/report.pdf); "
+         f"[results summary]({REPORT}/summary.html); [policy brief]({REPORT}/policy_brief.html).",
          f"- Pre-registered analysis plan: [OSF]({OSF}).",
          f"- Code, generated reports and figures: [GitHub repository]({REPO}).",
-         "- The code licence has not been chosen yet; until it is, the code is published for reading and checking only. "
-         "The data licences above apply to the data.", ""]  # fmt: skip
+         f"- Licences: code under the MIT licence; text and figures under CC BY 4.0; ground-derived data under the ODbL 1.0; "
+         f"other derived data under CC BY 4.0 ([LICENSING.md]({REPO}/blob/main/LICENSING.md)).", ""]  # fmt: skip
     return "\n".join(L) + "\n"
 
 
@@ -386,6 +391,8 @@ website:
         text: Cities
       - href: about.qmd
         text: About the data
+      - href: {report}/report.html
+        text: Report
     right:
       - href: {repo}
         text: Repository
@@ -393,7 +400,7 @@ website:
         text: Pre-registration
   page-footer:
     left: "Precomputed, read-only. Not identified as effects of NCAP (registered pre-trend test failed)."
-    right: "Ground-derived data: ODbL 1.0."
+    right: "Code: MIT. Text and figures: CC BY 4.0. Ground-derived data: ODbL 1.0."
 
 format:
   html:
@@ -452,7 +459,7 @@ def main() -> None:
         write(SITE / "cities" / f"{u.slug}.qmd", city_page(u, D, alt))
     write(SITE / "index.qmd", index_page(D))
     write(SITE / "about.qmd", about_page())
-    write(SITE / "_quarto.yml", QUARTO.format(repo=REPO, osf=OSF))
+    write(SITE / "_quarto.yml", QUARTO.format(repo=REPO, osf=OSF, report=REPORT))
     for name, df in downloads(D).items():
         (SITE / "data").mkdir(parents=True, exist_ok=True)
         df.round(4).to_csv(SITE / "data" / f"{name}.csv", index=False, lineterminator="\n")

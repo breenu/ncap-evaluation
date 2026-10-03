@@ -2058,3 +2058,28 @@ Phase 10 estimates nothing. It writes the report, the results summary, the polic
   - the references to removed files in `config/maiac.yaml`, `src/acquire/probe.py` and `src/normalise/pilot.py` are fixed. The pilot report is regenerated, and downstream outputs are marked current, as in DEC-108;
   - the final README is written;
   - a closing entry records the cleanup.
+
+**DEC-215: The public repository cleaned (Phase 10 Part C, 2026-10-03; rules in DEC-214, pushed in `b4874ab` before any file was moved).**
+- **Removed from the public tree in one normal commit; git history is not rewritten.** The commits that the OSF registration and clarification cite (`6e24eca`, `0d9aa42`, `29874cf`, `ba397a2`) are untouched.
+  - `CLAUDE.md` is untracked and gitignored, and stays on my laptop.
+  - Moved to the gitignored local folder `_working/`, so nothing is lost: `docs/PROGRESS.md`, `docs/PLAN.md`, `docs/phase-notes/` (10 notes), `docs/maiac_scoping.md`, `docs/osf/test.pdf` and `reports/report_outline.md`. `notebooks/.gitkeep` and `dashboard/.gitkeep` are deleted.
+- **Earlier entries in this log** mention `PROGRESS.md`, `PLAN.md`, the phase notes, `CLAUDE.md` and `maiac_scoping.md`. They refer to files removed by this commit, which remain readable in git history at `b4874ab` and before. This log is append-only, so those entries are not edited. DEC-019 is unchanged (DEC-214).
+- **References fixed in the files that stay:**
+  - Thirteen code comments and docstrings that cited "CLAUDE.md hard rule N" now state the rule itself.
+  - `config/maiac.yaml` now names the unit polygons instead of the scoping note.
+  - `src/acquire/probe.py` cites DEC-028 instead of PLAN.md.
+  - `src/normalise/pilot.py` no longer names PLAN.md. The regenerated `docs/deweathering_pilot.md` differs from the committed one in that one sentence only.
+  - The FIRMS data card's status, still "not downloaded yet" from 2026-09-26, now records the download (DEC-172) and the months not fetched (DEC-173).
+- **`docs/proposal.pdf` redacted as DEC-214 specifies.**
+  - R1–R7 are removed by true redaction (PyMuPDF), with visible markers and a page-1 note naming the original. 20 pages, as before.
+  - New sha256: `3f1df964c39e5c7c992ec340a39682758110180ae9346ae8807d0364c0ed5e8a`. The original (`988d2c69…`) stays in commit `86c4997`.
+  - A text extraction of the redacted file finds no "MSc", "interview", "CV line", "semester" or score text outside the markers.
+- **The website.**
+  - The About page now gives the licences (MIT; CC BY 4.0; ODbL 1.0 for ground-derived data; CC BY 4.0 for other derived data, DEC-213) and links the report, summary and brief.
+  - The index page links them too, and the navbar has a "Report" item. Only `index.qmd`, `about.qmd` and `_quarto.yml` changed; all 113 city pages are byte-identical.
+  - `.github/workflows/pages.yml` also renders the report sources to HTML on pushes that touch `reports/**`, and publishes them with the PDFs under `/report/`.
+- **README rewritten** (the question, headline findings, links, how the study was done, the layout, how to reproduce, licences).
+  - Its headline findings are a generated block: `src/report/readme.py`, written by `python -m src.report.values` and checked by `src.report.check`, so it holds no typed result.
+  - The `report_values` rule writes it as a side effect. README.md is not declared as an output, because the rest of it is hand-written.
+- **References:** the full titles of Hammer et al. (2023), Zhang et al. (2025), the GHSL UCDB and the MAIAC product, verified in DEC-200 and shown on the About page, were restored to the report's references (DEC-211 had removed them as unverified).
+- **Workflow (as DEC-108 and later).** The comment-only code edits and the one regenerated sentence mark 64 jobs stale by modification time. They were marked current with `snakemake --cores 1 --touch all pregate`, and `snakemake -n all pregate` then has nothing to do. Part D's clean-clone rebuild recomputes everything from raw data.

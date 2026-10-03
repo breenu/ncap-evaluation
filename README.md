@@ -2,118 +2,100 @@
 
 **A meteorologically normalised, quasi-experimental evaluation of India's National Clean Air Programme (NCAP), 2015–2025.**
 
-India's National Clean Air Programme, launched in January 2019, set 131 cities targets for cutting particulate pollution. Progress is judged on the readings of their monitoring stations. Those readings move for three reasons that are hard to tell apart:
-
-- **Measurement:** stations fail, get stuck, are recalibrated, and the network grew several-fold during the programme itself.
-- **Weather:** a still, cold winter raises pollution with no change in emissions.
-- **Policy:** the question of interest.
-
-This project separates the three, and asks whether NCAP cities saw larger falls in PM2.5 and PM10 than comparable cities once measurement and weather are accounted for.
-
-## Research questions
-
-| # | Theme | Question |
-|---|---|---|
-| RQ1 | Measurement | How much of each city's reported change comes from data-quality artefacts and changes in which stations exist? |
-| RQ2 | Weather | How much of the year-to-year change is driven by meteorology? |
-| RQ3 | Policy | What is the causal effect of NCAP enrolment on PM2.5 (and, as weaker evidence, PM10)? |
-| RQ4 | Heterogeneity | Does the effect vary across cities, and does it look like dust control (PM10 falling more than PM2.5)? |
-
-The specification is [`docs/proposal.pdf`](docs/proposal.pdf).
-
-**Effect estimation is pre-registered.** The analysis plan ([`docs/analysis_plan.md`](docs/analysis_plan.md)) was approved, committed (`6e24eca`) and registered on OSF (https://osf.io/jksne/) before any post-2019 treatment effect was computed. The pipeline enforced this through [`config/gate.yaml`](config/gate.yaml): gated steps refused to run until it was opened, in its own commit citing the plan. Until then, no figure or table compared NCAP with non-NCAP cities after 2018.
-
-## Status
-
-**Phases 1–4 of 10 are complete: the analysis plan is registered on OSF (https://osf.io/jksne/) and the pre-registration gate is open. There are no effect estimates yet.** Progress and the next steps are in [`docs/PROGRESS.md`](docs/PROGRESS.md); every judgement call is logged in [`docs/DECISIONS.md`](docs/DECISIONS.md), and each phase has a plain-language note in [`docs/phase-notes/`](docs/phase-notes/).
-
-| Phase | What it did |
+| | |
 |---|---|
-| 1. Skeleton | Pinned environment (Python 3.12 + R 4.5, `conda-lock`), Snakemake workflow, tests, CI |
-| 2. Acquisition | Resumable, checksum-verified downloaders for every source ([data cards](docs/data-cards/)); NCAP city lists and funding extracted from 14 official PDFs, each row traceable to its page, and checked against printed totals |
-| 3. Storage, cleaning, audit | Cleaned station-hour and station-day panel; data-quality flags; reliability score for every station-year; satellite PM2.5 for every Indian urban centre; station audit ([`docs/audit_report.md`](docs/audit_report.md)); draft analysis plan |
+| Technical report | [HTML](https://breenu.github.io/ncap-evaluation/report/report.html) · [PDF](reports/report.pdf) |
+| One-page results summary | [HTML](https://breenu.github.io/ncap-evaluation/report/summary.html) · [PDF](reports/summary.pdf) |
+| Two-page policy brief | [HTML](https://breenu.github.io/ncap-evaluation/report/policy_brief.html) · [PDF](reports/policy_brief.pdf) |
+| City explorer | <https://breenu.github.io/ncap-evaluation/> |
+| Pre-registration | <https://osf.io/jksne/> (the registered plan is [`docs/analysis_plan.md`](docs/analysis_plan.md) at commit `6e24eca`) |
 
-### What the Phase 3 audit found about the data
+## The question
 
-These are findings about data quality, not about NCAP.
+NCAP, launched in January 2019, set cities targets for cutting particulate pollution, and progress is judged on what their monitoring stations report. A reported change mixes three things: **measurement** (stations fail, get stuck, are recalibrated, and the network itself grew during the programme), **weather** (a still, cold winter raises pollution with no change in emissions) and **policy**. I separate the three and ask whether PM2.5 changed differently in NCAP cities than in comparable cities once measurement and weather are accounted for.
 
-- **The ground data source was verified, not trusted.** CPCB's own download service is offline, so station data come from a public mirror of CPCB's repository. The mirror was checked against OpenAQ's independent copy of the same stations; the two are identical where both hold data, and the few exceptions are explained ([`docs/mirror-openaq-crosscheck.md`](docs/mirror-openaq-crosscheck.md)).
-- **The mirror holds CPCB's *validated* data, while OpenAQ carries the raw real-time feed**, with zero, negative and impossible values that CPCB's validation removes. So the most recent months, January–March 2026, which only OpenAQ has, are treated as provisional.
-- **The mirror's timestamps are Indian time labelled as UTC.** This was found by three independent tests (matched values, the sun, weather reanalysis), and every reader corrects it.
-- **Station locations were settled from the data.** Two copies of one instrument's record share identical values at identical moments, which identifies stations whose names or coordinates disagree ([`docs/station_metadata_review.md`](docs/station_metadata_review.md)).
-- **Instrument faults are flagged by rules set from the data.** The rules cover values pinned at instrument ceilings, "flatlined" analysers, PM2.5 exceeding PM10, and level shifts relative to neighbouring stations, with the detector calibrated against a no-shift null.
-- **Monitoring gaps are not concentrated on the dirtiest days**, contrary to a common concern.
-- **The pre-NCAP ground network was tiny.** For PM10 there is effectively one baseline year (2018). The satellite layer, which reaches back to 2010, is therefore the primary evidence for effects.
-
-Figures: [station-entry map](reports/figures/fig2_station_entry.png) (where and when stations came online) and [data-quality heatmap](reports/figures/fig8_quality_heatmap.png) (reliability of every station-year).
-
-### What comes next
-
-| Phase | |
+| | Question |
 |---|---|
-| 4 | *Complete; registered at https://osf.io/jksne/.* Pre-gate computations on pre-2019 data only ([`docs/pregate_checks.md`](docs/pregate_checks.md): minimum detectable effect, control pool, baseline balance); analysis plan in OSF Preregistration format |
-| 5 | Deweathering (RQ2): Grange & Carslaw weather normalisation with LightGBM and GAM |
-| 6 | Network-composition correction (RQ1): all stations vs a balanced station panel vs satellite |
-| 7 | Causal analysis (RQ3): satellite synthetic difference-in-differences, event study, staggered-adoption estimator, ground-station checks, full robustness table |
-| 8 | Heterogeneity and mechanism (RQ4): Bayesian hierarchical model of city effects; PM10 vs PM2.5 |
-| 9–10 | Figures, read-only dashboard, technical report, policy brief, clean-clone reproducibility check |
+| RQ1, measurement | How much of a city's reported change comes from data-quality problems and from changes in which stations exist? |
+| RQ2, weather | How much of the year-to-year change comes from meteorology? |
+| RQ3, policy | Did PM2.5 change differently in NCAP cities than in comparable non-NCAP cities? (confirmatory) |
+| RQ4, heterogeneity | Does any change vary across cities, and does the PM10/PM2.5 pattern fit dust control? |
+
+## Headline findings
+
+<!-- headline findings: generated by `python -m src.report.values`; do not edit by hand -->
+
+- **Reported improvements are overstated where I could check them.** In the 18 NCAP cities with a continuous PM2.5 monitor since 2018 (16 of them with only one), the reported fall of 23.6% becomes 14.1% once modelled weather and the change in which monitors exist are removed. Most of the difference is the changing network: newly opened stations read cleaner than the ones already there (H4 supported: +9.5 percentage points, 95% CI +4.8 to +14.5).
+- **Weather moves a typical city's annual PM2.5 by a median 5.1% from one year to the next**, so a single year's change says little on its own.
+- **The satellite comparison.** I compared the 113 urban centres containing 121 of NCAP's 131 cities with 923 comparable non-NCAP centres. Satellite PM2.5 fell in both groups after 2018: by 16.8% in NCAP units and by 24.3% in the comparison pool. NCAP units' satellite PM2.5 did not fall relative to comparable units; the estimates point to a relative rise of about 3–5%. H1 is not identified by this design, so this is not an effect of NCAP. (Primary estimate +3.6%, 95% CI +2.4% to +4.8%; the registered pre-trend test failed, p = 0.0008.)
+- **The satellite product may not be the whole story.** Raw aerosol optical depth, which no ground monitor calibrates, shows a smaller relative change on the same units (+0.8% against +4.2%), for reasons this design cannot separate.
+- **No city can be ranked.** A typical city's 95% rank interval spans 75 of 113 places. The registered tests for a smaller change in the Indo-Gangetic Plain (H5) and for dust control (H3) came out "not met" and "inconclusive".
+
+<!-- end of generated headline findings -->
+
+**What this does not claim.** H1 is not identified by this design: my registered pre-trend test failed, so nothing here is an effect of NCAP. Ground results rest on one pre-NCAP year and mostly on single monitors. Satellite PM2.5 is calibrated to ground monitors. The confirmatory layer measures PM2.5, while NCAP's targets are for PM10. The report lists every caveat and every deviation from the registered plan.
+
+## How the study was done
+
+- **Pre-registered.** I registered the analysis plan on OSF before comparing NCAP with non-NCAP cities after 2018, and the code enforced it: every step that compares them after 2018 checks [`config/gate.yaml`](config/gate.yaml), which was opened in its own commit (`0d9aa42`) citing the registered plan. A clarification of how I read some ambiguous rules was posted on 1 October 2026 ([`docs/osf/clarification_2026-10-01.md`](docs/osf/clarification_2026-10-01.md)).
+- **Every judgement call is logged** with its date and reason in [`docs/DECISIONS.md`](docs/DECISIONS.md), and every departure from the registered plan is listed in the report's Appendix A ([`reports/deviations.md`](reports/deviations.md)).
+- **No number is typed by hand.** Every number in the report, summary, brief and this section is generated from the pipeline's outputs, and a test fails if one is typed in.
+- **Data.** CPCB continuous monitoring stations (via a public mirror of CPCB's repository, cross-checked against OpenAQ), ACAG satellite PM2.5, ERA5 weather, GHSL urban centres, NASA FIRMS fires, MODIS MAIAC aerosol optical depth and fourteen official NCAP documents. Each source has a data card in [`docs/data-cards/`](docs/data-cards/).
+- **Methods.** A station-level audit and reliability score; weather normalisation (Grange & Carslaw's method with a GAM and LightGBM); a balanced station panel to remove network composition; synthetic difference-in-differences on satellite PM2.5 against comparable non-NCAP urban centres, with an event study, Callaway & Sant'Anna, HonestDiD bounds and placebo tests; a Bayesian hierarchical model of city-level changes.
+
+## Repository layout
+
+```
+README.md, LICENSE*, LICENSING.md   this file; licences and attributions
+Snakefile, workflow/                 the pipeline: one Snakemake rule file per stage, setup script for R packages
+environment.yml, conda-lock.yml      the analysis environment (Python 3.12 + R 4.5), locked for Windows and Linux
+envs/site.yml, envs/site-lock.yml    the report and site environment (Quarto only), locked separately
+config/                              thresholds and parameters, the pre-registration gate, regions, name mappings
+src/acquire/                         one downloader per source; NCAP PDF extraction and checks
+src/clean/                           ingest, cross-check, station metadata, flags, audit, reliability, satellite values
+src/normalise/                       deweathering (RQ2) and network composition (RQ1)
+src/causal/                          satellite and ground comparisons (RQ3; gated)
+src/hierarchical/                    city-level estimates and pooling (RQ4; gated)
+src/viz/, src/dashboard/             figures, the wording check, the city explorer's sources
+src/report/                          every number in the documents (values.py) and the checks on them (check.py)
+tests/                               pytest, synthetic data only
+data/raw/*/MANIFEST.csv              provenance of every raw file (URL, date, SHA-256); the data are not committed
+docs/analysis_plan.md, docs/osf/     the registered plan, its OSF export and the posted clarification
+docs/DECISIONS.md                    the decision log
+docs/data-cards/                     one card per data source
+docs/*_report.md and other docs/*.md generated reports (rebuilt by the pipeline; do not edit), cited by the report
+docs/proposal.pdf                    the original proposal (application notes removed; the original is in commit 86c4997)
+reports/                             the report, summary and brief (Quarto sources and PDFs), figures, slide
+dashboard/                           the city explorer's precomputed sources (published on GitHub Pages)
+```
 
 ## Reproduce
 
-Requires [Miniforge](https://github.com/conda-forge/miniforge) (conda-forge). Python 3.12 and R 4.5 live in one environment, pinned exactly in `conda-lock.yml` (win-64 and linux-64).
+Requires [Miniforge](https://github.com/conda-forge/miniforge). Everything runs inside the activated environment.
 
 ```bash
-# 1. Environment
-conda install -n base -c conda-forge conda-lock      # once
-conda-lock install -n ncap conda-lock.yml
-conda activate ncap                                   # always run inside the activated environment
-Rscript workflow/scripts/install_r_extra.R           # did, DRDID, fastglm, synthdid (pinned versions)
+# 1. Environments
+conda install -n base -c conda-forge conda-lock          # once
+conda-lock install -n ncap conda-lock.yml                 # analysis: Python 3.12 + R 4.5
+conda activate ncap
+Rscript workflow/scripts/install_r_extra.R                # pinned CRAN/GitHub R packages (did, synthdid, mgcv, HonestDiD, ...)
+conda-lock install -n ncap-site envs/site-lock.yml        # report and site: Quarto only
 
 # 2. Tests (synthetic data only)
 pytest
 
-# 3. Pipeline
-snakemake -n pregate           # dry run: what would be built
-snakemake --cores 1 pregate    # downloads, cleaning, audit, EDA: everything allowed before the gate
-snakemake --cores 8 all        # the full analysis (stops at the gate until the plan is approved)
+# 3. Pipeline, from data/raw/ to every table, figure and number
+snakemake -n all                  # dry run
+snakemake --cores 1 all           # the full analysis and the report values (single core keeps memory in bounds)
+snakemake --cores 1 report_render # render the report, summary and brief (uses ncap-site)
 ```
 
-**Data access.**
-- Raw data are downloaded by the pipeline into `data/raw/` and never committed. Each source's `MANIFEST.csv` is committed, with source URL, download date and SHA-256, so a fresh download is verified byte for byte.
-- Most sources need no account. Two need free keys: Copernicus CDS (ERA5 weather) in `~/.cdsapirc`, and OpenAQ in `.env` (copy [`.env.example`](.env.example)).
-- The raw downloads total about 11 GB.
-- On a 16 GB laptop the Phase 1–3 pipeline takes a few hours, most of it downloading. `--cores 1` keeps memory in bounds.
+**Data.** The downloaders fetch every raw file into `data/raw/` and refuse any file whose checksum differs from its committed manifest. ERA5 needs a free Copernicus CDS key in `~/.cdsapirc`, OpenAQ a free key in `.env` (copy [`.env.example`](.env.example)), FIRMS a free MAP_KEY, and the aerosol optical depth tables a registered Google Earth Engine project. A full rebuild takes several hours on a laptop, most of it deweathering and the synthetic difference-in-differences; run it on mains power.
 
-**Sources and licences.** Each source's provenance, version, licence and known issues are in [`docs/data-cards/`](docs/data-cards/):
-- CPCB station data via the `Vonter/india-cpcb-aqi` mirror (ODbL 1.0);
-- OpenAQ;
-- ACAG satellite PM2.5 (Washington University in St. Louis);
-- ERA5 (Copernicus);
-- GHSL Urban Centre Database and population (JRC, CC BY 4.0);
-- DataMeet boundaries (CC BY 4.0);
-- GeoNames (CC BY 4.0);
-- Natural Earth (public domain);
-- NASA FIRMS;
-- official NCAP documents.
+## Licences
 
-Any derived dataset built from the CPCB mirror is published under ODbL.
+Code: MIT ([`LICENSE`](LICENSE)). Text and figures: CC BY 4.0 ([`LICENSE-CC-BY-4.0.txt`](LICENSE-CC-BY-4.0.txt)). Data derived from the CPCB station data: ODbL 1.0 ([`LICENSE-ODbL-1.0.txt`](LICENSE-ODbL-1.0.txt)). Contains information from `india-cpcb-aqi`, a mirror of CPCB's data repository, made available under the ODbL 1.0. Attributions for every source are in [`LICENSING.md`](LICENSING.md).
 
-## Layout
+## Author
 
-```
-config/           thresholds and parameters (params.yaml), pre-registration gate, regions, name mappings
-data/raw/         immutable downloads + MANIFEST.csv per source (manifests committed, data not)
-data/interim/     intermediate Parquet and audit tables (rebuilt by the pipeline)
-data/processed/   analysis-ready Parquet (rebuilt by the pipeline)
-src/acquire/      one downloader per source; NCAP PDF extraction and checks
-src/clean/        ingest, cross-check, station metadata, flags, audit, reliability, satellite zonal statistics
-src/normalise/    deweathering and network-composition correction (Phases 5–6)
-src/causal/       causal estimators (Phase 7; gated)
-src/hierarchical/ Bayesian pooling of city effects (Phase 8; gated)
-src/viz/          figures
-src/common/       paths, manifest, gate
-workflow/         Snakemake rules and setup scripts
-tests/            pytest, synthetic fixtures only
-reports/figures/  generated figures
-docs/             plan, decisions log, progress, data cards, generated reports, phase notes
-```
+Reenu. Questions and corrections are welcome through the repository's issues.

@@ -117,7 +117,7 @@ Share of pilot station-months (≥ 75% valid days) whose deweathered mean after 
 | 500 | 0.995 | 0.998 | 0.994 | 0.995 | 0.911 |
 | 1000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
 
-**Result: N = 300.** The binding cell is LightGBM PM2.5: 0.9502 of station-months within 0.5% at N = 300 (95th-percentile deviation 0.49%), so the rule is met only narrowly. The proposal says 500–1,000 draws; PLAN.md's default is 300. N is below the proposal's range: the rule shows fewer draws already reach the stated precision at the station-month level. Median Monte-Carlo standard error of a single *daily* deweathered value at N = 300:
+**Result: N = 300.** The binding cell is LightGBM PM2.5: 0.9502 of station-months within 0.5% at N = 300 (95th-percentile deviation 0.49%), so the rule is met only narrowly. The proposal says 500–1,000 draws; the planning default was 300. N is below the proposal's range: the rule shows fewer draws already reach the stated precision at the station-month level. Median Monte-Carlo standard error of a single *daily* deweathered value at N = 300:
 
 | family | pollutant | median_daily_mc_se_pct |
 |---|---|---|

@@ -2,7 +2,7 @@
 
 Every dataset created in tests/ is SYNTHETIC: small, made-up values written to
 pytest's temporary directories to exercise a rule. None of it is real data, and
-none of it is ever written into data/ (CLAUDE.md hard rule 1).
+none of it is ever written into data/ (project rule: synthetic data only in tests, never in the pipeline).
 """
 
 from pathlib import Path

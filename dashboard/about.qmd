@@ -27,11 +27,12 @@ Every number shown on the city pages, as CSV:
 - [ground.csv](data/ground.csv): annual ground PM2.5 and PM10 per urban centre (raw, deweathered with both model families, composition-corrected) and station counts. ODbL 1.0.
 - [quality.csv](data/quality.csv): stations reporting and median reliability score per year. ODbL 1.0.
 - [satellite.csv](data/satellite.csv): annual population-weighted ACAG V5.GL.06 PM2.5 per urban centre. CC BY 4.0 (ACAG, GHSL).
-- [city_estimates.csv](data/city_estimates.csv): city-level relative changes, unshrunk and shrunken. Not effects of NCAP.
+- [city_estimates.csv](data/city_estimates.csv): city-level relative changes, unshrunk and shrunken. Not effects of NCAP. CC BY 4.0.
 
 ## The study
 
+- The technical report: [HTML](https://breenu.github.io/ncap-evaluation/report/report.html) or [PDF](https://github.com/breenu/ncap-evaluation/blob/main/reports/report.pdf); [results summary](https://breenu.github.io/ncap-evaluation/report/summary.html); [policy brief](https://breenu.github.io/ncap-evaluation/report/policy_brief.html).
 - Pre-registered analysis plan: [OSF](https://osf.io/jksne/).
 - Code, generated reports and figures: [GitHub repository](https://github.com/breenu/ncap-evaluation).
-- The code licence has not been chosen yet; until it is, the code is published for reading and checking only. The data licences above apply to the data.
+- Licences: code under the MIT licence; text and figures under CC BY 4.0; ground-derived data under the ODbL 1.0; other derived data under CC BY 4.0 ([LICENSING.md](https://github.com/breenu/ncap-evaluation/blob/main/LICENSING.md)).
 

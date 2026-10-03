@@ -14,6 +14,8 @@ website:
         text: Cities
       - href: about.qmd
         text: About the data
+      - href: https://breenu.github.io/ncap-evaluation/report/report.html
+        text: Report
     right:
       - href: https://github.com/breenu/ncap-evaluation
         text: Repository
@@ -21,7 +23,7 @@ website:
         text: Pre-registration
   page-footer:
     left: "Precomputed, read-only. Not identified as effects of NCAP (registered pre-trend test failed)."
-    right: "Ground-derived data: ODbL 1.0."
+    right: "Code: MIT. Text and figures: CC BY 4.0. Ground-derived data: ODbL 1.0."
 
 format:
   html:

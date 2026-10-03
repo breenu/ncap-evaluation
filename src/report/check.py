@@ -122,6 +122,11 @@ def all_problems() -> dict[str, list[str]]:
     for p in sorted((REPORTS / "_generated").glob("*.md")):
         out[f"{p.name}: wording"] = [x for line in p.read_text(encoding="utf-8").split("\n") for x in wording.problems(line)]
     out["deviations not in Appendix A"] = sorted(logged_deviations() - listed_in_appendix())
+    from src.report import readme
+
+    rd = (REPORTS.parent / "README.md").read_text(encoding="utf-8")
+    out["README.md: headline findings not as generated"] = [] if readme.block(V) in rd else ["run python -m src.report.values"]
+    out["README.md: wording"] = [p for line in readme.block(V).split("\n") for p in wording.problems(line)]
     return out
 
 

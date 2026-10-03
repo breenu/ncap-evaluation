@@ -24,13 +24,13 @@
 
 **Data**
 
-- Hammer, M. S. et al. (2023). *Remote Sensing of Environment*, 294, 113624. doi:10.1016/j.rse.2023.113624.
+- Hammer, M. S. et al. (2023). Assessment of the impact of discontinuity in satellite instruments and retrievals on global PM2.5 estimates. *Remote Sensing of Environment*, 294, 113624. doi:10.1016/j.rse.2023.113624.
 - Hersbach, H. et al. (2020). The ERA5 global reanalysis. *Quarterly Journal of the Royal Meteorological Society*, 146, 1999–2049. doi:10.1002/qj.3803. Contains modified Copernicus Climate Change Service information (2026).
-- Lyapustin, A. and Wang, Y. (2022). MCD19A2 v061. NASA EOSDIS Land Processes DAAC. doi:10.5067/MODIS/MCD19A2.061.
-- Mari Rivero, I. et al. (2026). GHS-UCDB R2024A. European Commission, Joint Research Centre. doi:10.2905/JRC.05RDPR0.
+- Lyapustin, A. and Wang, Y. (2022). MODIS/Terra+Aqua Land Aerosol Optical Depth Daily L2G Global 1km SIN Grid V061. NASA EOSDIS Land Processes DAAC. doi:10.5067/MODIS/MCD19A2.061.
+- Mari Rivero, I. et al. (2026). GHS-UCDB R2024A: GHS Urban Centre Database 2025. European Commission, Joint Research Centre. doi:10.2905/JRC.05RDPR0.
 - Shen, S. et al. (2024). Enhancing global estimation of fine particulate matter concentrations by including geophysical a priori information in deep learning. *ACS ES&T Air*.
 - van Donkelaar, A. et al. (2021). Monthly global estimates of fine particulate matter and their uncertainty. *Environmental Science & Technology*. doi:10.1021/acs.est.1c05309.
-- Zhang, D. et al. (2025). *Geoscientific Model Development*, 18, 6767–6803. doi:10.5194/gmd-18-6767-2025.
+- Zhang, D. et al. (2025). Improving annual fine mineral dust representation from the surface to the column in GEOS-Chem 14.4.1. *Geoscientific Model Development*, 18, 6767–6803. doi:10.5194/gmd-18-6767-2025.
 - Vonter. `india-cpcb-aqi`: a mirror of CPCB's continuous ambient air quality data repository. <https://github.com/Vonter/india-cpcb-aqi>. ODbL 1.0.
 - OpenAQ. <https://openaq.org>. Data from CPCB and other providers.
 - NASA FIRMS. I acknowledge the use of data from the NASA LANCE FIRMS (<https://earthdata.nasa.gov/firms>), part of the NASA Earth Science Data and Information System (ESDIS).

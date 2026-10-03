@@ -1,4 +1,4 @@
-"""Phase 2 step 0: feasibility probe, run before any bulk download (PLAN.md section 4).
+"""Phase 2 step 0: feasibility probe, run before any bulk download (DEC-028).
 
 Checks that each source contains what the proposal expects and measures exact
 download sizes. Nothing here writes to data/raw/; small test files go to

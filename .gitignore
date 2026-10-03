@@ -58,3 +58,8 @@ desktop.ini
 # Phase 9 dashboard: rendered site and Quarto cache (sources in dashboard/ are committed; DEC-201)
 dashboard/_site/
 dashboard/.quarto/
+
+# --- Local working files, kept off the public repository (Phase 10 Part C, DEC-214) ---
+# Project instructions, handoff notes, plans and phase notes live here on the author's machine.
+CLAUDE.md
+_working/

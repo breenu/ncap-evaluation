@@ -259,5 +259,6 @@ The registered test of whether NCAP listing reduced PM2.5 (H1) could not be deci
 ## More
 
 - [About the data](about.qmd): sources, licences and attributions.
+- The technical report: [HTML](https://breenu.github.io/ncap-evaluation/report/report.html) or [PDF](https://github.com/breenu/ncap-evaluation/blob/main/reports/report.pdf); the [one-page results summary](https://breenu.github.io/ncap-evaluation/report/summary.html) and the [two-page policy brief](https://breenu.github.io/ncap-evaluation/report/policy_brief.html).
 - The pre-registered analysis plan: [OSF](https://osf.io/jksne/).
 - Code, reports and every figure: [GitHub repository](https://github.com/breenu/ncap-evaluation); the figures with their captions: [docs/figures.md](https://github.com/breenu/ncap-evaluation/blob/main/docs/figures.md).

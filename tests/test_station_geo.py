@@ -1,4 +1,4 @@
-"""Station metadata and geography rules. All data SYNTHETIC (CLAUDE.md hard rule 1)."""
+"""Station metadata and geography rules. All data SYNTHETIC (project rule: synthetic data only in tests, never in the pipeline)."""
 
 import geopandas as gpd
 import pandas as pd

@@ -1,7 +1,7 @@
 """Phase 4 pre-gate rules: treatment timing, control pool, spillover distance, seasons, balance,
 the post-2018 guard, and the plan's generated-number markers.
 
-All data here are SYNTHETIC, generated in the test (CLAUDE.md hard rule 1).
+All data here are SYNTHETIC, generated in the test (project rule: synthetic data only in tests, never in the pipeline).
 """
 
 import geopandas as gpd
