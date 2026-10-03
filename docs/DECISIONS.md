@@ -1588,3 +1588,92 @@ Numbers from `docs/causal_report.md` §12 (generated). **H1 is "not identified b
 - **The Drive folder `ncap_maiac_gee` stays until the project ends,** as a backup of the raw export (Reenu). This replaces DEC-187's "Reenu may delete the folder". The data card says so.
 - **Workflow:** `causal_maiac_summary` also writes `exploratory_notgained.json`, and the report reads it. The chain was rerun through Snakemake. Rebuilding Phase 8b's panels and specs gave the same spec hashes, so no SDID was recomputed. Figure 7's PNG was unchanged; its SVG differed only in date and element ids and was restored to the committed file (DEC-094/160).
 - **Phase 8b approved by Reenu on 2026-10-03.** Next: Phase 9.
+
+## 2026-10-03: Phase 9 (figures and dashboard). Rules written BEFORE any figure is changed
+
+Phase 9 estimates nothing. It redraws figures from outputs that already exist (Phases 3–8b) and adds one supplementary figure (ACAG vs AOD) from Phase 8b's existing estimates. The wording rules of DEC-151/154 and the Phase 8 extension bind every title, label, note, caption and alt text: **H1 is not identified by this design, so nothing is an effect of NCAP.** Written and pushed before any figure module is edited.
+
+**DEC-190: The figure set, and where figures are built.**
+- **Eight main figures** (proposal visualisation plan), each answering one question. The proposal's questions are reworded where they presuppose an effect:
+  1. `fig1_decomposition`: how much of a city's reported improvement survives weather and network-composition correction, and how did its satellite PM2.5 move relative to comparison cities? (DEC-191)
+  2. `fig2_station_entry`: did the measuring instrument change under the programme?
+  3. `fig3_deweathered_annual` is the main view, because the question is about *annual* numbers; the monthly views `fig3_deweathered` and `fig3_deweathered_grange_carslaw` are 3b and 3c. Question: how much does weather move annual numbers?
+  4. `fig4_event_study`: were pre-trends parallel, and when did listed and comparison centres diverge? (The proposal's "when did any effect appear?" is reworded.)
+  5. `fig5_city_map`: where did satellite PM2.5 rise or fall relative to comparison units after listing? (The proposal's "where did NCAP work?" is reworded, as PROGRESS required.)
+  6. `fig6_shrinkage`: how uncertain are city-level estimates and their ranks?
+  7. `fig7_mechanism`: is the ground PM10/PM2.5 pattern consistent with dust control?
+  8. `fig8_quality_heatmap`: how trustworthy is the network over time?
+- **Supplementary:**
+  - S1 `figS1_levels` (role unchanged);
+  - **S2 `figS2_aod_acag`** (new): ACAG PM2.5 vs raw MAIAC AOD relative changes, every Phase 8b specification and the monitor-gain split (DEC-195);
+  - **S3 `figS3_decomposition_cities`**: the old per-city view, every H4 city, both pollutants, **alphabetical**;
+  - **S4 `figS4_decomposition_pm10`**: the PM10 cross-city summary, which leaves figure 1.
+  - The four Phase 3 EDA figures stay as exploratory E1–E4 under their file names.
+- **Retired:** `fig1_decomposition_cities` (→ S3) and `fig1_decomposition_policy` (→ figure 1 and S4) are deleted. `fig1_decomposition` is overwritten by the final figure 1.
+- **Workflow:**
+  - Every figure rule moves to `workflow/rules/viz.smk`, and figure modules read only files already on disk.
+  - Data rules no longer draw figures. `src/viz/eda.py` keeps its tables; its drawing functions move to `src/viz/fig2_station_entry.py`, `fig8_quality_heatmap.py` and `eda_figures.py`.
+  - The `fig1`, `fig1_policy`, `fig3`, `fig4`, `figS1`, `fig5`, `fig6` and `fig7` rules move out of `composition.smk`, `normalise.smk`, `causal.smk` and `hierarchical.smk`.
+  - The phase targets (`eda`, `causal`, `hierarchical`) drop their figure inputs. `viz` collects every figure, and the pre-gate figures (2, 3, 8, E1–E4) also join `pregate`. Rules that read gated outputs check the gate.
+  - Editing `eda.py` marks its outputs stale by modification time. Its tables must come out content-identical; downstream outputs are then marked current with `snakemake --touch`, as in DEC-108/134/153, and logged at the end of the phase.
+
+**DEC-191: Figure 1, the main figure. DEVIATION from DEC-150's design of the pooled view, dated 2026-10-03.**
+- **Pollutant: PM2.5 only.** Satellite PM2.5 exists only for PM2.5, and one pollutant keeps the figure readable at slide size. The PM10 summary moves to S4, with unchanged content.
+- **Panel (a), cross-city summary.** The existing waterfall over the 18 H4 PM2.5 cities: reported → unmodelled change → modelled weather → network composition → weather- and composition-corrected change (DEC-126/136). GAM with 95% cluster-bootstrap CIs, LightGBM beside it.
+- **Panel (b), the relative change against comparison cities, on its own axis (not a waterfall step).**
+  - Layer A restricted to these cities' units (+3.8% in Phase 7), labelled "relative change against comparison cities (satellite PM2.5)" and "not identified as an effect of NCAP".
+  - Below it, the **shrunken** city-level relative change of each illustrative city (Phase 8, `city_shrunken.csv`), with its 95% CrI.
+- **What changes from DEC-150, and why.**
+  - DEC-150 was written before H1's verdict. It drew the Layer A estimate as a step down from the corrected level, plus a "remaining change" bar (corrected minus that step) described as "the part not attributed to NCAP".
+  - After DEC-151 nothing is attributed to NCAP. Subtracting the estimate from the corrected change presupposes the attribution the design failed to identify.
+  - The two quantities are also on different bases: a ground change 2018 → 2025 in % of 2018, against a satellite difference from a synthetic comparison averaged over 2019 and 2021–2024. They do not belong on one stacked axis.
+  - Hence: no step, no "remaining change" bar, and a separate axis with its own label. No number changes.
+- **Panel (c), illustrative cities, chosen by a rule on network metadata only.**
+  - Among the 18 PM2.5 H4 cities, in each region present (coastal, IGP, peninsular/other), take the city with the most stations valid in 2025 (ties: more panel stations, then alphabetical).
+  - Then add the city with the most stations valid in 2025 not yet chosen, for four in total.
+  - Result: Chennai, New Delhi, Hyderabad and Kolkata, drawn **alphabetically**.
+  - Why station counts: composition can matter only where the network changed, and the rule uses no outcome.
+  - *Stated plainly:* I had seen every city's decomposition (`composition_report.md` §1d) before writing this rule. The rule is fixed on station counts, but the choice of rule is not blind.
+  - Each city panel shows the same steps, the station-bootstrap CI where the city has more than one station in a stratum, and LightGBM beside the GAM.
+- **Wording on the figure.** Never "policy", "policy effect" or "policy-attributable". The step names are "reported", "unmodelled change", "modelled weather", "network composition" and "corrected". Panel (b) carries "not identified as an effect of NCAP (registered pre-trend test failed)".
+
+**DEC-192: Style rules, as implemented in `src/viz/style.py`.**
+- **One palette.**
+  - The validated categorical order: blue, orange, aqua, yellow. Re-run on 2026-10-03: worst adjacent CVD ΔE 9.1, normal-vision 22.9. Aqua and yellow are below 3:1 contrast, so every chart using them carries direct labels or a legend plus distinct markers.
+  - One sequential blue ramp.
+  - One diverging blue–grey–red pair with a grey midpoint, now defined in `style.py` and used by figure 5.
+- **One font** (DejaVu Sans), with sizes raised for slides: base 10 pt, ticks 9, panel titles 10.5, figure titles 12, notes at least 8 pt.
+- **Every figure has:**
+  - a title "Figure N." that states its question;
+  - units on every axis (µg/m³, or % with what it is a % of);
+  - uncertainty on every estimate;
+  - colour never the only carrier of meaning.
+- **Fixes this needs:**
+  - **Figure 2:** entry periods reduced to three (before NCAP ≤ 2018, 2019–2021, 2022–2025), each with its own marker shape as well as colour.
+  - **Figure 5:** in panel (a), marker shape shows the 95% CrI class (▲ entirely above 0, ▼ entirely below, ● spans 0). The land fill no longer equals the diverging midpoint.
+  - **Figure 8:** a line panel beside the heatmap shows the median reliability score per year, with an interquartile band and the number of stations, so the trend is readable without colour.
+- **No ranking of cities.** Every named per-city list is alphabetical (figure 1c, S3). Figure 6 keeps its unnamed units sorted by shrunken estimate, and its rank intervals, because that figure's question is how uncertain ranks are. No unit is named there.
+- **In-figure notes are short:** scope, the binding caveat, sources. The full explanation is the caption (DEC-194).
+- **Byte-stable SVGs** (the DEC-094 open item): `svg.hashsalt` is fixed and there is no date metadata.
+
+**DEC-193: An automated wording check on every figure and caption.**
+- `src/viz/wording.py` scans all text drawn in a figure (titles, labels, ticks, notes, legends) before it is saved, and every caption and alt text. It **refuses to save** on a banned phrase:
+  - "policy effect", "policy-attributable", "attributable to NCAP" or "to the programme", "impact of NCAP", "NCAP caused/reduced/cut/lowered/improved/worked", "due to NCAP", "because of NCAP", "thanks to NCAP";
+  - "effect(s) of NCAP" unless negated in the same clause ("not an effect of NCAP", "not effects of NCAP", "not identified as an effect of NCAP");
+  - "counterfactual": the comparison is a synthetic or comparison unit, and the word implies identification;
+  - "best", "worst", "top N" and "league table" (ranking language).
+- The same check runs on the dashboard text in Part B. Unit tests use synthetic strings.
+
+**DEC-194: Captions and alt text are generated.**
+- Each figure module returns, beside the figure, its number, question, caption and alt text. Every number in them is formatted from the same pipeline outputs the figure draws (hard rule 3).
+- `S.save` writes them to `reports/figures/<name>.json`.
+- `python -m src.viz.catalogue` assembles `docs/figures.md` (generated): one section per figure with file links, question, caption and alt text, plus the wording-check result.
+- Alt text says, in one to four sentences, what the chart shows and its main reading. Where a caveat binds, it ends with it.
+
+**DEC-195: Figure S2, ACAG vs raw MAIAC AOD.**
+- **Rows:**
+  - the five Phase 8b specifications: primary, non-monsoon, area-weighted, relaxed QA, and the 17 Layer B units;
+  - then the monitor-gain split on the primary: gained, not gained, and gained − not gained.
+- **Each row** shows ACAG PM2.5 on the same units (filled circle) and AOD (open square), each with its 95% CI. The pre-specified classification is written at the row's end: Q1 per specification, Q2 for the difference (DEC-180). The not-gained row also carries DEC-188's exploratory label.
+- **One shared % axis.** DEC-180's rule itself reads the AOD interval against ACAG's estimate on a common % scale (the yardstick). The axis label and title state "AOD, not PM2.5: direction only". No ACAG–AOD difference is plotted as a quantity.
+- **Caveats on the figure:** H1 is not identified; AOD is a column measure; the AOD sample is 95 of 113 treated units.
