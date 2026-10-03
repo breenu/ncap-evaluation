@@ -1905,3 +1905,44 @@ Phase 10 estimates nothing. It writes the report, the results summary, the polic
 - **No result numbers.** The list holds dates, DEC numbers and commit hashes only, so it needs no generated values.
 
 **DEC-208 (fact, found while compiling the list): the registered exploratory analysis "NO2 as a secondary pollutant" (plan §5) was never carried out.** NO2 was ingested and cleaned in Phase 3, and its units were checked (DEC-056), but no phase analysed it. It is listed as B3, "not carried out". Whether to run it before the report, as an exploratory analysis carried out after every other result was seen, or to leave it as a stated omission, is my decision at the Part A checkpoint.
+
+## 2026-10-03: Phase 10 Part A reviewed (Reenu); Part B rules written BEFORE any report text or code
+
+**DEC-209: My Part A rulings.**
+- **Approved, with edits:**
+  - The headline paragraph's first sentence is scoped to the cities I could check.
+  - "All 113 NCAP urban centres" becomes "the 113 urban centres containing 121 of NCAP's 131 cities".
+  - The sentence that satellite PM2.5 fell in both groups now comes before the relative-change estimate, so "a relative rise" cannot be read as pollution rising.
+  - One sentence is added on the pre-specified Q2 result: the monitor-gain gap seen in satellite PM2.5 is absent from raw AOD, which is consistent with, but does not prove, the satellite product absorbing the new monitors.
+  - The abstract uses the same wording.
+- **The deviations list:**
+  - Group C now says that a summary was posted on OSF and that the full set of readings is DEC-135.
+  - C1 states that `29874cf` was pushed publicly on 1 October 2026, after H4 had been computed.
+  - A new row, D5, records that figure 1(c)'s city rule was written after viewing every city's decomposition (DEC-191). Later group D rows are renumbered.
+- **The PDF is made with Typst** (DEC-206).
+- **Where the report goes:** the PDF is committed in `reports/` and attached to the v1.0 release; the HTML goes on the Pages site.
+- **NO2 stays a stated omission** (B3, DEC-208). It is not run.
+- **The OSF clarification:** the text I posted on 1 October 2026 replaces the local draft in `docs/osf/clarification_2026-10-01.md`. It differs from the draft: it states that `29874cf` was pushed after H4 had been computed, and that deviations are logged in DECISIONS.md.
+- **For Part C:**
+  - Every code comment that cites "CLAUDE.md hard rule N" is reworded to state the rule itself.
+  - `docs/osf/test.pdf` is removed.
+  - How DEC-019 is handled is still open; I decide at the Part C checkpoint.
+
+**DEC-210: Part B build rules (implementing DEC-206).**
+- **Values.**
+  - `python -m src.report.values` (analysis environment, gated) writes `reports/_variables.yml` and the tables in `reports/_generated/`.
+  - It reads the same processed outputs as the phase reports, reusing their loaders and decision functions (`src.causal.causal_report.load/decide/wording`, `src.hierarchical.report.load`, `src.causal.report_maiac.results`), so no rule is re-implemented.
+  - Each value is stored already formatted, as the documents print it.
+- **Figures.** Each figure's caption in the report is the caption the figure module generated (its JSON sidecar, DEC-194), copied into `_variables.yml`. Captions are therefore never retyped, and they have already passed the wording check.
+- **Pages and the release.**
+  - The HTML is published on the Pages site in Part C, when the site's links are revised.
+  - The PDF is attached to the release in Part D.
+  - Until my review of Part B, nothing new is deployed.
+- **The slide.**
+  - `python -m src.viz.fig1_decomposition --slide` writes `reports/figures/fig1_slide.{png,svg,json}`: figure 1 panel (a) alone, 16:9.
+  - Its title is one takeaway line built from the same numbers as panel (a).
+  - It is saved through `style.save`, so the wording check and byte-stability apply.
+- **Length targets, measured on the rendered PDF:** the technical report 20–30 pages; the summary one page; the brief two pages.
+- **Licences.**
+  - Each source's terms are checked against my choices (MIT for code; CC BY 4.0 for text and figures, with the ODbL notice where figures use ground-derived data; ODbL 1.0 for ground-derived data).
+  - Licence files are written only where no conflict is found. Any conflict is reported at the Part B checkpoint and is not applied.
