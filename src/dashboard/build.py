@@ -367,6 +367,9 @@ def about_page() -> str:
 QUARTO = """project:
   type: website
   output-dir: _site
+  resources:
+    # the phone charts are referenced only from a raw-HTML <source srcset>, which Quarto does not scan (DEC-205)
+    - "cities/img/*-narrow.png"
 
 website:
   title: "NCAP city explorer"

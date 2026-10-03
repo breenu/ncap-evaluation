@@ -54,6 +54,9 @@ def test_every_city_page_serves_a_wide_and_a_phone_chart():
         assert narrow and wide, p.name
         for rel in (narrow.group(1), wide.group(1)):
             assert (p.parent / rel).exists(), rel
+    # Quarto does not scan raw-HTML srcset, so the phone charts must be declared as resources or they are never
+    # published (found on the live site, DEC-205)
+    assert '"cities/img/*-narrow.png"' in (SITE / "_quarto.yml").read_text(encoding="utf-8")
 
 
 @needs_site
