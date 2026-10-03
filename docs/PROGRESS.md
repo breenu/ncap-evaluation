@@ -75,7 +75,7 @@ snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (
 
 ## Phase 8b (raw MAIAC AOD, Earth Engine): DONE (2026-10-03), awaiting Reenu's review
 
-**Next:** Reenu reviews Phase 8b (`docs/phase-notes/08b-maiac.md`, `docs/causal_report.md` §12). After approval comes Phase 9: figures 1–8 to the style rules, and the read-only dashboard (cut item #3 if time runs short).
+**CI** passed on the final Phase 8b commit (run 37081522142). **Next:** Reenu reviews Phase 8b (`docs/phase-notes/08b-maiac.md`, `docs/causal_report.md` §12). After approval comes Phase 9: figures 1–8 to the style rules, and the read-only dashboard (cut item #3 if time runs short).
 
 **Rules:**
 - the specification, DEC-174 to DEC-181, pushed in `85acc2a` before any AOD value was pulled;
@@ -539,7 +539,7 @@ Built and run (all generated, all in Snakemake `workflow/rules/clean.smk`):
 - **The treatment definition** (listed vs funded) is proposed in `docs/analysis_plan.md` (listed primary) and decided by Reenu at the gate.
 - **No LICENSE file yet, and the repo is public (since 2026-09-27).** Reenu to choose a code licence. Any derived dataset from the CPCB mirror must be ODbL (DEC-037).
 - **Jan–Mar 2026 ground data are provisional** (OpenAQ raw feed, DEC-079).
-- **The locked `wcwidth 0.9.1` build (`pyh5ded981_0`) is no longer on conda-forge's main label** (found 2026-10-03, DEC-182). A clean `conda-lock install` may fail on it; test it in the Phase 10 clean-clone check.
+- **The locked `wcwidth 0.9.1` build (`pyh5ded981_0`) is no longer on conda-forge's main label** (found 2026-10-03, DEC-182). `conda-lock install` still works, because it fetches each package by its exact URL: CI's linux-64 install from the updated lock passed (runs 37066116964, 37066872977, 37081522142). A fresh *solve* from `environment.yml` would pick another build. Recheck in the Phase 10 clean-clone test.
 - **Earth Engine exports are not byte-reproducible** (about 8 significant figures, DEC-184). The raw MAIAC tables are pinned by sha256; re-exporting them would need credentials and about 170 EECU-hours.
 - **Outputs are not byte-deterministic** (GeoPackage timestamps, tie order in DuckDB/pandas writes, SVG dates and ids; DEC-094). Content and numbers reproduce. Fix before the Phase 10 clean-clone check.
 - Possible extension (not scheduled): the official PRANA/NAMP PM10 series as a "reported" reference (DEC-016).
