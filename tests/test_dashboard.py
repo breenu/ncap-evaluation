@@ -46,6 +46,17 @@ def test_every_city_page_carries_the_caveat():
 
 
 @needs_site
+def test_every_city_page_serves_a_wide_and_a_phone_chart():
+    for p in PAGES:
+        t = p.read_text(encoding="utf-8")
+        narrow = re.search(r'<source media="\(max-width: 600px\)" srcset="(img/[^"]+-narrow\.png)">', t)
+        wide = re.search(r'<img src="(img/[^"]+\.png)" alt="Four charts for [^"]+"', t)
+        assert narrow and wide, p.name
+        for rel in (narrow.group(1), wide.group(1)):
+            assert (p.parent / rel).exists(), rel
+
+
+@needs_site
 def test_cities_are_listed_alphabetically_and_never_ranked():
     idx = (SITE / "index.qmd").read_text(encoding="utf-8")
     listed = re.findall(r"^- \[(.+?)\]\(cities/", idx, flags=re.M)

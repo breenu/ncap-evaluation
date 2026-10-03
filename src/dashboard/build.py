@@ -12,8 +12,10 @@ are listed alphabetically and never ranked; no page shows a rank, a p-value or a
     python -m src.dashboard.build      (gated: reads Phase 7 and Phase 8 outputs)
 """
 
+import html
 import re
 import shutil
+import textwrap
 import unicodedata
 
 import geopandas as gpd
@@ -34,6 +36,7 @@ YEARS_SAT = (2010, 2024)
 REPO = "https://github.com/breenu/ncap-evaluation"
 OSF = "https://osf.io/jksne/"
 DPI = 120
+DPI_NARROW = 130  # the narrow chart is ~4 in wide, so a 390 px phone shows its text near full size; the extra pixels keep it sharp
 C_RAW, C_DW, C_PANEL = S.INK_2, S.CATEGORICAL[0], S.CATEGORICAL[1]
 
 
@@ -116,11 +119,17 @@ def ground_panel(ax: plt.Axes, t: pd.DataFrame, pol: str, listed: int) -> bool:
     return True
 
 
-def city_figure(u: pd.Series, D: dict) -> tuple[plt.Figure, str]:
+def city_figure(u: pd.Series, D: dict, narrow: bool = False) -> tuple[plt.Figure, str]:
+    """The city's four panels: 2 x 2 for wide screens, or one column (`narrow`) for phones (DEC-204), so each
+    panel keeps a readable size at a 390 px viewport."""
     S.apply()
     t = D["trends"][D["trends"].unit_id == u.unit_id]
     listed = int(u.cohort_listed)
-    fig, axes = plt.subplots(2, 2, figsize=(11, 7.6))
+    if narrow:
+        fig, ax4 = plt.subplots(4, 1, figsize=(4.2, 15.5))
+        axes = np.array([[ax4[0], ax4[1]], [ax4[2], ax4[3]]])
+    else:
+        fig, axes = plt.subplots(2, 2, figsize=(11, 7.6))
     has = {pol: ground_panel(ax, t, pol, listed) for ax, pol in zip(axes[0], ("pm25", "pm10"), strict=True)}
 
     sx = axes[1, 0]
@@ -156,10 +165,18 @@ def city_figure(u: pd.Series, D: dict) -> tuple[plt.Figure, str]:
                Line2D([], [], color=C_DW, marker="s", label="Deweathered, all stations (GAM; band: GAM–LightGBM range)"),
                Line2D([], [], color=C_PANEL, marker="^", linestyle="--", label="Composition-corrected: stations valid every year 2018–2025, deweathered"),
                Line2D([], [], color=S.NEUTRAL, linestyle=":", label="NCAP listing year")]  # fmt: skip
-    fig.tight_layout(rect=(0, 0, 1, 0.88))
-    fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.0, 0.995), ncol=2, fontsize=8.5)
-    fig.text(0.0, 0.0, "Shaded: 2020 (lockdown). Sources: CPCB via the india-cpcb-aqi mirror (ODbL 1.0); ERA5 (Copernicus); "
-             "ACAG SatPM V5.GL.06; GHSL UCDB R2024A.", fontsize=8, color=S.INK_2, va="top")  # fmt: skip
+    note = ("Shaded: 2020 (lockdown). Sources: CPCB via the india-cpcb-aqi mirror (ODbL 1.0); ERA5 (Copernicus); "
+            "ACAG SatPM V5.GL.06; GHSL UCDB R2024A.")
+    if narrow:
+        handles[1].set_label("Deweathered, all stations (GAM;\nband: GAM–LightGBM range)")
+        handles[2].set_label("Composition-corrected: stations valid\nevery year 2018–2025, deweathered")
+        fig.tight_layout(rect=(0, 0, 1, 0.915), h_pad=2.2)
+        fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.0, 0.998), ncol=1, fontsize=9)
+        note = textwrap.fill(note, 52)
+    else:
+        fig.tight_layout(rect=(0, 0, 1, 0.88))
+        fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.0, 0.995), ncol=2, fontsize=8.5)
+    fig.text(0.0, 0.0, note, fontsize=8, color=S.INK_2, va="top")
 
     def g(pol):
         a = t[(t.pollutant == pol) & (t.set == "all")].dropna(subset=["raw"]).sort_values("year")
@@ -212,18 +229,22 @@ def city_page(u: pd.Series, D: dict, alt: str) -> str:
          f"| Region | {S.REGION_LABEL.get(u.region, u.region)} |", f"| Listed under NCAP (treated from) | {int(u.cohort_listed)} |",
          f"| Population 2015 (GHSL) | {u.pop_2015:,.0f} |",
          f"| New monitor inside the urban centre, 2019–2024 | {monitor} |", "",
-         f"![Ground and satellite PM2.5 and the city-level relative change for {u['name']}.](img/{u.slug}.png)"
-         f'{{.column-page fig-alt="{alt.replace(chr(34), chr(39))}"}}', ""]  # fmt: skip
+         # one column on phones (≤ 600 px), 2 x 2 elsewhere (DEC-204); the alt text describes both
+         "```{=html}", '<figure class="figure column-page">',
+         f'<picture><source media="(max-width: 600px)" srcset="img/{u.slug}-narrow.png">'
+         f'<img src="img/{u.slug}.png" alt="{html.escape(alt)}" class="img-fluid figure-img"></picture>',
+         f"<figcaption>Ground and satellite PM2.5 and the city-level relative change for {html.escape(u['name'])}."
+         "</figcaption>", "</figure>", "```", ""]  # fmt: skip
     L += ["## What the charts show", "",
-          "- **Ground PM2.5 and PM10** (top): the annual mean over every CPCB station inside the urban centre that was "
+          "- **Ground PM2.5 and PM10** (first two charts): the annual mean over every CPCB station inside the urban centre that was "
           "valid that year, as reported; the same after removing year-to-year weather (deweathered); and, where some stations "
           "were valid every year 2018–2025, those stations alone, deweathered (corrected for weather and for the change in "
           "which stations exist). The numbers along the bottom are the stations behind each year."
           + ("" if any(has_ground.values()) else " **This urban centre has no ground station with a valid year.**")
           + ("" if any(has_panel.values()) else " No station here was valid every year 2018–2025, so there is no "
              "composition-corrected series."),
-          "- **Satellite PM2.5** (bottom left): ACAG V5.GL.06, weighted by where people live. Descriptive.",
-          "- **City-level relative change** (bottom right): how this urban centre's satellite PM2.5 moved after listing, "
+          "- **Satellite PM2.5** (third chart): ACAG V5.GL.06, weighted by where people live. Descriptive.",
+          "- **City-level relative change** (fourth chart): how this urban centre's satellite PM2.5 moved after listing, "
           "against a synthetic comparison built from non-NCAP centres.", ""]  # fmt: skip
     L += ["## City-level relative change (satellite PM2.5)", "",
           "| | estimate | 95% interval |", "|---|---|---|",
@@ -417,6 +438,8 @@ def main() -> None:
     for _, u in D["units"].iterrows():
         fig, alt = city_figure(u, D)
         S.save(fig, u.slug, directory=SITE / "cities" / "img", formats=("png",), dpi=DPI)
+        fig, _ = city_figure(u, D, narrow=True)
+        S.save(fig, f"{u.slug}-narrow", directory=SITE / "cities" / "img", formats=("png",), dpi=DPI_NARROW)
         write(SITE / "cities" / f"{u.slug}.qmd", city_page(u, D, alt))
     write(SITE / "index.qmd", index_page(D))
     write(SITE / "about.qmd", about_page())

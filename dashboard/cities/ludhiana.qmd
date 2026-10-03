@@ -19,13 +19,18 @@ Nothing on this page is an effect of NCAP. City-level numbers come from a Bayesi
 | Population 2015 (GHSL) | 2,088,205 |
 | New monitor inside the urban centre, 2019–2024 | no |
 
-![Ground and satellite PM2.5 and the city-level relative change for Ludhiana.](img/ludhiana.png){.column-page fig-alt="Four charts for Ludhiana. Ground data: PM2.5 raw annual mean 51 µg/m³ in 2018 and 53 in 2025; PM10 raw annual mean 110 µg/m³ in 2018 and 104 in 2025. Satellite PM2.5 from 76 µg/m³ in 2010 to 87 in 2024. City-level relative change after listing, shrunken: +3.4% (95% credible interval +0.0 to +8.0); not identified as an effect of NCAP."}
+```{=html}
+<figure class="figure column-page">
+<picture><source media="(max-width: 600px)" srcset="img/ludhiana-narrow.png"><img src="img/ludhiana.png" alt="Four charts for Ludhiana. Ground data: PM2.5 raw annual mean 51 µg/m³ in 2018 and 53 in 2025; PM10 raw annual mean 110 µg/m³ in 2018 and 104 in 2025. Satellite PM2.5 from 76 µg/m³ in 2010 to 87 in 2024. City-level relative change after listing, shrunken: +3.4% (95% credible interval +0.0 to +8.0); not identified as an effect of NCAP." class="img-fluid figure-img"></picture>
+<figcaption>Ground and satellite PM2.5 and the city-level relative change for Ludhiana.</figcaption>
+</figure>
+```
 
 ## What the charts show
 
-- **Ground PM2.5 and PM10** (top): the annual mean over every CPCB station inside the urban centre that was valid that year, as reported; the same after removing year-to-year weather (deweathered); and, where some stations were valid every year 2018–2025, those stations alone, deweathered (corrected for weather and for the change in which stations exist). The numbers along the bottom are the stations behind each year.
-- **Satellite PM2.5** (bottom left): ACAG V5.GL.06, weighted by where people live. Descriptive.
-- **City-level relative change** (bottom right): how this urban centre's satellite PM2.5 moved after listing, against a synthetic comparison built from non-NCAP centres.
+- **Ground PM2.5 and PM10** (first two charts): the annual mean over every CPCB station inside the urban centre that was valid that year, as reported; the same after removing year-to-year weather (deweathered); and, where some stations were valid every year 2018–2025, those stations alone, deweathered (corrected for weather and for the change in which stations exist). The numbers along the bottom are the stations behind each year.
+- **Satellite PM2.5** (third chart): ACAG V5.GL.06, weighted by where people live. Descriptive.
+- **City-level relative change** (fourth chart): how this urban centre's satellite PM2.5 moved after listing, against a synthetic comparison built from non-NCAP centres.
 
 ## City-level relative change (satellite PM2.5)
 

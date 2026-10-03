@@ -19,13 +19,18 @@ Nothing on this page is an effect of NCAP. City-level numbers come from a Bayesi
 | Population 2015 (GHSL) | 1,484,755 |
 | New monitor inside the urban centre, 2019–2024 | yes |
 
-![Ground and satellite PM2.5 and the city-level relative change for Jabalpur.](img/jabalpur.png){.column-page fig-alt="Four charts for Jabalpur. Ground data: PM2.5 raw annual mean 46 µg/m³ in 2020 and 34 in 2025; PM10 raw annual mean 107 µg/m³ in 2020 and 79 in 2025. Satellite PM2.5 from 40 µg/m³ in 2010 to 46 in 2024. City-level relative change after listing, shrunken: +6.0% (95% credible interval +2.5 to +9.6); not identified as an effect of NCAP."}
+```{=html}
+<figure class="figure column-page">
+<picture><source media="(max-width: 600px)" srcset="img/jabalpur-narrow.png"><img src="img/jabalpur.png" alt="Four charts for Jabalpur. Ground data: PM2.5 raw annual mean 46 µg/m³ in 2020 and 34 in 2025; PM10 raw annual mean 107 µg/m³ in 2020 and 79 in 2025. Satellite PM2.5 from 40 µg/m³ in 2010 to 46 in 2024. City-level relative change after listing, shrunken: +6.0% (95% credible interval +2.5 to +9.6); not identified as an effect of NCAP." class="img-fluid figure-img"></picture>
+<figcaption>Ground and satellite PM2.5 and the city-level relative change for Jabalpur.</figcaption>
+</figure>
+```
 
 ## What the charts show
 
-- **Ground PM2.5 and PM10** (top): the annual mean over every CPCB station inside the urban centre that was valid that year, as reported; the same after removing year-to-year weather (deweathered); and, where some stations were valid every year 2018–2025, those stations alone, deweathered (corrected for weather and for the change in which stations exist). The numbers along the bottom are the stations behind each year. No station here was valid every year 2018–2025, so there is no composition-corrected series.
-- **Satellite PM2.5** (bottom left): ACAG V5.GL.06, weighted by where people live. Descriptive.
-- **City-level relative change** (bottom right): how this urban centre's satellite PM2.5 moved after listing, against a synthetic comparison built from non-NCAP centres.
+- **Ground PM2.5 and PM10** (first two charts): the annual mean over every CPCB station inside the urban centre that was valid that year, as reported; the same after removing year-to-year weather (deweathered); and, where some stations were valid every year 2018–2025, those stations alone, deweathered (corrected for weather and for the change in which stations exist). The numbers along the bottom are the stations behind each year. No station here was valid every year 2018–2025, so there is no composition-corrected series.
+- **Satellite PM2.5** (third chart): ACAG V5.GL.06, weighted by where people live. Descriptive.
+- **City-level relative change** (fourth chart): how this urban centre's satellite PM2.5 moved after listing, against a synthetic comparison built from non-NCAP centres.
 
 ## City-level relative change (satellite PM2.5)
 

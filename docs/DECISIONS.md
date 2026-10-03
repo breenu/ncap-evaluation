@@ -1826,3 +1826,31 @@ Phase 9 estimates nothing. It redraws figures from outputs that already exist (P
 - **Reproducibility.** A second build gives 230 of 230 site source files byte-identical. All figure rules ran again through Snakemake (`style.save` gained an output-directory argument), and every figure came out byte-identical to the committed files. Afterwards `snakemake -n viz` and `-n pregate` have nothing to do, and `snakemake -n all` lists only the Phase 10 `report` stub (log `data/interim/logs/snakemake_phase9_partB.log`).
 - **Tests:** `tests/test_dashboard.py`, with 6 tests. The full suite has 254 tests, all passing (`data/interim/logs/pytest_phase9_final.log`).
 - **Deployment (DEC-201).** `.github/workflows/pages.yml` renders the committed sources with the site lock and deploys through GitHub's Pages actions. It needs Reenu to set the repository's Pages source to "GitHub Actions"; until then the deploy job fails.
+
+## 2026-10-03: Phase 9 approved (Reenu); the deployed site checked
+
+**DEC-203: Phase 9 approved by Reenu (2026-10-03). The dashboard leaves out the synthetic comparison's trajectory: a DEVIATION from the proposal's dashboard description, dated 2026-10-03.**
+- **What the proposal says.** The dashboard should show a city's "raw, deweathered, composition-corrected and counterfactual trends".
+- **What is done instead.** Each city page shows the raw, deweathered and composition-corrected ground trends, the satellite PM2.5 series, and the city-level relative change with its interval and its shrunken estimate. It does not draw the synthetic comparison's trajectory.
+- **Why (Reenu agreed, as DEC-199 proposed):**
+  - H1 is not identified (DEC-151). A drawn gap between a city and its "counterfactual" would be read as an effect of NCAP, which the design failed to establish.
+  - The per-unit synthetic trajectories were not saved in Phase 8 (`unit_sdid_*.parquet` holds estimates, not paths). Drawing them would mean re-running 113 per-unit SDIDs for a view the wording rules would forbid labelling as a counterfactual.
+- **Effect:** none on any number; it will be listed with the deviations in the final report.
+- **Also decided:** the repository size is acceptable, and the code licence is decided in Phase 10.
+- **Pages:** Reenu enabled GitHub Pages (source: GitHub Actions). A manual run of the `dashboard` workflow deployed the site to https://breenu.github.io/ncap-evaluation/ (run 37112646867).
+
+**DEC-204: Check of the deployed site (not the local build), and one fix: city charts were unreadable at phone width.**
+- **Links.**
+  - A crawl of the live site requested every internal page and asset reachable from the index: 249 URLs, including 116 HTML pages, every chart, every CSV and Quarto's own files. All returned 200.
+  - The 14 external links all resolve. Wiley and ACS answer a scripted request with 403 after the DOI has correctly redirected to the article page, so those two are publisher bot-blocking, not broken links.
+- **Caveat and content.** All 113 city pages carry the "not identified" caveat, the chart and its alt text. The About page carries every attribution and DOI of DEC-200.
+- **Mobile check: how it was done.** Headless Edge on Windows will not lay out a page narrower than 504 px (measured), so a "390 px" screenshot is really a clipped 504 px layout. The pages were therefore loaded inside a 390 px-wide iframe, which gives them a true 390 px viewport.
+- **Mobile check: what it found.**
+  - **Passed:** text, tables, the navigation (collapsed to a menu) and the About page fit with no sideways scrolling.
+  - **Failed:** each city's 2 × 2 chart shrank to about 350 px wide, which made its text unreadable.
+- **Fix.**
+  - Each city also gets a one-column chart: the same four panels stacked, about 4 in wide, at 130 dpi. Pages serve it through `<picture><source media="(max-width: 600px)">`, so phones get the stacked chart and wider screens keep the 2 × 2 one. The alt text covers both.
+  - The page text now refers to "the first two charts", "the third chart" and "the fourth chart" instead of positions that differ between layouts.
+  - Same data and same numbers; the images add about 17 MB to `dashboard/`.
+- **Test:** every committed city page must serve both images, and both files must exist (`tests/test_dashboard.py`).
+- After redeployment the live checks were repeated (DEC-205).
