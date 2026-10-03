@@ -1,0 +1,8 @@
+{
+  "name": "figS4_decomposition_pm10",
+  "number": "S4",
+  "title": "How much of NCAP cities' reported fall in PM10 survives weather and network correction?",
+  "question": "How much of a city's reported PM10 improvement is real?",
+  "caption": "(a) Mean change in annual ground PM10 from 2018 to 2025 over the 13 NCAP cities with a PM10 station valid every year (11 with one such station): reported -9.6%; unmodelled change +0.5 pp, modelled weather -5.4 pp, network composition -1.0 pp; corrected -3.6%. H4 = +6.0 pp (95% CI +1.8 to +10.0). GAM bars, LightGBM squares, 95% cluster-bootstrap intervals. (b) Ground difference-in-differences against control-pool cities (Layer B, secondary, one pre-year): +9.2% (95% CI -0.7 to +23.5). There is no satellite PM10. H1 is not identified by this design (registered pre-trend test failed): not an effect of NCAP.",
+  "alt": "Waterfall chart for PM10 across 13 NCAP cities: reported change -9.6%, corrected change -3.6%; modelled weather is the largest part removed (-5.4 pp). A separate axis shows the secondary ground comparison with control cities, +9.2% with a wide interval (-0.7 to +23.5). Not identified as an effect of NCAP."
+}

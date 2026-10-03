@@ -1,0 +1,8 @@
+{
+  "name": "eda_ground_vs_satellite",
+  "number": "E3",
+  "title": "Does ground–satellite agreement change as the network grows?",
+  "question": "Ground vs satellite (exploratory)",
+  "caption": "Correlation across stations between log station annual mean PM2.5 and log ACAG value of the station's grid cell, by year, for both satellite products, with bootstrap 95% intervals. V5.GL.06: r = 0.80 in 2016 (12 stations) and 0.79 in 2024 (372 stations).",
+  "alt": "Line chart of the yearly correlation between ground and satellite PM2.5, from 0.80 in 2016 to 0.79 in 2024, as the number of stations grows from 12 to 372."
+}

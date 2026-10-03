@@ -1,0 +1,8 @@
+{
+  "name": "fig8_quality_heatmap",
+  "number": "8",
+  "title": "How trustworthy is the PM2.5 network over time?",
+  "question": "How trustworthy is the network over time?",
+  "caption": "(a) The reliability score (0–100) of every PM2.5 station in every year it reported, 562 stations, grouped by region and ordered by first year of data; pale grey cells have no data. (b) The median score over the stations reporting each year, with its interquartile range: 79 over 131 stations in 2018 and 82 over 545 in 2025. The score is 100 × completeness × share of unflagged data, times 0.8 for each failed consistency check (neighbours, satellite, changepoints). It describes data quality; no data are excluded by it.",
+  "alt": "Heatmap of 562 PM2.5 monitoring stations by year, shaded by reliability score, showing how the network grew from 30 stations in 2015 to 545 in 2025. A station's first, usually partial, year scores a median 42, against 84 in its later years. A line chart beside it shows the median score: 79 in 2018 and 82 in 2025."
+}

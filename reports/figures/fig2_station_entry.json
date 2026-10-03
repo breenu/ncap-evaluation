@@ -1,0 +1,8 @@
+{
+  "name": "fig2_station_entry",
+  "number": "2",
+  "title": "Did the measuring instrument change under the programme?",
+  "question": "Did the measuring instrument change under the programme?",
+  "caption": "(a) The 539 CPCB continuous monitoring stations with a station-level coordinate, by the period of their first PM data: 138 before NCAP (to 2018), 185 in 2019–2021 and 216 in 2022–2025; open circles mark NCAP cities. (b) New stations per year, all 565 stations: 139 first reported in 2015–2018 and 426 from 2019 onward, peaking at 127 in 2023. Most of the network that measures NCAP cities today did not exist at the 2018 baseline, which is why reported city averages mix air-quality change with changes in where monitors stand.",
+  "alt": "Map of India with monitoring stations marked by when they first reported: 138 before 2019, 185 in 2019–2021 and 216 in 2022–2025, most of them in or near NCAP cities. A bar chart shows new stations per year, 139 up to 2018 and 426 from 2019, with the peak of 127 in 2023."
+}

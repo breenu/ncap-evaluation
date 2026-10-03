@@ -1,0 +1,8 @@
+{
+  "name": "eda_seasonal_regions",
+  "number": "E1",
+  "title": "How does PM2.5 vary through the year in each region?",
+  "question": "Seasonality by region (exploratory)",
+  "caption": "Monthly mean PM2.5 by region, (a) over ground stations 2015–2025 and (b) over satellite urban-centre values 2015–2024, with 95% intervals across stations or centres. Coastal ground peak in month 1 (63 µg/m³); Indo-Gangetic Plain ground peak in month 11 (134 µg/m³); North-east ground peak in month 1 (84 µg/m³); Peninsular / other ground peak in month 11 (61 µg/m³).",
+  "alt": "Two line charts of the seasonal PM2.5 cycle by region, ground and satellite. Every region peaks in month(s) 1, 11, 12 and is lowest in month(s) 7, 8. The Indo-Gangetic Plain is highest in every month in the satellite series."
+}

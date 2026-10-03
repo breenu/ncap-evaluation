@@ -1,0 +1,8 @@
+{
+  "name": "fig3_deweathered_annual",
+  "number": "3",
+  "title": "How much does weather move annual PM2.5 numbers?",
+  "question": "How much does weather move annual numbers?",
+  "caption": "Raw annual mean PM2.5 (grey) and the deweathered annual mean (blue: weather resampled within ±15 days of each date, the primary scheme; orange dashed: Grange & Carslaw all-year resampling) for six cities chosen by data coverage, one per region first. The band is the range between the two model families (GAM primary, LightGBM). Median weather part of the year-on-year change in the annual mean, per city: Chennai 5%; New Delhi 5%; Guwahati 6%; Hyderabad 4%; Mumbai 5%; Lucknow 2%; the median of these per-city medians over all 171 cities with ground data is 5.3%. 2020 is shaded: its lockdown is an emissions change, not weather, and the one-year-knot trend partly averages it out.",
+  "alt": "Six small line charts of annual PM2.5 for Chennai, New Delhi, Guwahati, Hyderabad, Mumbai, Lucknow. In each, the gap between the raw and deweathered lines is that year's weather effect; a typical city's median weather part of a year-on-year change in the annual mean is 5.3%."
+}

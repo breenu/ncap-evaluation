@@ -1,0 +1,8 @@
+{
+  "name": "figS1_levels",
+  "number": "S1",
+  "title": "What happened to satellite PM2.5 in NCAP units and in the control pool?",
+  "question": "Descriptive context for figure 4",
+  "caption": "Mean annual population-weighted satellite PM2.5 (ACAG V5.GL.06, µg/m³) over the 113 NCAP units and the 923 control-pool centres, 2010–2024, unweighted across units, with 95% t-intervals; 2020 shaded. From 2018 to 2024 the NCAP units' mean went from 54.8 to 45.6 µg/m³ (-16.8%) and the pool's from 59.3 to 44.9 (-24.3%): both fell, the pool more. Descriptive: the groups differ in size and region, and no effect is computed from these means.",
+  "alt": "Line chart of satellite PM2.5, 2010–2024, for NCAP units and control-pool centres. Both peak in 2016 and fall after 2018; the control pool starts higher and falls further, from 59 to 45 µg/m³, against 55 to 46 for NCAP units, so by 2024 the two are about equal."
+}

@@ -3,7 +3,7 @@
 Handoff file: a fresh session should be able to continue from this alone.
 Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (why) and `CLAUDE.md` (rules).
 
-*Last updated: 2026-10-03. **Phase 8b approved and closed (DEC-174 to DEC-189). Next: Phase 9, figures and dashboard.** START at "Next: Phase 9" below.*
+*Last updated: 2026-10-03. **Phase 9 Part A (figures) built and pushed; waiting for Reenu's review and go-ahead before Part B (dashboard).** START at "Phase 9: Part A done" below.*
 
 ## Status
 
@@ -19,7 +19,7 @@ Read with [`PLAN.md`](PLAN.md) (what and how), [`DECISIONS.md`](DECISIONS.md) (w
 | 7 Causal analysis | ✅ approved 2026-10-02 (H1 not identified: rule (b) fails); pushed (DEC-138 to DEC-161) |
 | 8 Heterogeneity and mechanism | ✅ approved 2026-10-03 (H5 rule not met; H3 inconclusive; dose: nothing); pushed (DEC-161 to DEC-172) |
 | 8b MAIAC AOD check (Earth Engine) | ✅ approved 2026-10-03 (Q1 rise not reproduced; Q2 gap absent; exploratory: ACAG and AOD also diverge where no monitor was added); pushed (DEC-174 to DEC-189) |
-| 9 Figures and dashboard | **next** |
+| 9 Figures and dashboard | **in progress:** Part A (figures) done and pushed, at the checkpoint (DEC-190 to DEC-196); Part B (dashboard) waits for Reenu's go-ahead |
 | 10 Report and release | not started |
 
 Pre-registration gate: **open** since 2026-09-27 (`config/gate.yaml` cites plan commit `6e24ecaf38c54c1f31774c966c243e4183c1b2ca` and https://osf.io/jksne/). Phase 7's rules (DEC-138 to DEC-150) were pushed in `eebaecc` before any estimate; the first post-2019 effect estimates are Part A's (DEC-151).
@@ -74,7 +74,53 @@ snakemake -n all               # dry run
 snakemake --cores 1 pregate      # single core: several steps give DuckDB 8 GB (DEC-082)
 ```
 
-## Next: Phase 9 (figures and dashboard). START HERE in a new chat
+## Phase 9: Part A done (figures), CHECKPOINT. START HERE in a new chat
+
+**State (2026-10-03):** Part A is built and pushed. **Reenu reviews the figures** (`docs/figures.md` lists them all, with captions and alt text). **Part B (dashboard) starts only after her go-ahead.**
+
+**Rules:** DEC-190 to DEC-195, pushed in `09209e7` before any figure changed. Results and workflow: DEC-196.
+- **Figure 1** follows DEC-191, which deviates from DEC-150: no "policy" step and no "remaining change" bar. The satellite relative change sits on its own axis, labelled "not identified as an effect of NCAP".
+  - Four illustrative cities chosen by station counts: Chennai, Hyderabad, Kolkata, New Delhi.
+  - PM10 moves to S4; the per-city view moves to S3 (alphabetical).
+- **Every figure, caption and alt text passes `src/viz/wording.py`** (DEC-193). `style.save` refuses to write a figure with banned wording.
+
+**Figures** (`reports/figures/`, each PNG + SVG + JSON sidecar):
+- 1 `fig1_decomposition`
+- 2 `fig2_station_entry`
+- 3 `fig3_deweathered_annual` (3b `fig3_deweathered`, 3c `fig3_deweathered_grange_carslaw`)
+- 4 `fig4_event_study`
+- 5 `fig5_city_map`
+- 6 `fig6_shrinkage`
+- 7 `fig7_mechanism`
+- 8 `fig8_quality_heatmap`
+- S1 `figS1_levels`; S2 `figS2_aod_acag` (new); S3 `figS3_decomposition_cities`; S4 `figS4_decomposition_pm10`
+- E1–E4 `eda_*`
+- Retired: `fig1_decomposition_cities`, `fig1_decomposition_policy`.
+
+**Code:**
+- `src/viz/style.py` (Meta, header, save: wording check, byte-stable SVG, sidecar), `wording.py`, `catalogue.py` → `docs/figures.md`;
+- new `fig2_station_entry.py`, `fig8_quality_heatmap.py`, `eda_figures.py`, `figS2_aod_acag.py`;
+- `eda.py` now tables only;
+- every figure rule is in `workflow/rules/viz.smk` (`viz`, `viz_pregate`, `figure_catalogue`).
+- Tests: `tests/test_viz.py` (26, synthetic); full suite 248 passed.
+
+**How to rebuild:** `snakemake --cores 1 viz viz_pregate` (about 1 min; gated figures check the gate). Or, inside the `ncap` env:
+```bash
+python -m src.viz.fig1_decomposition      # figure 1, S3, S4 (gated)
+python -m src.viz.fig2_station_entry; python -m src.viz.fig8_quality_heatmap; python -m src.viz.eda_figures
+python -m src.viz.fig3_deweathered --scheme seasonal; python -m src.viz.fig3_deweathered --scheme annual; python -m src.viz.fig3_deweathered --view annual
+python -m src.viz.fig4_event_study; python -m src.viz.fig5_city_map; python -m src.viz.fig6_shrinkage; python -m src.viz.fig7_mechanism
+python -m src.viz.figS1_levels; python -m src.viz.figS2_aod_acag
+python -m src.viz.catalogue               # -> docs/figures.md
+```
+
+**Part B plan (after the go-ahead):**
+- A static Quarto site in `dashboard/`, rendered from precomputed files, deployed to GitHub Pages; Quarto added to the environment lock (ask before changing the lock).
+- One page per city, alphabetical; the "H1 not identified" caveat on every page; an "About the data" page with each source's attribution.
+- Its own DECISIONS entries pushed before building. The dashboard text goes through `wording.py`.
+- At the end: phase note `docs/phase-notes/09-figures-dashboard.md`, this file, DECISIONS, and the GitHub Pages instructions for Reenu.
+
+## Phase 9: the original handoff (written at the end of Phase 8b; kept for the record)
 
 **Per CLAUDE.md:**
 - write a short plan first (files and functions);

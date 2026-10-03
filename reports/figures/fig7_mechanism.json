@@ -1,0 +1,8 @@
+{
+  "name": "fig7_mechanism",
+  "number": "7",
+  "title": "Is the ground PM10/PM2.5 pattern consistent with dust control?",
+  "question": "Is the mechanism consistent with dust control?",
+  "caption": "(a) Ground estimates for PM2.5 (circles) and PM10 (squares) on the 11 NCAP cities that have both, for the three registered specifications (all stations raw, all stations deweathered, balanced panel) and both Layer B estimators: interrupted time series (after listing minus before) and difference-in-differences against control-pool stations; satellite PM2.5 for the 18 Layer A units with a ground panel is shown for reference (+3.8%). (b) The change in the PM2.5/PM10 ratio on co-located stations: deweathered ITS +4.5% (95% CI -0.0 to +9.2), deweathered DiD +0.6% (-8.7 to +11.7); raw values as hollow markers. Dust control predicts PM10 falling more than PM2.5 and the ratio rising. H3 is inconclusive by its registered rule: condition (iii) already fails (the Layer A vs ITS pair is 'conflict'), and (i) and (ii) fail too. Ground results are secondary, with one pre-year; not effects of NCAP.",
+  "alt": "Dot-and-interval charts comparing ground PM2.5 and PM10 changes in 11 NCAP cities across six estimator-specification pairs, and the change in their ratio. The intervals are wide and mostly include 0; the ratio rises by +4.5% in the before-after comparison, with an interval reaching -0.0%, and by +0.6% against control cities. H3 is inconclusive. Not effects of NCAP."
+}

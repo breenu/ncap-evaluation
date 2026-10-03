@@ -1,0 +1,8 @@
+{
+  "name": "figS3_decomposition_cities",
+  "number": "S3",
+  "title": "City by city: reported change, the parts removed, and the corrected change",
+  "question": "How much of each city's reported improvement is real?",
+  "caption": "Every NCAP city in H4's scope, listed alphabetically (never ranked): (a) PM2.5, (b) PM10. Each row shows the reported change in the annual mean 2018 → 2025 (thin bar), then removes the unmodelled change, modelled weather and network composition; the diamond is the weather- and composition-corrected change (GAM; line: 95% station bootstrap where the city has more than one station), the square the same with LightGBM. Most cities have one continuous station, so their corrected change is one monitor's record. Ground data only; nothing here is an effect of NCAP.",
+  "alt": "Two horizontal bar charts listing 18 PM2.5 and 13 PM10 NCAP cities alphabetically. For each city, bars show the reported 2018-to-2025 change and the parts removed for unmodelled change, weather and network composition, ending at the corrected change. In 4 PM2.5 cities a reported fall becomes a corrected rise. Not effects of NCAP."
+}

@@ -7,7 +7,6 @@
 
 NRM = "data/interim/normalise"
 DW = "data/processed/deweathered"
-FIG3 = ["fig3_deweathered", "fig3_deweathered_grange_carslaw", "fig3_deweathered_annual"]  # DEC-109, DEC-117
 NRM_CODE = ["src/normalise/features.py", "src/normalise/resample.py", "src/normalise/lgbm.py",
             "src/normalise/gam.R", "src/normalise/run.py"]
 
@@ -137,19 +136,6 @@ rule city_disagreement:
     shell: f"{PY} src.normalise.city_disagreement"
 
 
-rule fig3:
-    input:
-        f"{DW}/city_month.parquet",
-        f"{DW}/city_year.parquet",
-        "src/viz/fig3_deweathered.py",
-        "src/viz/style.py",
-    output: expand("reports/figures/{f}.{ext}", f=FIG3, ext=["png", "svg"])
-    shell:
-        f"{PY} src.viz.fig3_deweathered --scheme seasonal && "
-        f"{PY} src.viz.fig3_deweathered --scheme annual && "
-        f"{PY} src.viz.fig3_deweathered --view annual"
-
-
 rule deweathering_report:
     input:
         f"{DW}/series_metrics.parquet",
@@ -167,7 +153,6 @@ rule normalise:
     input:
         f"{STUB}/clean.done",
         "docs/deweathering_report.md",
-        expand("reports/figures/{f}.{ext}", f=FIG3, ext=["png", "svg"]),
     output:
         f"{STUB}/normalise.done",
     run:

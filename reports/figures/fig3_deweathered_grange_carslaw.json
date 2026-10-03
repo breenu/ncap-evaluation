@@ -1,0 +1,8 @@
+{
+  "name": "fig3_deweathered_grange_carslaw",
+  "number": "3c",
+  "title": "Raw vs deweathered monthly PM2.5: Grange & Carslaw all-year resampling (removes the seasonal cycle)",
+  "question": "How much does weather move monthly numbers?",
+  "caption": "Monthly raw (grey) and deweathered (blue, GAM) PM2.5 for the six cities of figure 3, with the range between the two model families as a band; Grange & Carslaw all-year resampling (removes the seasonal cycle). Each panel gives the median weather part of the city's year-on-year change in annual means and its largest station count. City-month = mean over stations with at least 75% valid days. Extrapolation guard (DEC-117): 1 of 1875 valid PM2.5 station-years of this family and scheme have a deweathered mean outside 0.67–1.5× the raw mean. 2020 is shaded (lockdown).",
+  "alt": "Six monthly PM2.5 time series, 2015–2025, for Chennai, New Delhi, Guwahati, Hyderabad, Mumbai, Lucknow, raw and deweathered. The deweathered series loses most of the seasonal cycle, because weather is resampled from any time of year."
+}

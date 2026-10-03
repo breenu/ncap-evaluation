@@ -1677,3 +1677,38 @@ Phase 9 estimates nothing. It redraws figures from outputs that already exist (P
 - **Each row** shows ACAG PM2.5 on the same units (filled circle) and AOD (open square), each with its 95% CI. The pre-specified classification is written at the row's end: Q1 per specification, Q2 for the difference (DEC-180). The not-gained row also carries DEC-188's exploratory label.
 - **One shared % axis.** DEC-180's rule itself reads the AOD interval against ACAG's estimate on a common % scale (the yardstick). The axis label and title state "AOD, not PM2.5: direction only". No ACAG–AOD difference is plotted as a quantity.
 - **Caveats on the figure:** H1 is not identified; AOD is a column measure; the AOD sample is 95 of 113 treated units.
+
+## 2026-10-03: Phase 9 Part A (figures) built (rules DEC-190 to DEC-195, pushed in `09209e7` before any figure changed)
+
+**DEC-196: Part A results, implementation notes and workflow. No estimate was made or changed.**
+- **What exists.** 18 figures, each with PNG, SVG and a caption/alt-text sidecar, listed in the generated `docs/figures.md`:
+  - eight main figures: 1, 2, 3 (with 3b and 3c), 4–8;
+  - four supplementary: S1–S4;
+  - four exploratory: E1–E4.
+- **Figure 1's illustrative cities, by DEC-191's rule:** Chennai (coastal), New Delhi (IGP), Hyderabad (peninsular/other), then Kolkata (most stations in 2025 not yet chosen). Drawn alphabetically.
+- **The wording check (DEC-193) caught three things before any file was saved:**
+  - "counterfactual" in figure 4's y-axis label, now "comparison centres";
+  - "attributable to NCAP" in the notes of figures 5 and 6, now "not identified as effects of NCAP";
+  - "best-quality QA" in figure S2. This is MAIAC's own name for a QA level (DEC-175), not ranking language, so the ranking pattern now excludes "best/worst" followed by "quality". A test covers the exception.
+- **Alt text and captions are generated, and every factual claim in them was checked against the tables before it was written as code:**
+  - E1's draft alt text said the IGP is highest in every month. That holds for the satellite series but not the ground one. The sentence is now computed per series.
+  - Figure 3's caption gives the median over cities of each city's median weather part of the year-on-year change (5.3%). This is a different statistic from DEC-118's pooled 5.1%, and the caption names it exactly so the two do not look inconsistent.
+- **Layout fixes after looking at each render** (no number affected):
+  - figure 1: panel (b) labels clipped; the caveat collided with a panel title;
+  - figure 2: legend over a label; the note over an axis label;
+  - figure 5: the CrI legend moved off the map;
+  - figure 8: the colour bar collided with the year ticks;
+  - S2: block labels moved to the top of each block.
+- **Workflow (as DEC-190 stated in advance):**
+  - `src/viz/eda.py` now writes only tables. Rerun, all six EDA CSVs and `station_year.parquet` came out byte-identical to the committed run.
+  - The data stages were then marked current with `snakemake --touch hierarchical` plus the `eda`, `composition` and `pre_period_checks` stubs (as DEC-108/134/153). Every figure rule then ran through Snakemake (`snakemake --cores 1 viz viz_pregate`; log `data/interim/logs/snakemake_phase9_partA.log`).
+  - `composition_report.md` was regenerated, because its text named the retired figure files. Only those two lines changed.
+  - Afterwards `snakemake -n pregate` has nothing to do, and `snakemake -n all` lists only the Phase 10 `report` stub and `all`.
+- **Byte reproducibility (the DEC-094 open item, for figures):** re-running every figure module gives 54 of 54 figure files byte-identical (PNG, SVG, JSON). The fix is a fixed SVG hash salt, no SVG date and no PNG "Software" tag. Tables and GeoPackages are not covered; that stays open for Phase 10.
+- **Tests:** `tests/test_viz.py`, 26 synthetic tests covering:
+  - banned and allowed wording, the clause rule, per-label checking;
+  - byte-identical saves, and refusal to save on banned wording;
+  - catalogue order, a missing sidecar, re-checked wording;
+  - DEC-191's city rule.
+  
+  The full suite has 248 tests, all passing (`data/interim/logs/pytest_phase9_partA.log`).

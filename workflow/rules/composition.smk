@@ -9,7 +9,6 @@ CMP_TABLES = [f"{CMP}/{f}" for f in ("city_changes.parquet", "summary.csv", "h4.
                                      "ground_sat_summary.csv", "entrants.csv", "entrants_summary.csv",
                                      "coverage.csv", "station_year_fitted.parquet")]
 FAMDIAG = [f"{CMP}/family_diag_{f}.csv" for f in ("cities", "contrib", "check", "era5", "attribution", "misfit_h4")]
-FIG1 = ["fig1_decomposition", "fig1_decomposition_cities"]
 
 
 rule composition_tables:
@@ -36,17 +35,6 @@ rule family_diag:
     shell: f"{PY} src.normalise.family_diag"
 
 
-rule fig1:
-    input:
-        f"{CMP}/city_changes.parquet",
-        f"{CMP}/summary.csv",
-        f"{CMP}/city_boot.csv",
-        "src/viz/fig1_decomposition.py",
-        "src/viz/style.py",
-    output: expand("reports/figures/{f}.{ext}", f=FIG1, ext=["png", "svg"])
-    shell: f"{PY} src.viz.fig1_decomposition"
-
-
 rule composition_report:
     input:
         CMP_TABLES,
@@ -61,7 +49,6 @@ rule composition:
     input:
         f"{STUB}/normalise.done",
         "docs/composition_report.md",
-        expand("reports/figures/{f}.{ext}", f=FIG1, ext=["png", "svg"]),
     output:
         f"{STUB}/composition.done",
     run:

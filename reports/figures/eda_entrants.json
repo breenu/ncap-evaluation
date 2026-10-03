@@ -1,0 +1,8 @@
+{
+  "name": "eda_entrants",
+  "number": "E4",
+  "title": "Do new stations read cleaner or dirtier than the ones already there?",
+  "question": "New vs existing stations (exploratory)",
+  "caption": "For each city-year with both newly opened and existing valid stations, the % difference between the mean annual PM of the new stations and of the existing ones, averaged over cities by entry year, with 95% intervals. Pooled over all city-years, PM2.5: -5.8% (-11.5 to +0.2).",
+  "alt": "Dot-and-interval chart by entry year: new PM2.5 stations read below the existing stations in the same city in 6 of 7 entry years shown, each with a wide interval. Pooled over all city-years, PM2.5: -5.8% (-11.5 to +0.2)."
+}

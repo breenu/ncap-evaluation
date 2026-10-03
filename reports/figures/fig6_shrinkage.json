@@ -1,0 +1,8 @@
+{
+  "name": "fig6_shrinkage",
+  "number": "6",
+  "title": "How uncertain are city-level relative changes, and their ranks?",
+  "question": "How uncertain are city rankings?",
+  "caption": "(a) For each of the 113 NCAP urban centres, unlabelled and sorted by the shrunken estimate: the unshrunk city-level relative change in satellite PM2.5 after listing (grey, ± 1.96 × its placebo SE, median 0.049 log units) and the shrunken posterior mean with its 95% credible interval (blue). The between-unit SD τ = 0.013 is small against the per-unit SEs, so the estimates shrink strongly towards the average city-level relative change of +3.5%. (b) The 95% interval of each unit's rank among the 113: a median width of 75 places, so the ranks are mostly uninformative. No unit is named. These are relative changes, not effects of NCAP: H1 is not identified by this design.",
+  "alt": "Two dot-and-interval charts with 113 unlabelled rows. Unshrunk estimates scatter widely (-12% to +16%); after shrinkage they cluster near the average of +3.5% (-4.4% to +9.0%). The 95% rank intervals are long, a median of 75 of 113 places, so the data cannot rank cities. Unshrunk intervals entirely above 0: 15. Not identified as effects of NCAP."
+}

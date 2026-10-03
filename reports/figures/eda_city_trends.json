@@ -1,0 +1,8 @@
+{
+  "name": "eda_city_trends",
+  "number": "E2",
+  "title": "What do public trackers see?",
+  "question": "Raw city trends (exploratory)",
+  "caption": "Raw all-station annual mean PM2.5 for the six urban centres with the most station-years, in alphabetical order: Bengaluru, Chennai, Hyderabad, Kolkata, Mumbai, New Delhi. Each point averages whichever stations were valid that year, which is what public trackers report before any correction for weather or network composition. Bands: 95% intervals across stations in years with three or more; labels give the station count in the first and last year.",
+  "alt": "Six small line charts of raw annual PM2.5 for Bengaluru, Chennai, Hyderabad, Kolkata, Mumbai, New Delhi, with the number of stations growing over the years in each city."
+}

@@ -172,18 +172,6 @@ rule causal_cs:
     shell: f"{PY} src.causal.r_steps cs"
 
 
-rule fig4:
-    input:
-        rules.causal_summary.output,
-        rules.causal_event_study.output,
-        rules.causal_honest.output,
-        rules.causal_cs.output,
-        "src/viz/fig4_event_study.py",
-        "src/viz/style.py",
-    output: expand("reports/figures/fig4_event_study.{ext}", ext=["png", "svg"])
-    shell: f"{PY} src.viz.fig4_event_study"
-
-
 rule causal_report:
     input:
         rules.causal_summary.output,
@@ -250,15 +238,6 @@ rule causal_descriptive:
         "src/causal/descriptive.py",
     output: f"{CSL}/levels.csv"
     shell: f"{PY} src.causal.descriptive"
-
-
-rule figS1:
-    input:
-        f"{CSL}/levels.csv",
-        "src/viz/figS1_levels.py",
-        "src/viz/style.py",
-    output: expand("reports/figures/figS1_levels.{ext}", ext=["png", "svg"])
-    shell: f"{PY} src.viz.figS1_levels"
 
 
 rule causal_triangulation:
@@ -384,25 +363,11 @@ rule causal_maiac_summary:
     shell: f"{PY} src.causal.maiac summarise"
 
 
-# Figure 1 with the Phase 7 step (DEC-150): its own output name, so the Phase 6 figure rule stays ungated
-rule fig1_policy:
-    input:
-        f"{CSL}/sdid_summary.csv",
-        f"{CSL}/layer_b/estimates.csv",
-        "data/processed/composition/summary.csv",
-        "data/processed/composition/h4.csv",
-        "src/viz/fig1_decomposition.py",
-        "src/viz/style.py",
-    output: expand("reports/figures/fig1_decomposition_policy.{ext}", ext=["png", "svg"])
-    shell: f"{PY} src.viz.fig1_decomposition --policy"
-
-
 rule causal:
     input:
         f"{STUB}/composition.done",
         f"{STUB}/pre_period_checks.done",
         "docs/causal_report.md",
-        expand("reports/figures/{f}.{ext}", f=["fig4_event_study", "figS1_levels", "fig1_decomposition_policy"], ext=["png", "svg"]),
     output:
         f"{STUB}/causal.done",
     run:

@@ -1,0 +1,8 @@
+{
+  "name": "figS2_aod_acag",
+  "number": "S2",
+  "title": "Does a satellite signal that no ground monitor calibrates show the same relative change as ACAG PM2.5?",
+  "question": "Does the relative rise appear in raw AOD, and the monitor-gain gap?",
+  "caption": "Relative change of NCAP-listed units against their synthetic comparison in raw MAIAC aerosol optical depth (squares) and in ACAG PM2.5 estimated on exactly the same units (circles), with 95% CIs. Primary: AOD +0.8% (-0.4 to +2.0), ACAG +4.2% (+2.7 to +5.6), read as \"rise not reproduced in AOD\". Across the 5 specifications, AOD is below ACAG in 5 and its interval lies entirely above 0 in 1 (non-monsoon months). Monitor-gain split: AOD gained +1.2% (-0.2 to +2.7), not gained -0.4% (-2.3 to +1.6), difference +1.6% (-0.8 to +4.0); ACAG on the same units: difference -4.1% (-6.7 to -1.4), read as \"gap absent from AOD (consistent with calibration leakage)\". Exploratory (DEC-188): ACAG and AOD diverge most in the units that gained no monitor (ACAG +7.1% (+4.7 to +9.6), AOD -0.4% (-2.3 to +1.6)), where calibration leakage cannot act, which weakens Q2 as evidence for leakage specifically. AOD is a column measure, not surface PM2.5, so only its direction is read. These are relative changes, not effects of NCAP: H1 is not identified by this design.",
+  "alt": "Paired dot-and-interval chart. In every one of the 5 specifications the raw-AOD relative change is below the ACAG PM2.5 one on the same units (5 of 5); the primary AOD estimate is +0.8% against ACAG's +4.2%. ACAG's smaller rise in units that gained monitors is absent from AOD, and the two signals differ most in units that gained no monitor. AOD is not PM2.5; not effects of NCAP."
+}

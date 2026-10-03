@@ -1,0 +1,8 @@
+{
+  "name": "fig5_city_map",
+  "number": "5",
+  "title": "Where did satellite PM2.5 rise or fall relative to comparison units after listing?",
+  "question": "Where did satellite PM2.5 rise or fall relative to comparison units?",
+  "caption": "Maps of the 113 NCAP urban centres. (a) Each centre's shrunken city-level relative change in satellite PM2.5 after listing (posterior mean, %; blue = fell relative to its synthetic comparison, red = rose); marker shape gives its 95% credible interval: entirely above 0 for 62, entirely below 0 for 1, spanning 0 for 50. (b) The width of that interval (6.6–9.3 pp). (c) The posterior probability that the relative change is below 0. The average city-level relative change is +3.5% (95% CrI +2.6 to +4.4). Each unit is estimated against its own synthetic comparison (ACAG V5.GL.06, log population-weighted, 2010–2024 without 2020) and pooled with the five registered moderators. No city is ranked or named. These are relative changes, not effects of NCAP: H1 is not identified by this design.",
+  "alt": "Three maps of India with one marker per NCAP city. 104 of 113 posterior means are above 0 (red). Satellite PM2.5 in 62 cities rose relative to comparison units after listing with a credible interval above 0, and in 1 it fell with an interval below 0; the rest are uncertain. Interval widths are 7–9 percentage points. Not identified as effects of NCAP."
+}

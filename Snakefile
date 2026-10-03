@@ -48,3 +48,4 @@ rule pregate:
         f"{STUB}/eda.done",
         f"{STUB}/composition.done",
         f"{STUB}/pre_period_checks.done",
+        f"{STUB}/viz_pregate.done",

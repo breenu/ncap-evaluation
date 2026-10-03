@@ -68,24 +68,6 @@ rule hier_mechanism:
     shell: f"{PY} src.hierarchical.mechanism"
 
 
-rule fig5:
-    input: f"{HIER}/city_shrunken.csv", "src/viz/fig5_city_map.py"
-    output: expand("reports/figures/fig5_city_map.{ext}", ext=["png", "svg"])
-    shell: f"{PY} src.viz.fig5_city_map"
-
-
-rule fig6:
-    input: f"{HIER}/city_shrunken.csv", f"{HIER}/pool_coefs.csv", "src/viz/fig6_shrinkage.py"
-    output: expand("reports/figures/fig6_shrinkage.{ext}", ext=["png", "svg"])
-    shell: f"{PY} src.viz.fig6_shrinkage"
-
-
-rule fig7:
-    input: rules.hier_mechanism.output, "src/viz/fig7_mechanism.py"
-    output: expand("reports/figures/fig7_mechanism.{ext}", ext=["png", "svg"])
-    shell: f"{PY} src.viz.fig7_mechanism"
-
-
 rule heterogeneity_report:
     input:
         rules.hier_city_estimates.output,
@@ -103,7 +85,6 @@ rule hierarchical:
     input:
         f"{STUB}/causal.done",
         "docs/heterogeneity_report.md",
-        expand("reports/figures/{f}.{ext}", f=["fig5_city_map", "fig6_shrinkage", "fig7_mechanism"], ext=["png", "svg"]),
     output:
         f"{STUB}/hierarchical.done",
     run:

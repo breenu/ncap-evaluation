@@ -62,7 +62,7 @@ def weather_share(cy: pd.DataFrame, col: str = "dw") -> pd.Series:
 def annual_figure(cm: pd.DataFrame, cy: pd.DataFrame, choice: dict, picks: list[str], nm: pd.Series) -> plt.Figure:
     fam = {"lgbm": "LightGBM", "gam": "GAM"}
     p, other = choice["primary"], choice["sensitivity"]
-    fig, axes = plt.subplots(3, 2, figsize=(10, 8.2), sharex=True)
+    fig, axes = plt.subplots(3, 2, figsize=(11, 9.4), sharex=True)
     for ax, u in zip(axes.flat, picks, strict=False):
         g = cy[cy.unit_id == u].set_index("year").sort_index()
         g = g.reindex(range(int(g.index.min()), int(g.index.max()) + 1))  # break lines at missing years
@@ -77,7 +77,7 @@ def annual_figure(cm: pd.DataFrame, cy: pd.DataFrame, choice: dict, picks: list[
                 linewidth=1.5, label=f"Deweathered, Grange & Carslaw ({fam[p]})")  # fmt: skip
         region = S.REGION_LABEL.get(cm[cm.unit_id == u].region.iloc[0], "")
         name = nm.get(u)
-        ax.set_title(f"{name if isinstance(name, str) else u} ({region})", fontsize=9)
+        ax.set_title(f"{name if isinstance(name, str) else u} ({region})", fontsize=10)
         top = np.nanmax([g.raw.max(), hi.max(), g.dw_annual.max()])
         ax.set_ylim(0, top * 1.15)
     for ax in axes.flat[len(picks):]:
@@ -88,11 +88,10 @@ def annual_figure(cm: pd.DataFrame, cy: pd.DataFrame, choice: dict, picks: list[
         ax.set_xlabel("Year")
     h, lab = axes.flat[0].get_legend_handles_labels()
     order = [1, 2, 3, 0]
-    fig.legend([h[i] for i in order], [lab[i] for i in order], loc="upper left", bbox_to_anchor=(0.0, 0.965),
-               ncol=2, fontsize=8)  # fmt: skip
-    fig.suptitle("Raw vs deweathered annual PM2.5, six illustrative cities", x=0.0, ha="left", fontsize=10,
-                 fontweight="bold")  # fmt: skip
-    fig.tight_layout(rect=(0, 0, 1, 0.92))
+    fig.tight_layout(rect=(0, 0, 1, 0.87))
+    fig.legend([h[i] for i in order], [lab[i] for i in order], loc="upper left", bbox_to_anchor=(0.0, 0.955),
+               ncol=2, fontsize=9)  # fmt: skip
+    S.header(fig, "3", "How much does weather move annual PM2.5 numbers? Raw vs deweathered, six illustrative cities")
     return fig
 
 
@@ -128,19 +127,31 @@ def main() -> None:
     if a.view == "annual":
         fig = annual_figure(cm, cy, choice, picks, nm)
         y0, y1 = cfg()["weather_pool_years"]
-        S.source_note(fig, "City-year = mean over stations inside the city's GHSL urban centre that are valid that year "
-                      "(primary completeness rule; near-constant station-years excluded, DEC-110; all stations, the "
-                      f"balanced panel is Phase 6). Deweathered = expected annual mean under the city's typical {y0}-{y1} "
-                      "weather: resampled within ±15 days of each date (primary, DEC-109) or from any time of year "
-                      "(Grange & Carslaw). The gap between the grey and blue lines is the weather effect in that year. "
-                      "Shaded: 2020 (lockdown). Same cities as the monthly view (DEC-106).")  # fmt: skip
+        S.source_note(fig, "City-year = mean over the stations inside the city's GHSL urban centre valid that year (all stations). "
+                      f"Deweathered = expected annual mean under the city's typical {y0}–{y1} ERA5 weather. The gap between "
+                      "the grey and blue lines is that year's weather effect. Shaded: 2020 (lockdown). Cities chosen by a "
+                      "coverage rule (DEC-106). Source: CPCB via the Vonter/india-cpcb-aqi mirror (ODbL); ERA5 (Copernicus).")  # fmt: skip
         if run == "main":
-            S.save(fig, "fig3_deweathered_annual")
+            label = lambda u: nm.get(u) if isinstance(nm.get(u), str) else u  # noqa: E731
+            per_city = "; ".join(f"{label(u)} {ws.get(u, np.nan):.0f}%" for u in picks)
+            ws_all = weather_share(pd.read_parquet(src / "city_year.parquet").query("pollutant == 'pm25' and rule == 'primary'"), "dw")
+            cap = (f"Raw annual mean PM2.5 (grey) and the deweathered annual mean (blue: weather resampled within ±15 days of "
+                   f"each date, the primary scheme; orange dashed: Grange & Carslaw all-year resampling) for six cities chosen "
+                   f"by data coverage, one per region first. The band is the range between the two model families "
+                   f"({fam[choice['primary']]} primary, {fam[choice['sensitivity']]}). Median weather part of the year-on-year change in the annual mean, "
+                   f"per city: {per_city}; the median of these per-city medians over all {ws_all.notna().sum()} cities with ground "
+                   f"data is {np.nanmedian(ws_all):.1f}%. 2020 is shaded: "
+                   "its lockdown is an emissions change, not weather, and the one-year-knot trend partly averages it out.")  # fmt: skip
+            alt = (f"Six small line charts of annual PM2.5 for {', '.join(label(u) for u in picks)}. In each, the "
+                   f"gap between the raw and deweathered lines is that year's weather effect; a typical city's median "
+                   f"weather part of a year-on-year change in the annual mean is {np.nanmedian(ws_all):.1f}%.")  # fmt: skip
+            S.save(fig, "fig3_deweathered_annual", S.Meta("3", "How much does weather move annual PM2.5 numbers?",
+                                                           "How much does weather move annual numbers?", cap, alt))  # fmt: skip
         else:
             fig.savefig(src / "fig3_preview_annual_view.png", dpi=150, bbox_inches="tight")
             plt.close(fig)
         return
-    fig, axes = plt.subplots(3, 2, figsize=(10, 8.2), sharex=True)
+    fig, axes = plt.subplots(3, 2, figsize=(11, 9.4), sharex=True)
     for ax, u in zip(axes.flat, picks, strict=False):
         g = cm[cm.unit_id == u].set_index("month").sort_index()
         full = pd.date_range(g.index.min(), g.index.max(), freq="MS")
@@ -154,10 +165,10 @@ def main() -> None:
         ax.plot(g.index, g[col], color=S.CATEGORICAL[0], linewidth=2, label=f"Deweathered ({fam[choice['primary']]})")
         region = S.REGION_LABEL.get(cm[cm.unit_id == u].region.iloc[0], "")
         name = nm.get(u)
-        ax.set_title(f"{name if isinstance(name, str) else u} ({region})", fontsize=9)
+        ax.set_title(f"{name if isinstance(name, str) else u} ({region})", fontsize=10)
         st = int(cm[cm.unit_id == u].n_stations.max())
         ax.text(0.99, 0.97, f"weather part of year-on-year change:\nmedian {ws.get(u, np.nan):.0f}%  ·  up to {st} station{'s' if st != 1 else ''}",
-                transform=ax.transAxes, ha="right", va="top", fontsize=6.5, color=S.INK_2)  # fmt: skip
+                transform=ax.transAxes, ha="right", va="top", fontsize=8, color=S.INK_2)  # fmt: skip
         ax.set_ylim(0, np.nanmax([g.raw.max(), hi.max()]) * 1.25)
     for ax in axes.flat[len(picks):]:
         ax.set_visible(False)
@@ -166,16 +177,16 @@ def main() -> None:
     for ax in axes[-1]:
         ax.set_xlabel("Month")
     axes.flat[0].annotate("2020", (pd.Timestamp("2020-07-01"), axes.flat[0].get_ylim()[1] * 0.97), ha="center",
-                          va="top", fontsize=6.5, color=S.INK_2)  # fmt: skip
+                          va="top", fontsize=8, color=S.INK_2)  # fmt: skip
     h, lab = axes.flat[0].get_legend_handles_labels()
     order = [2, 1, 0]
-    fig.legend([h[i] for i in order], [lab[i] for i in order], loc="upper left", bbox_to_anchor=(0.0, 0.965),
-               ncol=3, fontsize=8)  # fmt: skip
     how = ("weather resampled within ±15 days of each date" if scheme == "seasonal"
            else "Grange & Carslaw all-year resampling (removes the seasonal cycle)")  # fmt: skip
-    fig.suptitle(f"Raw vs deweathered monthly PM2.5, six illustrative cities: {how}", x=0.0, ha="left",
-                 fontsize=10, fontweight="bold")  # fmt: skip
-    fig.tight_layout(rect=(0, 0, 1, 0.94))
+    number = "3b" if scheme == "seasonal" else "3c"
+    fig.tight_layout(rect=(0, 0, 1, 0.89))
+    fig.legend([h[i] for i in order], [lab[i] for i in order], loc="upper left", bbox_to_anchor=(0.0, 0.955),
+               ncol=3, fontsize=9)  # fmt: skip
+    S.header(fig, number, f"Raw vs deweathered monthly PM2.5, six illustrative cities:\n{how}")
     y0, y1 = cfg()["weather_pool_years"]
     n = cfg()["resamples_max" if run == "pilot" else "resamples_default"]
     lo, hi = cfg()["guard_ratio"]
@@ -183,18 +194,23 @@ def main() -> None:
     sy = sy[(sy.rule == "primary") & (sy.variant == "q1_t75") & sy.valid & (sy.pollutant == "pm25")]
     gcol = f"guard_{col}"
     n_guard, n_sy = (int(sy[gcol].sum()), len(sy)) if gcol in sy else (0, len(sy))
-    S.source_note(fig, "City-month = mean over stations inside the city's GHSL urban centre with >= 75% valid days that "
-                  "month (all stations; the balanced panel is Phase 6). Deweathered = expected concentration under the "
-                  f"city's typical {y0}-{y1} weather ({'for that time of year' if scheme == 'seasonal' else 'from any time of year'}; "
-                  f"ERA5; {n} resampled weather days per day). "
-                  "Shaded year: 2020: its lockdown is an emissions change, not weather; the one-year-knot trend "
-                  "(DEC-116) cannot follow a few-month shock, so the deweathered series partly averages it out. "
-                  "Cities chosen by a coverage rule, one per region first (DEC-106); near-constant station-years "
-                  "excluded (DEC-110)."
-                  + f" Guard (DEC-117): {n_guard} of {n_sy} valid PM2.5 station-years of this family and scheme have a "
-                  f"deweathered mean outside {lo}-{hi}x the raw mean (docs/deweathering_report.md).")  # fmt: skip
+    S.source_note(fig, "City-month = mean over stations inside the city's GHSL urban centre with ≥ 75% valid days that month. "
+                  f"Deweathered = expected concentration under the city's typical {y0}–{y1} ERA5 weather "
+                  f"({'for that time of year' if scheme == 'seasonal' else 'from any time of year'}; {n} draws per day). "
+                  "Shaded: 2020 (lockdown). Cities chosen by a coverage rule (DEC-106).")  # fmt: skip
     if run == "main":
-        S.save(fig, "fig3_deweathered" if scheme == "seasonal" else "fig3_deweathered_grange_carslaw")
+        label = lambda u: nm.get(u) if isinstance(nm.get(u), str) else u  # noqa: E731
+        cap = (f"Monthly raw (grey) and deweathered (blue, {fam[choice['primary']]}) PM2.5 for the six cities of figure 3, with "
+               f"the range between the two model families as a band; {how}. Each panel gives the median weather part of the "
+               f"city's year-on-year change in annual means and its largest station count. City-month = mean over stations "
+               f"with at least 75% valid days. Extrapolation guard (DEC-117): {n_guard} of {n_sy} valid PM2.5 station-years of "
+               f"this family and scheme have a deweathered mean outside {lo}–{hi}× the raw mean. 2020 is shaded (lockdown).")  # fmt: skip
+        alt = (f"Six monthly PM2.5 time series, 2015–2025, for {', '.join(label(u) for u in picks)}, raw and deweathered. "
+               + ("Both keep the seasonal winter peaks, because weather is resampled from the same time of year."
+                  if scheme == "seasonal" else "The deweathered series loses most of the seasonal cycle, because weather is "
+                  "resampled from any time of year."))  # fmt: skip
+        S.save(fig, "fig3_deweathered" if scheme == "seasonal" else "fig3_deweathered_grange_carslaw",
+               S.Meta(number, f"Raw vs deweathered monthly PM2.5: {how}", "How much does weather move monthly numbers?", cap, alt))  # fmt: skip
     else:  # a preview on the pilot's single-station cities; not a report figure
         fig.savefig(src / f"fig3_preview_{scheme}.png", dpi=150, bbox_inches="tight")
         plt.close(fig)
