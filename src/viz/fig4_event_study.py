@@ -65,8 +65,8 @@ def figure(D: dict) -> tuple[plt.Figure, S.Meta]:
     p = D["sdid"].set_index(["spec_id", "estimand"]).loc[("primary", "att")]
     bd = f"{h.breakdown_note} (original CI {str(h.direction).split(' (')[0]})"
     ax.set_title("Sun & Abraham and Callaway & Sant'Anna, by year relative to listing", fontsize=10.5, pad=44)
-    ax.text(0.0, 1.015, (f"H1: not identified by this design. Pre-trend test (l = −9 … −2): Wald p = {w['p']:.4f}, so registered rule (b) fails.\n"
-                         f"Average l = 0 … +5: {pct(avg['coef']):+.1f}% (95% CI {pct(avg['lo95']):+.1f} to {pct(avg['hi95']):+.1f}).   "
+    ax.text(0.0, 1.015, (f"H1: not identified by this design. Pre-trend test (relative years −9 to −2): Wald p = {w['p']:.4f}, so registered rule (b) fails.\n"
+                         f"Average over relative years 0 to +5: {pct(avg['coef']):+.1f}% (95% CI {pct(avg['lo95']):+.1f} to {pct(avg['hi95']):+.1f}).   "
                          f"HonestDiD breakdown M̄: {bd}.   Primary SDID: {pct(p.att):+.1f}% "
                          f"(95% CI {pct(p.lo95):+.1f} to {pct(p.hi95):+.1f})."),
             transform=ax.transAxes, ha="left", va="bottom", fontsize=8.5, color=S.INK_2, linespacing=1.4)  # fmt: skip
@@ -100,7 +100,7 @@ def figure(D: dict) -> tuple[plt.Figure, S.Meta]:
            f"Callaway & Sant'Anna dynamic estimates with uniform 95% bands (never-treated controls). Listed units by cohort: "
            f"{sizes}; 923 never-treated centres. Pre-listing Sun & Abraham coefficients range from {pct(pre.coef.min()):+.1f}% to "
            f"{pct(pre.coef.max()):+.1f}%, but are jointly different from zero (Wald p = {w['p']:.4f}), so the registered rule (b) "
-           f"fails and H1 is not identified by this design. Average over l = 0 … +5: {pct(avg['coef']):+.1f}% (95% CI "
+           f"fails and H1 is not identified by this design. Average over relative years 0 to +5: {pct(avg['coef']):+.1f}% (95% CI "
            f"{pct(avg['lo95']):+.1f} to {pct(avg['hi95']):+.1f}); HonestDiD breakdown M̄ = {h.breakdown_note}. Right: the "
            f"calendar-2020 coefficient from a fit that includes 2020 ({pct(o.coef):+.1f}%). Values are % differences, "
            "100(e^β − 1). Satellite PM2.5 says nothing directly about PM10, NCAP's target pollutant. "

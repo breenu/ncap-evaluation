@@ -57,8 +57,9 @@ def main() -> None:
     med_w = float(np.median(c.rank_hi95 - c.rank_lo95))
     fig.tight_layout(rect=(0, 0, 1, 0.92))
     S.header(fig, "6", "How uncertain are city-level relative changes, and their ranks?")
-    fig.text(0.0, 0.945, "No city is named: the units are unlabelled and this is not a list of cities. Not identified as effects "
-             "of NCAP: the registered pre-trend test failed.", fontsize=10, color=S.INK, ha="left", va="top")  # fmt: skip
+    fig.text(0.0, 0.945, "Purpose: to show that city ranks are too uncertain to be meaningful, so units are deliberately unnamed. "
+             "Not identified as effects of NCAP: the registered pre-trend test failed.", fontsize=10, color=S.INK, ha="left",
+             va="top")  # fmt: skip
     S.source_note(fig, "Unshrunk: each NCAP unit's own synthetic difference-in-differences (ACAG V5.GL.06, population-weighted, "
                   "2010–2024 without 2020), SE from every control used as a fake listed unit (DEC-162). Shrunken: Bayesian "
                   f"measurement-error model with the five registered moderators (DEC-163); between-unit SD τ = {tau['mean']:.3f} "

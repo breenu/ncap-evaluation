@@ -115,6 +115,21 @@ def city_values(ch: pd.DataFrame, b: pd.DataFrame, unit: str, pol: str, spec: st
 # ------------------------------------------------------------------ drawing
 
 
+PARTS = {"unmodelled": "unmodelled change", "weather": "modelled weather", "composition": "network composition"}
+
+
+def step_label(m: str, x: float) -> str:
+    """Totals as changes in %; a part as the step it makes when removed (Reenu's review): removing a contribution x
+    moves the level by -x, so the label's sign is the direction of the bar."""
+    return f"{x:+.1f}%" if m in ("reported", "corrected") else f"{-x:+.1f} pp removed"
+
+
+def largest_part(v: dict) -> tuple[str, float]:
+    """The part whose removal moves the level most, and its step (-contribution)."""
+    m = max(PARTS, key=lambda k: abs(v[k][0]))
+    return PARTS[m], -v[m][0]
+
+
 def waterfall(ax: plt.Axes, v: dict, v_alt: dict | None, ticks: dict, value_labels: bool = True) -> None:
     """Reported (from 0) -> each part removed in turn -> corrected (from 0). v[m] = (value, lo, hi): totals are
     changes in %, parts are contributions in pp. The interval of a part is drawn at the running level it
@@ -148,8 +163,7 @@ def waterfall(ax: plt.Axes, v: dict, v_alt: dict | None, ticks: dict, value_labe
     labs = []
     for m in STEPS:
         x = v[m][0]
-        unit = "%" if m in ("reported", "corrected") else " pp"
-        labs.append(f"{ticks[m]}\n{x:+.1f}{unit}" if value_labels else ticks[m])
+        labs.append(f"{ticks[m]}\n{step_label(m, x)}" if value_labels else f"{ticks[m]}  {step_label(m, x)}")
     ax.set_xticks(range(len(STEPS)), labs)
     ax.axhline(0, color=S.INK_2, linewidth=0.8)
     ax.grid(axis="x", visible=False)
@@ -173,7 +187,7 @@ def relative_rows(ax: plt.Axes, rows: list[tuple[str, float, float, float, str]]
 
 
 def legend_handles(alt_label: str = "LightGBM (other model family), with its 95% interval") -> list:
-    return [Patch(color=C_TOTAL, label="Change (GAM, primary)"),
+    return [Patch(color=C_TOTAL, label="Reported and corrected change (correction uses the GAM, the primary model)"),
             Patch(color=C_UNMOD, label="Unmodelled change removed (raw − fitted)"),
             Patch(color=C_WEATHER, label="Modelled weather removed (fitted − deweathered)"),
             Patch(color=C_COMP, label="Network composition removed (all stations − balanced panel)"),
@@ -193,9 +207,9 @@ def fig_main(D: dict) -> tuple[plt.Figure, S.Meta]:
     r = D["restricted"]
     rel = (S.pct(r.att), S.pct(r.lo95), S.pct(r.hi95))
 
-    fig = plt.figure(figsize=(13, 10.4))
-    gs = GridSpec(2, 4, figure=fig, height_ratios=[1.15, 1], hspace=0.62, wspace=0.28, left=0.07, right=0.985, top=0.81,
-                  bottom=0.08)  # fmt: skip
+    fig = plt.figure(figsize=(13, 12.2))
+    gs = GridSpec(2, 4, figure=fig, height_ratios=[1.15, 1], hspace=0.55, wspace=0.28, left=0.07, right=0.985, top=0.83,
+                  bottom=0.17)  # fmt: skip
     top = gs[0, :].subgridspec(1, 2, width_ratios=[2.35, 1], wspace=0.5)
     ax = fig.add_subplot(top[0, 0])
     bx = fig.add_subplot(top[0, 1])
@@ -229,21 +243,20 @@ def fig_main(D: dict) -> tuple[plt.Figure, S.Meta]:
                     run -= x
                     lo_all.append(run - (hi - x)), hi_all.append(run + (x - lo))
     ylim = (min(lo_all) - 4, max(hi_all) + 4)
+    c_top = gs[1, 0].get_position(fig).y1 + 0.052  # the (c) heading sits above the city titles
     for k, u in enumerate(picks):
         cx = fig.add_subplot(gs[1, k])
-        waterfall(cx, *vals[u], SHORT, value_labels=False)
+        waterfall(cx, *vals[u], SHORT, value_labels=False)  # tick labels carry each step's value
         cx.set_ylim(*ylim)
         cx.tick_params(axis="x", labelrotation=90, labelsize=8.5)
         row = D["ch"][(D["ch"].spec == spec) & (D["ch"].pollutant == pol) & (D["ch"].unit_id == u)].iloc[0]
-        a = vals[u][0]
         cx.set_title(f"{nm(u)}\n{int(row.n_all_base)}→{int(row.n_all_end)} stations, {int(row.n_panel)} continuous", fontsize=10, pad=6)
-        cx.text(0.03, 0.97, f"reported {a['reported'][0]:+.1f}%\ncorrected {a['corrected'][0]:+.1f}%", transform=cx.transAxes,
-                ha="left", va="top", fontsize=8.5, color=S.INK_2)  # fmt: skip
         if k == 0:
             cx.set_ylabel(XLAB_CHANGE)
         else:
             cx.tick_params(axis="y", labelleft=False)
-    fig.text(0.07, 0.415, f"(c) {N_ILLUSTRATIVE} illustrative cities (chosen by station counts, not results; alphabetical)",
+    fig.text(0.07, c_top, f"(c) {N_ILLUSTRATIVE} illustrative cities, chosen by a station-count rule written after viewing "
+             "results (DEC-191); every city in Fig. S3",
              fontsize=10.5, fontweight="bold", color=S.INK, ha="left")  # fmt: skip
     S.header(fig, "1", "How much of NCAP cities' reported fall in PM2.5 survives weather and network correction,\n"
              "and how did their satellite PM2.5 move relative to comparison cities?")  # fmt: skip
@@ -256,26 +269,32 @@ def fig_main(D: dict) -> tuple[plt.Figure, S.Meta]:
                   + S.NOT_IDENTIFIED)  # fmt: skip
 
     names4 = ", ".join(nm(u) for u in picks)
+    big = largest_part(v)
+    flips = sum(1 for u in picks if vals[u][0]["reported"][0] < 0 < vals[u][0]["corrected"][0])
     rel_rows = "; ".join(f"{lab.replace(" (shrunken)", "")} {est:+.1f}% ({lo:+.1f} to {hi:+.1f})" for lab, est, lo, hi, _ in rows[1:])
     cap = (f"(a) Mean change in annual ground PM2.5 from 2018 to 2025 over the {n_c} NCAP cities with a station valid every year "
            f"({n_single} of them with only one such station), decomposed in the proposal's order. Reported change (all stations "
            f"as reported, after the audit's cleaning) {v['reported'][0]:+.1f}%; removing the part the deweathering model does not "
-           f"reproduce ({v['unmodelled'][0]:+.1f} pp), modelled weather ({v['weather'][0]:+.1f} pp) and the change in which "
-           f"stations exist ({v['composition'][0]:+.1f} pp) leaves a weather- and composition-corrected change of "
+           f"reproduce ({step_label('unmodelled', v['unmodelled'][0])}), modelled weather ({step_label('weather', v['weather'][0])}) "
+           f"and the change in which stations exist ({step_label('composition', v['composition'][0])}) leaves a weather- and "
+           f"composition-corrected change of "
            f"{v['corrected'][0]:+.1f}% (balanced panel, deweathered). Bars: GAM (primary); squares: LightGBM; intervals: 95% "
            f"cluster bootstrap over cities. H4 (reported fall minus corrected fall) = {h[0]:+.1f} pp (95% CI {h[1]:+.1f} to "
            f"{h[2]:+.1f}). (b) Satellite PM2.5 of the listed units relative to their synthetic comparison units after listing: "
            f"the {n_c} cities' units pooled (Phase 7, Layer A restricted) {rel[0]:+.1f}% (95% CI {rel[1]:+.1f} to {rel[2]:+.1f}), "
            f"and the shrunken city-level relative change of each illustrative city (Phase 8; 95% credible interval): {rel_rows}. "
            "This is a different quantity on a different time base from (a), so it is drawn on its own axis and not subtracted. "
-           f"(c) The same decomposition for {names4}, chosen by a rule on station counts (DEC-191); intervals are station "
+           f"Each removed part is labelled with the step it makes, so its sign is the direction of its bar. "
+           f"(c) The same decomposition for {names4}, chosen by a rule on station counts that was written after viewing the "
+           f"per-city results (DEC-191); every city is in Figure S3. Intervals are station "
            "bootstraps where a city has more than one station in a stratum, otherwise none can be estimated and the "
            "GAM–LightGBM gap shows the model uncertainty. " + S.NOT_IDENTIFIED)  # fmt: skip
     alt = (f"Waterfall chart. Across {n_c} NCAP cities, the reported fall in ground PM2.5 from 2018 to 2025 averages "
            f"{v['reported'][0]:.1f}%; after removing modelled weather and the change in which monitors exist it is "
            f"{v['corrected'][0]:.1f}%, so about {100 * h[0] / -v['reported'][0]:.0f}% of the reported fall does not survive "
-           f"correction. Network composition is the largest part ({v['composition'][0]:+.1f} pp). Four illustrative cities "
-           f"({names4}) show the same steps; in some the correction reverses the sign. On a separate axis, the same cities' "
+           f"correction. The largest part removed is {big[0]} ({big[1]:+.1f} pp removed). Four illustrative cities "
+           f"({names4}) show the same steps; in {flips} of them the correction turns a reported fall into a rise. On a "
+           f"separate axis, the same cities' "
            f"satellite PM2.5 rose {rel[0]:.1f}% relative to comparison units after listing. "
            "That relative change is not identified as an effect of NCAP.")  # fmt: skip
     return fig, S.Meta("1", "How much of NCAP cities' reported fall in PM2.5 survives weather and network correction, and how "
@@ -310,13 +329,15 @@ def fig_pm10(D: dict) -> tuple[plt.Figure, S.Meta]:
                   "(b): ground difference-in-differences against a handful of control-pool cities, one pre-year (2018): "
                   "secondary, parallel trends untestable. " + S.NOT_IDENTIFIED, y=0.02)  # fmt: skip
     cap = (f"(a) Mean change in annual ground PM10 from 2018 to 2025 over the {n_c} NCAP cities with a PM10 station valid every "
-           f"year ({n_single} with one such station): reported {v['reported'][0]:+.1f}%; unmodelled change {v['unmodelled'][0]:+.1f} pp, "
-           f"modelled weather {v['weather'][0]:+.1f} pp, network composition {v['composition'][0]:+.1f} pp; corrected "
+           f"year ({n_single} with one such station): reported {v['reported'][0]:+.1f}%; unmodelled change "
+           f"{step_label('unmodelled', v['unmodelled'][0])}, modelled weather {step_label('weather', v['weather'][0])}, network "
+           f"composition {step_label('composition', v['composition'][0])}; corrected "
            f"{v['corrected'][0]:+.1f}%. H4 = {h[0]:+.1f} pp (95% CI {h[1]:+.1f} to {h[2]:+.1f}). GAM bars, LightGBM squares, 95% "
            f"cluster-bootstrap intervals. (b) Ground difference-in-differences against control-pool cities (Layer B, secondary, one "
            f"pre-year): {did[0]:+.1f}% (95% CI {did[1]:+.1f} to {did[2]:+.1f}). There is no satellite PM10. " + S.NOT_IDENTIFIED)  # fmt: skip
     alt = (f"Waterfall chart for PM10 across {n_c} NCAP cities: reported change {v['reported'][0]:.1f}%, corrected change "
-           f"{v['corrected'][0]:.1f}%; modelled weather is the largest part removed ({v['weather'][0]:+.1f} pp). A separate axis "
+           f"{v['corrected'][0]:.1f}%; the largest part removed is {largest_part(v)[0]} ({largest_part(v)[1]:+.1f} pp removed). A "
+           f"separate axis "
            f"shows the secondary ground comparison with control cities, {did[0]:+.1f}% with a wide interval "
            f"({did[1]:+.1f} to {did[2]:+.1f}). Not identified as an effect of NCAP.")  # fmt: skip
     return fig, S.Meta("S4", "How much of NCAP cities' reported fall in PM10 survives weather and network correction?",

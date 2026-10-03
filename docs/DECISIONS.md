@@ -1712,3 +1712,90 @@ Phase 9 estimates nothing. It redraws figures from outputs that already exist (P
   - DEC-191's city rule.
   
   The full suite has 248 tests, all passing (`data/interim/logs/pytest_phase9_partA.log`).
+
+## 2026-10-03: Phase 9 Part A reviewed (Reenu); Part B rules written BEFORE any dashboard code
+
+**DEC-197: Reenu's Part A rulings, and the figure fixes they required. No number changed.**
+- **DEVIATION from DEC-150, dated 2026-10-03 (approved by Reenu): figure 1 has no "policy" step and no "remaining change" bar.**
+  - DEC-150 was written on 2026-10-01, before H1's verdict. It drew the Layer A restricted estimate as a step down from the corrected ground change, followed by "remaining change = corrected − that step, the part not attributed to NCAP".
+  - DEC-151 then found H1 not identified, so nothing can be attributed to NCAP. Subtracting the estimate presupposes the attribution the design failed to identify.
+  - The two quantities are also on different bases: a ground change from 2018 to 2025, in % of 2018, against a satellite difference from a synthetic comparison averaged over 2019 and 2021–2024. They cannot be stacked on one axis.
+  - The estimate is therefore drawn on its own axis (DEC-191), labelled "relative change against comparison cities … not identified as an effect of NCAP". It will be listed with the deviations in the final report.
+- **Figure 6 stays, with no city named** (Reenu). Its subtitle now reads: "Purpose: to show that city ranks are too uncertain to be meaningful, so units are deliberately unnamed. Not identified as effects of NCAP: the registered pre-trend test failed."
+- **Figure 1's illustrative-city rule is accepted** (Reenu). The panel (c) heading now says "chosen by a station-count rule written after viewing results (DEC-191); every city in Fig. S3". The caption says the same.
+- **Figure 3:** the annual view is main (Reenu agreed).
+- **Fixes:**
+  - **Figure 1 (a) and (c), and S4, which shares the drawing code:** each removed part is labelled with the step it makes, "+2.9 pp removed" (the sign of −contribution), so the label matches the bar's direction. Totals stay as % changes. This applies in the tick labels, the caption and the alt text. The alt text's "largest part removed" is computed, not typed.
+  - **Figure 1 legend:** the dark bars are "Reported and corrected change (correction uses the GAM, the primary model)". The reported change is raw data, not a GAM output.
+  - **Figure 4:** "l = −9 … −2" and "l = 0 … +5" now read "relative years −9 to −2" and "relative years 0 to +5", in the subtitle and the caption.
+- **Checks:**
+  - every figure passed the wording check when saved, and the catalogue passed it again;
+  - a rebuild of every figure module gave 55 of 55 files byte-identical (54 figure files and `docs/figures.md`);
+  - `snakemake -n pregate` and `-n viz` have nothing to do.
+
+**DEC-198: The site gets its own small environment and lock file; the analysis lock is not touched (Reenu).**
+- `envs/site.yml` holds conda-forge `quarto` pinned to 1.9.38 (the newest on conda-forge on 2026-10-03), and nothing else.
+- `envs/site-lock.yml` is made with `conda-lock` for win-64 and linux-64. It installs as the environment `ncap-site`.
+- **The site runs no code.** Every page is plain Markdown with pre-rendered images and CSV downloads, so Quarto needs neither Python nor Jupyter. All content is precomputed in the analysis environment by `python -m src.dashboard.build`.
+- **`conda-lock.yml` (the analysis lock) and `environment.yml` must not change.** This is checked with `git diff` before the commit and stated in the phase note.
+
+**DEC-199: What the dashboard shows, and what it does not.**
+- **Units.** One page for each of the 113 NCAP units of Layer A (GHSL urban centres holding an NCAP city), named by their NCAP cities. A shared polygon lists all its member cities, e.g. "Delhi, Faridabad, Ghaziabad, Noida". The 10 NCAP towns with no GHSL centre have no page; the index lists them as "not covered" with the reason (DEC-063).
+- **Order.** Cities are listed alphabetically on the index and in a select box, never ranked or sorted by any result. No page shows a rank or rank interval, a p-value or a "significant" label.
+- **Each page shows, all precomputed:**
+  1. **Facts:** member cities; state; region; listing year (cohort); 2015 population; whether a monitor was added inside the polygon in 2019–2024 (DEC-096).
+  2. **Ground PM2.5 and PM10, where ground data exist** (85 of 113 units). Annual series, 2015–2025:
+     - raw all-station mean (as reported, after the audit's cleaning);
+     - deweathered all-station mean (GAM, the primary model), with the GAM–LightGBM range as a band;
+     - **composition-corrected** = the 2018 balanced panel, deweathered, from 2018. It exists for 20 units; elsewhere the page says no station was valid every year 2018–2025.
+     - The number of stations behind each year is shown.
+     - Source: `data/processed/composition/trends.parquet` (primary version), identical to `deweathered/city_year.parquet` for the all-station series (checked).
+  3. **Satellite PM2.5:** the unit's annual population-weighted ACAG V5.GL.06 mean, 2010–2024, with the listing year marked. Descriptive.
+  4. **City-level relative change:** the unit's own SDID estimate against its synthetic comparison, with ± 1.96 × the placebo SE (DEC-162), and its shrunken posterior mean with the 95% credible interval (DEC-163). The average city-level relative change is shown for reference.
+     - Every page carries the fixed caveat, in a box: "H1 is not identified by this design: the registered pre-trend test failed. NCAP units' satellite PM2.5 did not fall relative to comparable units; the estimates point to a relative rise of about 3–5%. Nothing on this page is an effect of NCAP." (DEC-154).
+  5. **Data quality:** per year, the number of PM2.5 and PM10 stations reporting inside the polygon and their median reliability score (0–100, DEC-073).
+- **Not shown:**
+  - the synthetic comparison's own trajectory. The proposal's "counterfactual trend" is not saved per unit, and drawing it would invite reading the gap as an effect;
+  - Layer B per-city ITS values (Phase 7 keeps them descriptive only);
+  - AOD.
+- **Figures:** one PNG per page (150 dpi), drawn with `src/viz/style.py`, so the same palette, font, units-on-axes and uncertainty rules apply. Each has generated alt text.
+- **Downloads:** CSVs per dataset under `dashboard/data/`, with every number on the pages:
+  - ground series (derived from the CPCB mirror; ODbL 1.0, share-alike);
+  - satellite series;
+  - city-level estimates;
+  - quality.
+- **Wording:** every generated page passes `src/viz/wording.py` (DEC-193); the build refuses to write otherwise. A test re-checks the committed pages, so CI checks them too.
+
+**DEC-200: The "About the data" page, with attributions verified on 2026-10-03 (hard rule 2).**
+- **CPCB data via the `india-cpcb-aqi` mirror (Vonter), ODbL 1.0.**
+  - The mirror README requires attribution and share-alike: "If you publicly use any adapted version of this database, or works produced from an adapted database, you must also offer that adapted database under the ODbL".
+  - So the page says: "Contains information from india-cpcb-aqi, a mirror of CPCB's data repository, made available under the ODbL 1.0; some contents © CPCB. The ground-derived data on this site are made available under the ODbL 1.0."
+- **ERA5 (Copernicus).** The CDS pages give a CC-BY licence (since 2 July 2025) and DOIs 10.24381/1cf1ad76 (hourly time series) and 10.24381/cds.f17050d7 (monthly means).
+  - Notice: "Contains modified Copernicus Climate Change Service information (2026)".
+  - Citation: Hersbach et al. (2020), *QJRMS* 146, 1999–2049, doi:10.1002/qj.3803.
+- **ACAG SatPM V5.GL.06 (WashU), CC BY 4.0.** satpm.org asks for three citations:
+  - van Donkelaar et al. (2021), *ES&T*, doi:10.1021/acs.est.1c05309;
+  - Hammer et al. (2023), *RSE* 294, 113624, doi:10.1016/j.rse.2023.113624;
+  - Zhang et al. (2025), *GMD* 18, 6767–6803, doi:10.5194/gmd-18-6767-2025.
+- **GHSL UCDB R2024A (JRC), CC BY 4.0, © European Union 1995–2026.** The licence text is in our download. Citation: Mari Rivero et al. (2026), GHS-UCDB R2024A, doi:10.2905/JRC.05RDPR0. The page states that changes were made (polygons joined into units, population-weighted means).
+- **MODIS MAIAC (NASA), openly shared without restriction** (EOSDIS policy). Citation: Lyapustin & Wang (2022), MCD19A2 v061, NASA LP DAAC, doi:10.5067/MODIS/MCD19A2.061. The page says AOD appears only in the report, not in the city pages.
+- **OpenAQ.** The terms page says "Attribution to OpenAQ as the source data is also required when using OpenAQ services", and the original providers must be acknowledged. OpenAQ supplied January–March 2026 (not shown on the dashboard) and station coordinates.
+- **Also listed,** because the pages or their maps use them:
+  - DataMeet boundaries (CC BY 4.0, as their data card says);
+  - GHS-POP R2023A weights (CC BY 4.0).
+- **Links:** the OSF registration https://osf.io/jksne/ and the repository https://github.com/breenu/ncap-evaluation.
+- **Code licence:** none has been chosen yet (open item). The page says so, rather than implying one.
+
+**DEC-201: Build and deployment.**
+- **Sources.** `python -m src.dashboard.build` (gated; analysis environment) writes the site sources to `dashboard/`:
+  - `_quarto.yml`, `index.qmd`, `about.qmd`;
+  - `cities/<slug>.qmd`, `cities/img/<slug>.png`;
+  - `data/*.csv`.
+- **The generated sources are committed.** `data/` is not in git, so CI cannot regenerate them. The rendered `dashboard/_site/` is gitignored.
+- **Snakemake:** rule `dashboard` in `viz.smk` (gated), part of `viz`. Rendering is a separate rule, `dashboard_render` (`conda run -n ncap-site quarto render dashboard`). It is not part of `all`, because it needs the site environment.
+- **Deployment:** `.github/workflows/pages.yml`.
+  - It runs on pushes to `main` that touch `dashboard/**` or `envs/site*`, and on manual dispatch.
+  - It installs `ncap-site` from `envs/site-lock.yml`, renders, and deploys with GitHub's Pages actions.
+  - Nothing is pushed to a `gh-pages` branch.
+  - It deploys only after Reenu sets the repository's Pages source to "GitHub Actions"; until then the deploy job fails, and that is expected.
+- **Static only:** no server, no live data, no analytics, no external scripts beyond what Quarto bundles.
