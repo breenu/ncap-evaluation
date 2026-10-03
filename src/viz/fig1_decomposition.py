@@ -318,8 +318,8 @@ def fig_slide(D: dict) -> tuple[plt.Figure, S.Meta]:
     v, va = summary_values(D["s"], pol, spec), summary_values(D["s"], pol, lg)
     h = v["h4"]
     share = 100 * h[0] / -v["reported"][0]
-    take = (f"In {n_c} NCAP cities, about {share:.0f}% of the reported fall in PM2.5 since 2018 does not survive\n"
-            "correction for weather and for changes in which monitors exist")
+    take = (f"In the {n_c} NCAP cities with a continuous monitor since 2018, about {share:.0f}% of the reported fall in PM2.5\n"
+            "does not survive correction for weather and for changes in which monitors exist")
     fig = plt.figure(figsize=(13.33, 7.5))
     ax = fig.add_axes([0.08, 0.2, 0.9, 0.53])
     waterfall(ax, v, va, LONG)

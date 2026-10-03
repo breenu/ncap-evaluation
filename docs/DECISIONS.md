@@ -2004,3 +2004,26 @@ Phase 10 estimates nothing. It writes the report, the results summary, the polic
   - `LICENSE-ODbL-1.0.txt` (the full ODbL 1.0 text as shipped by the mirror, sha256 `1d553fee…`);
   - `LICENSING.md` (which licence covers which part, the ODbL notice, and the attributions).
 - **Still to change in Part C:** the dashboard's About page still says no code licence has been chosen.
+
+## 2026-10-03: Phase 10 Part B reviewed (Reenu)
+
+**DEC-213: My Part B rulings, applied before Part C.**
+- **Registration wording.** The report abstract, the summary and the brief now say the plan was registered "before comparing NCAP with non-NCAP cities after 2018", as in the report's section on pre-registration. "Before any post-2019 comparison" and "before looking at the results" overclaimed.
+- **"Already moving apart before 2019"** (the brief, twice) becomes "did not move together closely enough before 2019"; the failed test does not show a steady divergence. The report and summary did not use the phrase.
+- **Scope and size, in the conclusion.**
+  - The first sentence is scoped to "the NCAP cities I could check".
+  - Weather moves a single year by "about half of a typical year's change", matching the weather section; before, it said "about as much as".
+- **Table 4** now has a note: the "as registered, no deviations" rows' parts (generated values) are unstable because of the original GAM's extrapolation problem that motivated deviations A1 and A3. Only their H4 total is comparable with the other rows.
+- **The abstract's AOD sentence** now carries the exploratory caveat that the two signals diverge most where no monitor was added.
+- **NCAP and the monitoring network.** "NCAP paid for a large expansion of the monitoring network" is replaced with what the documents support, and a "Policy documents" group lists all fourteen NCAP documents in the references.
+  - The NCAP report of January 2019 (section 8.1, PDF pages 61–62) proposes augmenting the continuous stations.
+  - Lok Sabha answer AU5104 (4 April 2022, page 1) lists "expansion of monitoring network" among the activities that NCAP funds support.
+  - Neither shows NCAP paid for any particular station, so the brief no longer says "many of them paid for by NCAP".
+- **Scope on the slide and in the brief's caption:** "In the 18 NCAP cities with a continuous monitor since 2018…". The count is generated.
+- **Smaller edits:**
+  - "about 5.1%" becomes "a median 5.1%";
+  - "On average, new monitors stand in cleaner spots";
+  - the fire check now reads "nearby fire activity, as measured, does not account for it".
+- **Licences:** CC BY 4.0 for the non-ground derived data (satellite and city-level series) is confirmed.
+- **DEC-019:** my message again listed both options (leave unchanged, or replace the tool name with a visible note and a new entry), so the choice is still open and is asked at the Part C checkpoint.
+- **Checks after the edits:** `python -m src.report.check` passes. `snakemake --cores 1 all` and `report_render` ran. Figure 1, S3, S4 and `docs/figures.md` rebuilt byte-identical; only the slide changed. The PDFs are 26, 1 and 2 pages.

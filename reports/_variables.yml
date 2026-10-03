@@ -329,7 +329,7 @@ fig:
     caption: 'Slide version of Figure 1, panel (a). Mean change in annual ground PM2.5 from 2018 to 2025 over the 18 NCAP cities with a station valid every year (16 of them with only one such station): reported -23.6%, corrected -14.1%; H4 = +9.5 pp (95% CI +4.8 to +14.5). Bars: GAM (primary); squares: LightGBM; intervals: 95% cluster bootstrap over cities. H1 is not identified by this design (registered pre-trend test failed): not an effect of NCAP.'
     number: 1 (slide)
     question: How much of a city's reported improvement is real?
-    title: In 18 NCAP cities, about 40% of the reported fall in PM2.5 since 2018 does not survive correction for weather and for changes in which monitors exist
+    title: In the 18 NCAP cities with a continuous monitor since 2018, about 40% of the reported fall in PM2.5 does not survive correction for weather and for changes in which monitors exist
   fig2_station_entry:
     alt: 'Map of India with monitoring stations marked by when they first reported: 138 before 2019, 185 in 2019–2021 and 216 in 2022–2025, most of them in or near NCAP cities. A bar chart shows new stations per year, 139 up to 2018 and 426 from 2019, with the peak of 127 in 2023.'
     caption: '(a) The 539 CPCB continuous monitoring stations with a station-level coordinate, by the period of their first PM data: 138 before NCAP (to 2018), 185 in 2019–2021 and 216 in 2022–2025; open circles mark NCAP cities. (b) New stations per year, all 565 stations: 139 first reported in 2015–2018 and 426 from 2019 onward, peaking at 127 in 2023. Most of the network that measures NCAP cities today did not exist at the 2018 baseline, which is why reported city averages mix air-quality change with changes in where monitors stand.'

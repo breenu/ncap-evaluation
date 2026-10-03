@@ -16,7 +16,7 @@ format:
       - file: _typst_style.typ
 ---
 
-**Question.** Once weather and changes in the monitoring network are removed, did PM2.5 change differently in cities enrolled in India's National Clean Air Programme (NCAP) than in comparable cities? I registered the analysis plan before making any post-2019 comparison (<https://osf.io/jksne/>). Full report, code and decision log: <https://github.com/breenu/ncap-evaluation>.
+**Question.** Once weather and changes in the monitoring network are removed, did PM2.5 change differently in cities enrolled in India's National Clean Air Programme (NCAP) than in comparable cities? I registered the analysis plan before comparing NCAP with non-NCAP cities after 2018 (<https://osf.io/jksne/>). Full report, code and decision log: <https://github.com/breenu/ncap-evaluation>.
 
 **RQ1: measurement (ground monitors, descriptive).**
 

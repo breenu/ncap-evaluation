@@ -14,6 +14,14 @@
 - Sun, L. and Abraham, S. (2021). Estimating dynamic treatment effects in event studies with heterogeneous treatment effects. *Journal of Econometrics*, 225(2), 175–199.
 - Wood, S. N. (2017). *Generalized Additive Models: An Introduction with R* (2nd edition). Chapman and Hall/CRC.
 
+**Policy documents** (the NCAP documents used; every extracted row records its document and page)
+
+- Ministry of Environment, Forest and Climate Change (2019). *National Clean Air Programme (NCAP)*. January 2019 (copy archived by the Internet Archive on 11 July 2019). Section 8.1 proposes augmenting the network of continuous monitoring stations.
+- Central Pollution Control Board. List of non-attainment cities (`Non-Attainment_Cities.pdf`), versions of 9 June 2017, 4 June 2020, 8 December 2020, 18 June 2021 and 10 October 2022 (Internet Archive captures of cpcb.nic.in).
+- XV Finance Commission. *Report for 2020-21*, Annex 5.3: Grants to Million Plus Cities for 2020-21.
+- XV Finance Commission. *Report for 2021-26*, Volume II, Annex 7.6: Grants to Million Plus Urban Agglomerations.
+- Lok Sabha, unstarred questions answered by the Ministry of Environment, Forest and Climate Change (sansad.in): AU5104, 4 April 2022, "Funds for NCAP" (lists expansion of the monitoring network among the activities that NCAP funds support); AU2467, 1 August 2022; AU164, 4 December 2023; AU307, 5 February 2024; AU2080, 9 December 2024; AU386, 2 February 2026.
+
 **Data**
 
 - Hammer, M. S. et al. (2023). *Remote Sensing of Environment*, 294, 113624. doi:10.1016/j.rse.2023.113624.

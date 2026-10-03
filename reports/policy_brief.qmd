@@ -22,31 +22,31 @@ format:
 ## Key messages
 
 - **Reported improvements are overstated.** In the {{< var comp.primary_pm25.cities >}} NCAP cities where at least one monitor could be followed from 2018 to 2025, about {{< var comp.primary_pm25.share_removed >}} of the reported fall in fine particles (PM2.5) disappears once favourable weather and the arrival of new monitors are taken into account.
-- **New monitors were often placed in cleaner spots.** That alone makes city averages look better, even when nobody's air has changed.
+- **On average, new monitors stand in cleaner spots.** That alone makes city averages look better, even when nobody's air has changed.
 - **NCAP cities got cleaner, but not faster than comparable cities.** Satellite measurements show fine particles fell after 2018 both in NCAP cities ({{< var causal.ncap_fall_abs >}}) and in other cities ({{< var causal.pool_fall_abs >}}).
-- **The study cannot say whether NCAP made a difference.** A check I fixed in advance showed the two groups of cities were already moving apart before 2019, so the comparison does not isolate the programme.
+- **The study cannot say whether NCAP made a difference.** A check I fixed in advance showed the two groups of cities did not move together closely enough before 2019, so the comparison does not isolate the programme.
 :::
 
 ## Why raw progress numbers mislead
 
 NCAP, launched in January 2019, set targets for cutting particulate pollution in {{< var units.cities_master >}} cities. Progress is usually judged by comparing a city's measured pollution in a recent year with a baseline year. Three things move that number:
 
-1. **Weather.** A windier or wetter year lowers pollution without any change in emissions. In a typical city, weather alone moves the yearly average by about {{< var dw.weather_pm25 >}} from one year to the next.
-2. **Which monitors exist.** Of the {{< var audit.stations >}} continuous monitoring stations, {{< var audit.stations_from_2019 >}} first reported in 2019 or later, many of them paid for by NCAP. If new monitors sit in cleaner neighbourhoods, the city average falls even when the air does not.
+1. **Weather.** A windier or wetter year lowers pollution without any change in emissions. In a typical city, weather alone moves the yearly average by a median {{< var dw.weather_pm25 >}} from one year to the next.
+2. **Which monitors exist.** Of the {{< var audit.stations >}} continuous monitoring stations, {{< var audit.stations_from_2019 >}} first reported in 2019 or later. NCAP set out to expand the network, and its city funds can be spent on it (NCAP report, January 2019; Lok Sabha answer AU5104, April 2022). If new monitors sit in cleaner neighbourhoods, the city average falls even when the air does not.
 3. **Policy.** Only what is left after the first two could reflect what cities did.
 
 ## What changes when weather and monitors are accounted for
 
 I removed the effect of weather with a statistical model of each monitor's readings, and the effect of changing monitors by following only the stations that measured every year. In the cities where this was possible, the reported fall of {{< var comp.primary_pm25.reported_abs >}} shrinks to {{< var comp.primary_pm25.corrected_abs >}}. Most of the difference comes from the changing network: newly opened stations read about {{< var comp.entrants_pm25_raw_abs >}} cleaner than older stations in the same city and year.
 
-![{{< var fig.fig1_slide.title >}}. Scope: the {{< var comp.primary_pm25.cities >}} NCAP cities with a monitor valid every year from 2018 to 2025. Not an effect of NCAP.](figures/fig1_slide.png){fig-alt="{{< var fig.fig1_slide.alt >}}"}
+![{{< var fig.fig1_slide.title >}}. Not an effect of NCAP.](figures/fig1_slide.png){fig-alt="{{< var fig.fig1_slide.alt >}}"}
 
 ## Did NCAP cities improve more than other cities?
 
 To answer this fairly, each NCAP city has to be compared with similar cities that were not in the programme. Ground monitors cannot do this, because few existed before 2018. So I used satellite estimates of fine particles for {{< var units.treated >}} NCAP urban areas and {{< var units.controls >}} similar non-NCAP areas from 2010 to 2024.
 
 - **Both groups improved after 2018, and the NCAP group improved less.** Against a weighted group of similar cities that tracked them before 2019, NCAP cities' satellite PM2.5 was about {{< var causal.rise_range >}} higher after listing. In the study's own terms, the programme's effect is not identified by this design.
-- **This is not evidence that NCAP made air worse.** Before NCAP began, the two groups were already moving apart, so the comparison cannot separate the programme from other differences: NCAP cities are much larger than the comparison cities and less often on the polluted Indo-Gangetic Plain.
+- **This is not evidence that NCAP made air worse.** Before NCAP began, the two groups did not move together closely enough, so the comparison cannot separate the programme from other differences: NCAP cities are much larger than the comparison cities and less often on the polluted Indo-Gangetic Plain.
 - **The satellite figures need care.** They are calibrated against ground monitors, and an independent satellite signal that uses no monitors shows a smaller relative change.
 - **No city can be ranked.** City-by-city estimates are too uncertain to say which cities did better or worse.
 
@@ -60,4 +60,4 @@ To answer this fairly, each NCAP city has to be compared with similar cities tha
 
 ## About this study
 
-I designed and carried out this study as an independent evaluation, and registered the analysis plan publicly before looking at the results (<https://osf.io/jksne/>). All data are public. The code, the full technical report, every decision with its date, and a city-by-city explorer are at <https://github.com/breenu/ncap-evaluation> and <https://breenu.github.io/ncap-evaluation/>. Ground data: CPCB, via the `india-cpcb-aqi` mirror (ODbL); satellite PM2.5: Washington University in St. Louis; weather: Copernicus ERA5.
+I designed and carried out this study as an independent evaluation, and registered the analysis plan publicly before comparing NCAP with non-NCAP cities after 2018 (<https://osf.io/jksne/>). All data are public. The code, the full technical report, every decision with its date, and a city-by-city explorer are at <https://github.com/breenu/ncap-evaluation> and <https://breenu.github.io/ncap-evaluation/>. Ground data: CPCB, via the `india-cpcb-aqi` mirror (ODbL); satellite PM2.5: Washington University in St. Louis; weather: Copernicus ERA5.
