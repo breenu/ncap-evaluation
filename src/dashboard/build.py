@@ -19,6 +19,7 @@ import textwrap
 import unicodedata
 
 import geopandas as gpd
+import matplotlib as mpl
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -36,6 +37,7 @@ YEARS_SAT = (2010, 2024)
 REPO = "https://github.com/breenu/ncap-evaluation"
 OSF = "https://osf.io/jksne/"
 DPI = 120
+NARROW_FONT = 1.3
 DPI_NARROW = 130  # the narrow chart is ~4 in wide, so a 390 px phone shows its text near full size; the extra pixels keep it sharp
 C_RAW, C_DW, C_PANEL = S.INK_2, S.CATEGORICAL[0], S.CATEGORICAL[1]
 
@@ -91,7 +93,7 @@ def load() -> dict:
 # ------------------------------------------------------------------ one city's figure
 
 
-def ground_panel(ax: plt.Axes, t: pd.DataFrame, pol: str, listed: int) -> bool:
+def ground_panel(ax: plt.Axes, t: pd.DataFrame, pol: str, listed: int, fk: float = 1.0) -> bool:
     a = t[(t.pollutant == pol) & (t.set == "all")].set_index("year").reindex(range(YEARS_GROUND[0], YEARS_GROUND[1] + 1))
     p = t[(t.pollutant == pol) & (t.set == "panel") & (t.year >= 2018)].set_index("year")
     ax.set_title(f"Ground {POL[pol]}")
@@ -99,7 +101,7 @@ def ground_panel(ax: plt.Axes, t: pd.DataFrame, pol: str, listed: int) -> bool:
     ax.axvspan(2019.5, 2020.5, color=S.GRID, linewidth=0, zorder=0)
     if a.raw.notna().sum() == 0:
         ax.text(0.5, 0.5, f"No {POL[pol]} station inside this urban centre\nhas a valid year (2015–2025).", transform=ax.transAxes,
-                ha="center", va="center", fontsize=9.5, color=S.INK_2)  # fmt: skip
+                ha="center", va="center", fontsize=9.5 * fk, color=S.INK_2)  # fmt: skip
         ax.set_yticks([])
         ax.set_xlabel("Year")
         return False
@@ -115,7 +117,7 @@ def ground_panel(ax: plt.Axes, t: pd.DataFrame, pol: str, listed: int) -> bool:
     ax.set_ylabel(f"{POL[pol]}, annual mean ({S.UG})")
     ax.set_xlabel("Year (numbers: stations)")
     for y, n in a.n_stations.dropna().items():
-        ax.text(y, 0.02, f"{int(n)}", transform=ax.get_xaxis_transform(), ha="center", fontsize=7.5, color=S.INK_2)
+        ax.text(y, 0.02, f"{int(n)}", transform=ax.get_xaxis_transform(), ha="center", fontsize=7.5 * fk, color=S.INK_2)
     return True
 
 
@@ -123,21 +125,25 @@ def city_figure(u: pd.Series, D: dict, narrow: bool = False) -> tuple[plt.Figure
     """The city's four panels: 2 x 2 for wide screens, or one column (`narrow`) for phones (DEC-204), so each
     panel keeps a readable size at a 390 px viewport."""
     S.apply()
+    fk = NARROW_FONT if narrow else 1.0  # phones: every font larger by fk at the same figure width (DEC-205)
+    if narrow:
+        for key in ("font.size", "axes.labelsize", "axes.titlesize", "xtick.labelsize", "ytick.labelsize", "legend.fontsize"):
+            mpl.rcParams[key] = mpl.rcParams[key] * fk
     t = D["trends"][D["trends"].unit_id == u.unit_id]
     listed = int(u.cohort_listed)
     if narrow:
-        fig, ax4 = plt.subplots(4, 1, figsize=(4.2, 15.5))
+        fig, ax4 = plt.subplots(4, 1, figsize=(4.4, 17.5))
         axes = np.array([[ax4[0], ax4[1]], [ax4[2], ax4[3]]])
     else:
         fig, axes = plt.subplots(2, 2, figsize=(11, 7.6))
-    has = {pol: ground_panel(ax, t, pol, listed) for ax, pol in zip(axes[0], ("pm25", "pm10"), strict=True)}
+    has = {pol: ground_panel(ax, t, pol, listed, fk) for ax, pol in zip(axes[0], ("pm25", "pm10"), strict=True)}
 
     sx = axes[1, 0]
     s = D["sat"][D["sat"].unit_id == u.unit_id].set_index("year").sort_index()
     sx.axvspan(2019.5, 2020.5, color=S.GRID, linewidth=0, zorder=0)
     sx.plot(s.index, s.pm25_popw, color=S.INK, marker="o", markersize=4)
     sx.axvline(listed - 0.5, color=S.NEUTRAL, linestyle=":", linewidth=1)
-    sx.text(listed - 0.4, 0.04, f"listed {listed}", transform=sx.get_xaxis_transform(), fontsize=8, color=S.INK_2)
+    sx.text(listed - 0.4, 0.04, f"listed {listed}", transform=sx.get_xaxis_transform(), fontsize=8 * fk, color=S.INK_2)
     sx.set_ylim(0, s.pm25_popw.max() * 1.15)
     sx.set_title("Satellite PM2.5 (ACAG V5.GL.06)")
     sx.set_ylabel(f"PM2.5, population-weighted\nannual mean ({S.UG})")
@@ -152,12 +158,12 @@ def city_figure(u: pd.Series, D: dict, narrow: bool = False) -> tuple[plt.Figure
         m, lo, hi = S.pct([m, lo, hi])
         rx.errorbar(m, 2 - k, xerr=[[m - lo], [hi - m]], fmt=mk, color=S.INK if k < 2 else S.INK_2, markerfacecolor=face,
                     markersize=7, markeredgewidth=1.3, elinewidth=1.5, capsize=3)  # fmt: skip
-    rx.set_yticks([2, 1, 0], [r[0] for r in rows], fontsize=8.5)
+    rx.set_yticks([2, 1, 0], [r[0] for r in rows], fontsize=8.5 * fk)
     rx.set_ylim(-0.6, 3.1)
     rx.axvline(0, color=S.INK_2, linewidth=0.8)
     rx.set_xlabel("Satellite PM2.5 after listing, listed unit\nminus its synthetic comparison (%)")
     rx.set_title("City-level relative change")
-    rx.text(0.02, 0.97, "Not identified as an effect of NCAP", transform=rx.transAxes, fontsize=8.5, fontweight="bold",
+    rx.text(0.02, 0.97, "Not identified as an effect of NCAP", transform=rx.transAxes, fontsize=8.5 * fk, fontweight="bold",
             va="top", color=S.INK, bbox={"facecolor": S.SURFACE, "edgecolor": "none", "pad": 1})  # fmt: skip
     rx.grid(axis="y", visible=False)
 
@@ -171,12 +177,12 @@ def city_figure(u: pd.Series, D: dict, narrow: bool = False) -> tuple[plt.Figure
         handles[1].set_label("Deweathered, all stations (GAM;\nband: GAM–LightGBM range)")
         handles[2].set_label("Composition-corrected: stations valid\nevery year 2018–2025, deweathered")
         fig.tight_layout(rect=(0, 0, 1, 0.915), h_pad=2.2)
-        fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.0, 0.998), ncol=1, fontsize=9)
-        note = textwrap.fill(note, 52)
+        fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.0, 0.998), ncol=1, fontsize=9 * fk)
+        note = textwrap.fill(note, 44)
     else:
         fig.tight_layout(rect=(0, 0, 1, 0.88))
         fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.0, 0.995), ncol=2, fontsize=8.5)
-    fig.text(0.0, 0.0, note, fontsize=8, color=S.INK_2, va="top")
+    fig.text(0.0, 0.0, note, fontsize=8 * fk, color=S.INK_2, va="top")
 
     def g(pol):
         a = t[(t.pollutant == pol) & (t.set == "all")].dropna(subset=["raw"]).sort_values("year")
