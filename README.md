@@ -64,7 +64,6 @@ docs/analysis_plan.md, docs/osf/     the registered plan, its OSF export and the
 docs/DECISIONS.md                    the decision log
 docs/data-cards/                     one card per data source
 docs/*_report.md and other docs/*.md generated reports (rebuilt by the pipeline; do not edit), cited by the report
-docs/proposal.pdf                    the original proposal (application notes removed; the original is in commit 86c4997)
 reports/                             the report, summary and brief (Quarto sources and PDFs), figures, slide
 dashboard/                           the city explorer's precomputed sources (published on GitHub Pages)
 ```

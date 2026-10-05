@@ -63,3 +63,5 @@ dashboard/.quarto/
 # Project instructions, handoff notes, plans and phase notes live here on the author's machine.
 CLAUDE.md
 _working/
+# The proposal is kept locally only (removed from the repository at the author's request, 2026-10-05).
+docs/proposal.pdf
